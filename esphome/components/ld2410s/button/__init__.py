@@ -2,16 +2,21 @@ import esphome.codegen as cg
 from esphome.components import button
 import esphome.config_validation as cv
 from esphome.const import (
-    ENTITY_CATEGORY_DIAGNOSTIC,
-    ENTITY_CATEGORY_CONFIG,
-    ICON_BUG,
-    DEVICE_CLASS_IDENTIFY,
+    CONF_CALIBRATION,
+    CONF_FACTORY_RESET,
+    # DEVICE_CLASS_IDENTIFY,
     DEVICE_CLASS_RESTART,
     DEVICE_CLASS_UPDATE,
+    ENTITY_CATEGORY_CONFIG,
+    # ENTITY_CATEGORY_DIAGNOSTIC,
+    # ICON_BUG,
+    # ICON_MEMORY,
     ICON_RESTART_ALERT,
-    ICON_MEMORY
 )
+
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
+
+CODEOWNERS = ["@NovakIrs"]
 
 LD2410SReadAll = ld2410s_ns.class_("LD2410SReadAll", button.Button)
 LD2410SApplyConfigButton = ld2410s_ns.class_("LD2410SApplyConfigButton", button.Button)
@@ -23,9 +28,9 @@ LD2410SMinimalOutput = ld2410s_ns.class_("LD2410SMinimalOutput", button.Button)
 
 CONF_READ_ALL = "read_all"
 CONF_APPLY_CONFIG = "apply_config"
-CONF_CALIBRATION = "calibration"
-CONF_FACTORY_RESET = "factory_reset"
-CONF_MINIMAL_OUTPUT = "toggle_minimal_output"
+# CONF_CALIBRATION = "calibration"
+# CONF_FACTORY_RESET = "factory_reset"
+CONF_MINIMAL_OUTPUT = "minimal_output"
 # CONF_ENABLE_CONFIG = "enable_config"
 # CONF_DISABLE_CONFIG = "disable_config"
 
@@ -60,7 +65,7 @@ CONFIG_SCHEMA = {
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:icon-refresh",
-    )
+    ),
     # ,
     # cv.Optional(CONF_ENABLE_CONFIG): button.button_schema(
     #     LD2410SEnableConfigButton,
@@ -73,8 +78,9 @@ CONFIG_SCHEMA = {
     #     device_class=DEVICE_CLASS_IDENTIFY,
     #     entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
     #     icon=ICON_BUG
-    # )    
+    # )
 }
+
 
 async def to_code(config):
     ld2410s_component = await cg.get_variable(config[CONF_LD2410S_ID])
@@ -104,14 +110,15 @@ async def to_code(config):
         await cg.register_parented(b, config[CONF_LD2410S_ID])
         cg.add(ld2410s_component.set_toggle_minimal_output_button(b))
 
+
 # toggle_minimal_output
 # set_toggle_minimal_output_button
 
-    # if enable_confing := config.get(CONF_ENABLE_CONFIG):
-    #     b = await button.new_button(enable_confing)
-    #     await cg.register_parented(b, config[CONF_LD2410S_ID])
-    #     cg.add(ld2410s_component.set_enable_config_button(b))
-    # if disable_confing := config.get(CONF_DISABLE_CONFIG):
-    #     b = await button.new_button(disable_confing)
-    #     await cg.register_parented(b, config[CONF_LD2410S_ID])
-    #     cg.add(ld2410s_component.set_disable_config_button(b))
+# if enable_confing := config.get(CONF_ENABLE_CONFIG):
+#     b = await button.new_button(enable_confing)
+#     await cg.register_parented(b, config[CONF_LD2410S_ID])
+#     cg.add(ld2410s_component.set_enable_config_button(b))
+# if disable_confing := config.get(CONF_DISABLE_CONFIG):
+#     b = await button.new_button(disable_confing)
+#     await cg.register_parented(b, config[CONF_LD2410S_ID])
+#     cg.add(ld2410s_component.set_disable_config_button(b))

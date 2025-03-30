@@ -1,14 +1,22 @@
 import esphome.codegen as cg
-import esphome.config_validation as cv
 from esphome.components import binary_sensor
-from esphome.const import CONF_ID, DEVICE_CLASS_OCCUPANCY, DEVICE_CLASS_EMPTY, CONF_HAS_TARGET
-from .. import ld2410s_ns, LD2410S, CONF_LD2410S_ID
+import esphome.config_validation as cv
+from esphome.const import (
+    CONF_HAS_TARGET,
+    CONF_ID,
+    DEVICE_CLASS_EMPTY,
+    DEVICE_CLASS_OCCUPANCY,
+)
+
+from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
+
+CODEOWNERS = ["@NovakIrs"]
 
 LD2410SBinarySensor = ld2410s_ns.class_(
     "LD2410SBinarySensor", binary_sensor.BinarySensor, cg.Component
 )
 
-CONF_THRESHOLD_UPDATE = "has_threshold_update"
+HAS_THRESHOLD_UPDATE = "has_threshold_update"
 
 CONFIG_SCHEMA = cv.All(
     cv.COMPONENT_SCHEMA.extend(
@@ -18,7 +26,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_HAS_TARGET): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_OCCUPANCY
             ),
-            cv.Optional(CONF_THRESHOLD_UPDATE): binary_sensor.binary_sensor_schema(
+            cv.Optional(HAS_THRESHOLD_UPDATE): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_EMPTY
             ),
         }
@@ -32,8 +40,8 @@ async def to_code(config):
     if CONF_HAS_TARGET in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_HAS_TARGET])
         cg.add(var.set_presence_sensor(sens))
-    if CONF_THRESHOLD_UPDATE in config:
-        sens = await binary_sensor.new_binary_sensor(config[CONF_THRESHOLD_UPDATE])
+    if HAS_THRESHOLD_UPDATE in config:
+        sens = await binary_sensor.new_binary_sensor(config[HAS_THRESHOLD_UPDATE])
         cg.add(var.set_threshold_update_sensor(sens))
     ld2410s = await cg.get_variable(config[CONF_LD2410S_ID])
     cg.add(ld2410s.register_listener(var))

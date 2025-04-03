@@ -1,6 +1,6 @@
 substitutions:
   uart_tx: GPIO17
   uart_rx: GPIO16
-  keep_awake: GPIO15
+  keep_awake: GPIO5
 
 <<: !include common.yaml

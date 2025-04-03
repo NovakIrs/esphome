@@ -90,4 +90,4 @@ button:
 select:
   - platform: ld2410s
     response_speed:
-    name: Response speed
+      name: Response speed

@@ -904,7 +904,7 @@ void LD2410S::hex_diag_(const char *msg, const uint8_t *data, size_t length) {
 
   output[length * 3 - 1] = '\0';  // Null-terminate the string
 
-  ESP_LOGD(TAG, "%s %s", msg, output);
+  ESP_LOGD(TAG, "%s %s ", msg, output);
 }
 
 int LD2410S::read_int_(const uint8_t *buffer, size_t pos, size_t len) {

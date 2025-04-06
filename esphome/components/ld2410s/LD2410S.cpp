@@ -474,7 +474,7 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   memcpy(cmd_buffer + frame->length, &frame->footer, sizeof(frame->footer));
   frame->length += sizeof(frame->footer);
 
-  // this->hex_diag_(">", cmd_buffer, frame->length);
+  this->hex_diag_(">", cmd_buffer, frame->length);
 
   // WRITE
   for (uint16_t index = 0; index < frame->length; index++) {
@@ -498,7 +498,7 @@ void LD2410S::receive_(uint8_t *buffer, size_t buffer_size, size_t &end_pos, boo
         size_t data_size = get_data_size_(buffer, end_pos, type, start_pos);
 
         if (data_size != 0) {
-          // this->hex_diag_("<", &buffer[0], end_pos+1-start_pos);
+          this->hex_diag_("<", &buffer[0], end_pos + 1 - start_pos);
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:

@@ -126,6 +126,8 @@ static const uint32_t CMD_EXEC_TIMEOUT = 1000;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 
+static const uint16_t NO_SUB_CMD = 0xffff;
+
 struct TriggersT {
   uint8_t selected_gate{0};
   uint32_t trigger[16];
@@ -180,7 +182,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
   void read_all();
-  void apply_config();
+  void write_all();
   void calibration();
   void factory_reset();
   void toggle_minimal();
@@ -232,7 +234,7 @@ class LD2410S : public uart::UARTDevice, public Component {
 
 #ifdef USE_BUTTON
   void set_read_all_button(button::Button *button) { this->read_all_button_ = button; };
-  void set_apply_config_button(button::Button *button) { this->apply_config_button_ = button; };
+  void set_write_all_button(button::Button *button) { this->write_all_button_ = button; };
   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
   void set_toggle_minimal_output_button(button::Button *button) { this->toggle_minimal_output_button_ = button; };
@@ -265,9 +267,8 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint8_t last_ = 0;
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
 
-  void loop_exec_();
-  void cmd_add_(CmdFrameT *cmd_frame);
-  void cmd_buffer_insert_(CmdT *cmd);
+  void loop_send_command_();
+  void cmd_buffer_insert_(CmdFrameT *cmd_frame);
   void cmd_buffer_finished_();
   void cmd_buffer_inc_(uint8_t &index);
 
@@ -286,7 +287,7 @@ class LD2410S : public uart::UARTDevice, public Component {
 
 #ifdef USE_BUTTON
   button::Button *read_all_button_{nullptr};
-  button::Button *apply_config_button_{nullptr};
+  button::Button *write_all_button_{nullptr};
   button::Button *calibration_button_{nullptr};
   button::Button *factory_reset_button_{nullptr};
   button::Button *toggle_minimal_output_button_{nullptr};
@@ -298,7 +299,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   select::Select *response_speed_select_{nullptr};
 #endif
 
-  void receive_(uint8_t *buffer, size_t buffer_size, size_t &pos, bool &reply);
+  void receive_(uint8_t *buffer, size_t buffer_size, size_t &pos);
   PackageType get_frame_type_(uint8_t *buffer, size_t pos);
   size_t get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType type);
   size_t get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type, size_t start_pos);
@@ -307,26 +308,23 @@ class LD2410S : public uart::UARTDevice, public Component {
   // bool process_frame_(PackageType type, uint8_t *buffer, size_t data_size);
   void process_short_data_frame_(uint8_t *data);
   void process_data_frame_(uint8_t *data);
-  bool process_cmd_frame_(uint8_t *buffer, size_t len);
+  void process_cmd_frame_(uint8_t *buffer, size_t len);
 
-  CmdAckT parse_ack_(uint8_t *buffer, size_t length);
+  CmdAckT parse_cms_frame_(uint8_t *buffer, size_t length);
 
   // void process_data_distance_(uint8_t *data);
   // void process_data_progress_(uint8_t *data);
   // void process_data_energy_levels_(uint8_t *data);
 
-  void send_cmd_(const char *msg, uint16_t command, uint16_t sub_command = 16, uint16_t command2 = 0xffff,
-                 uint16_t sub_command2 = 16);
-  void send_cmd_frame_(uint16_t command, uint16_t sub_command = 0xffff);
-  // void publish_triggers_();
-
+  void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
   void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
   void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
 
   void send_command_(CmdFrameT *cmd_frame);
 
-  void process_config_read_ack_(uint8_t *data);
+  void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_trigger_threshold_read_(uint8_t *data);
   void process_ack_trigger_hold_read_(uint8_t *data);

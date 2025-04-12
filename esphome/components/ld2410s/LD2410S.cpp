@@ -393,10 +393,10 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
     this->last_ = next;
   }
 
-  this->commands_[this->last_] = *cmd;  // Shallow copy of state, time_started, retry
+  this->commands_[this->last_] = cmd;  // Shallow copy of state, time_started, retry
 
-  if (cmd->cmd_frame) {
-    this->commands_[this->last_].cmd_frame = new CmdFrameT(*cmd->cmd_frame);  // Deep copy
+  if (cmd.cmd_frame) {
+    this->commands_[this->last_].cmd_frame = new CmdFrameT(*cmd.cmd_frame);  // Deep copy
   } else {
     this->commands_[this->last_].cmd_frame = nullptr;
   }

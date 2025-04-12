@@ -91,6 +91,9 @@ static const uint32_t GATE_TRIGGER_THRESHOLD_WRITE_DATA[] = {
     // tool default
     //  https://drive.google.com/drive/folders/1wC8KC-DaNavNbpeVouZ1HdiBzZ9YrAcg
     //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
+    //
+    // semi good
+    //   95,63,38,35,35,34,33,33,33,33,33,32,32,31,31,31
 };
 
 static const uint16_t GATE_HOLD_THRESHOLD_READ_CMD = 0x0077;
@@ -109,6 +112,9 @@ static const uint32_t GATE_HOLD_THRESHOLD_WRITE_DATA[] = {
     //   45,42,33,32,28,28,28,28,28,28,28,28,28,28,28,28
     // tool default
     //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
+    //
+    // semi good
+    //   90,60,36,33,33,33,32,32,32,32,32,31,31,30,30,30
 };
 
 static const uint16_t GATE_SNR_READ_CMD = 0x0075;
@@ -120,6 +126,10 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
     40, 40, 41, 41, 42, 42, 43, 42, 41,
     41, 41, 41, 41, 41, 41, 41
     // 5~63 dB
+
+    //
+    // semi good
+    //   35,33,33,33,33,33,33,33,33,33,33,33,33,33,33,33
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;

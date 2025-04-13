@@ -1,5 +1,5 @@
-#include "esphome/core/log.h"
 #include "LD2410S.h"
+#include "esphome/core/log.h"
 
 namespace esphome {
 namespace ld2410s {
@@ -141,14 +141,20 @@ void LD2410S::set_trigger_selected_gate(float trigger_selected_gate) {
 void LD2410S::set_trigger_threshold(float trigger_threshold) {
   this->triggers_.trigger[this->triggers_.selected_gate] = trigger_threshold;
   this->schedule_cmd_("set_trigger_threshold\0", GATE_TRIGGER_THRESHOLD_WRITE_CMD);
+
+  this->update_ts_thresholds();
 }
 void LD2410S::set_trigger_hold(float trigger_hold) {
   this->triggers_.hold[this->triggers_.selected_gate] = trigger_hold;
   this->schedule_cmd_("set_trigger_hold\0", GATE_HOLD_THRESHOLD_WRITE_CMD);
+
+  this->update_ts_holds();
 }
 void LD2410S::set_trigger_snr(float trigger_snr) {
   this->triggers_.snr[this->triggers_.selected_gate] = trigger_snr;
   this->schedule_cmd_("set_trigger_snr\0", GATE_SNR_WRITE_CMD);
+
+  this->update_ts_snrs();
 }
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
@@ -345,8 +351,9 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       break;
   }
 
-  // ESP_LOGD(TAG, "schedule_cmd_frame frame_data_adr:%04x", &cmd_frame.data[0]);
-  // this->hex_diag_("schedule_cmd_frame:", &cmd_frame.data[0], cmd_frame.data_length);
+  // ESP_LOGD(TAG, "schedule_cmd_frame frame_data_adr:%04x",
+  // &cmd_frame.data[0]); this->hex_diag_("schedule_cmd_frame:",
+  // &cmd_frame.data[0], cmd_frame.data_length);
 
   this->cmd_buffer_insert_(&cmd_frame);
 }
@@ -375,7 +382,8 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
     ESP_LOGD(TAG, "cmd_buffer_insert cmd_frame is empty !!! active:%d, last:%d", this->active_, this->last_);
     return;
   }
-  // ESP_LOGD(TAG, "cmd_add command:%0x, lengt:%d", cmd_frame->command, cmd_frame->length);
+  // ESP_LOGD(TAG, "cmd_add command:%0x, lengt:%d", cmd_frame->command,
+  // cmd_frame->length);
 
   CmdT cmd;
   cmd.state = CmdState::SCHEDULED;
@@ -401,7 +409,8 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
 
-  // ESP_LOGD(TAG, "cmd_buffer_insert  command:%0x, lengt:%d, active:%d, last:%d", cmd->cmd_frame->command,
+  // ESP_LOGD(TAG, "cmd_buffer_insert  command:%0x, lengt:%d, active:%d,
+  // last:%d", cmd->cmd_frame->command,
 }
 void LD2410S::cmd_buffer_finished_() {
   this->commands_[this->active_].state = CmdState::EMPTY;
@@ -410,7 +419,8 @@ void LD2410S::cmd_buffer_finished_() {
     this->cmd_buffer_inc_(this->active_);
   }
 
-  // ESP_LOGD(TAG, "cmd_buffer_finished active:%d, last:%d", this->active_, this->last_);
+  // ESP_LOGD(TAG, "cmd_buffer_finished active:%d, last:%d", this->active_,
+  // this->last_);
 }
 void LD2410S::cmd_buffer_inc_(uint8_t &index) {
   index++;
@@ -424,7 +434,8 @@ void LD2410S::loop_send_command_() {
   uint32_t now = millis();
 
   if (cmd->state == CmdState::SCHEDULED) {
-    // ESP_LOGD(TAG, "loop_exec Send new command active:%d, last:%d", this->active, this->last_);
+    // ESP_LOGD(TAG, "loop_exec Send new command active:%d, last:%d",
+    // this->active, this->last_);
     this->send_command_(cmd->cmd_frame);
     cmd->state = CmdState::SENT;
     cmd->time_started = now;
@@ -449,8 +460,9 @@ void LD2410S::loop_send_command_() {
   }
 }
 void LD2410S::send_command_(CmdFrameT *frame) {
-  // ESP_LOGD(TAG, "Sending command Cmd:%04X, data_length:%d", frame->command, frame->data_length);
-  // this->hex_diag_("Sending command:", &frame->data[0], frame->data_length);
+  // ESP_LOGD(TAG, "Sending command Cmd:%04X, data_length:%d", frame->command,
+  // frame->data_length); this->hex_diag_("Sending command:", &frame->data[0],
+  // frame->data_length);
 
   this->cmd_active_ = true;
   uint8_t cmd_buffer[128];
@@ -615,8 +627,10 @@ size_t LD2410S::get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type
     return 0;
   }
 
-  // ESP_LOGD(TAG, "< start_pos:%d,  end_pos:%d, data_size:%d, expected_full_frame_size:%d, actual_frame_size:%d",
-  //     start_pos, end_pos, data_size,expected_full_frame_size, end_pos - start_pos + 1);
+  // ESP_LOGD(TAG, "< start_pos:%d,  end_pos:%d, data_size:%d,
+  // expected_full_frame_size:%d, actual_frame_size:%d",
+  //     start_pos, end_pos, data_size,expected_full_frame_size, end_pos -
+  //     start_pos + 1);
 
   if (expected_full_frame_size != end_pos - start_pos + 1) {
     return 0;
@@ -786,7 +800,9 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
 
-  ESP_LOGI(TAG, "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, dist_resp_freq=%d, resp_speed=%d",
+  ESP_LOGI(TAG,
+           "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
+           "dist_resp_freq=%d, resp_speed=%d",
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
@@ -812,8 +828,7 @@ void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
   for (auto &listener : this->listeners_) {
     listener->on_trigger_threshold_ts(vals);
   }
-
-  ESP_LOGD(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
+  this->update_ts_thresholds();
 }
 void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.hold, 16);
@@ -821,13 +836,7 @@ void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
   this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
 #endif
 
-  std::string vals = this->format_int_(this->triggers_.hold, 16, 2);
-
-  for (auto &listener : this->listeners_) {
-    listener->on_trigger_hold_ts(vals);
-  }
-
-  ESP_LOGD(TAG, "Gate Trigger Holds: %s", vals.c_str());
+  this->update_ts_holds();
 }
 void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.snr, 16);
@@ -835,13 +844,7 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
 #endif
 
-  std::string vals = this->format_int_(this->triggers_.snr, 16, 2);
-
-  for (auto &listener : this->listeners_) {
-    listener->on_trigger_snr_ts(vals);
-  }
-
-  ESP_LOGD(TAG, "Gate Trigger SNR: %s", vals.c_str());
+  this->update_ts_snrs();
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   for (int i = 0; i < 16; i++) {
@@ -851,6 +854,35 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
     this->energy_values_count_++;
   }
 
+  this->update_ts_energy_values();
+}
+
+void LD2410S::update_ts_thresholds() {
+  std::string vals = this->format_int_(this->triggers_.trigger, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_trigger_threshold_ts(vals);
+  }
+  ESP_LOGD(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
+}
+void LD2410S::update_ts_holds() {
+  std::string vals = this->format_int_(this->triggers_.hold, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_trigger_hold_ts(vals);
+  }
+  ESP_LOGD(TAG, "Gate Trigger Holds: %s", vals.c_str());
+}
+void LD2410S::update_ts_snrs() {
+  std::string vals = this->format_int_(this->triggers_.snr, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_trigger_snr_ts(vals);
+  }
+
+  ESP_LOGD(TAG, "Gate Trigger SNR: %s", vals.c_str());
+}
+void LD2410S::update_ts_energy_values() {
   std::string vals = this->format_int_(this->energy_values_, 16, 3);
 
   if (energy_values_str_ != vals) {

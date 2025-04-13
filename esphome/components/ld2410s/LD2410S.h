@@ -1,8 +1,8 @@
 #pragma once
 
+#include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 #include "esphome/core/helpers.h"
-#include "esphome/components/uart/uart.h"
 #ifdef USE_NUMBER
 #include "esphome/components/number/number.h"
 #endif
@@ -17,10 +17,10 @@
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
 #endif
-#include <map>
 #include <functional>
-#include <sstream>
 #include <iomanip>
+#include <map>
+#include <sstream>
 
 namespace esphome {
 namespace ld2410s {
@@ -248,8 +248,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
   void set_toggle_minimal_output_button(button::Button *button) { this->toggle_minimal_output_button_ = button; };
-    // void set_enable_config_button(button::Button* button) { this->enable_config_button_ = button; };
-    // void set_disable_config_button(button::Button* button) { this->disable_config_button_ = button; };
+    // void set_enable_config_button(button::Button* button) {
+    // this->enable_config_button_ = button; }; void
+    // set_disable_config_button(button::Button* button) {
+    // this->disable_config_button_ = button; };
 #endif
 
 #ifdef USE_SELECT
@@ -340,6 +342,11 @@ class LD2410S : public uart::UARTDevice, public Component {
   void process_ack_trigger_hold_read_(uint8_t *data);
   void process_ack_trigger_snr_read_(uint8_t *data);
   void process_data_energy_values_read_(uint8_t *data);
+
+  void update_ts_thresholds();
+  void update_ts_holds();
+  void update_ts_snrs();
+  void update_ts_energy_values();
 
   std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
   void four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len);

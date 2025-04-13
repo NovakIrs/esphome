@@ -1,13 +1,7 @@
 import esphome.codegen as cg
 from esphome.components import sensor
 import esphome.config_validation as cv
-from esphome.const import (
-    CONF_ID,
-    DEVICE_CLASS_DISTANCE,
-    DEVICE_CLASS_EMPTY,
-    UNIT_CENTIMETER,
-    UNIT_PERCENT,
-)
+from esphome.const import CONF_ID, DEVICE_CLASS_DISTANCE, UNIT_CENTIMETER, UNIT_PERCENT
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
@@ -29,7 +23,6 @@ CONFIG_SCHEMA = cv.All(
                 icon="mdi:arrow-left-right",
             ),
             cv.Optional(THRESHOLD_UPDATE): sensor.sensor_schema(
-                device_class=DEVICE_CLASS_EMPTY,
                 unit_of_measurement=UNIT_PERCENT,
                 icon="mdi:percent",
             ),

@@ -66,22 +66,22 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(CONF_NO_DELAY): number.number_schema(
             LD2410SDelayNumber,
             device_class=DEVICE_CLASS_DURATION,
-            unit_of_measurement=UNIT_SECOND,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_SECOND,
             icon=ICON_TIMELAPSE,
         ),
         cv.Optional(CONF_STATUS_REPORTING_FREQUENCY): number.number_schema(
             LD2410SStatusReportingFreqNumber,
             device_class=DEVICE_CLASS_FREQUENCY,
-            unit_of_measurement=UNIT_HERTZ,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_HERTZ,
             icon=ICON_PULSE,
         ),
         cv.Optional(CONF_DISTANCE_REPORTING_FREQUENCY): number.number_schema(
             LD2410SDistReportingFreqNumber,
             device_class=DEVICE_CLASS_FREQUENCY,
-            unit_of_measurement=UNIT_HERTZ,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_HERTZ,
             icon=ICON_PULSE,
         ),
         cv.Optional(CONF_TRIGGER_THRESHOLD): number.number_schema(

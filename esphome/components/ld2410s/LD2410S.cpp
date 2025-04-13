@@ -453,7 +453,7 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   // frame->data_length);
 
   char output[64];
-  sprintf(output, "Sending command: %02X \0", frame->command);
+  sprintf(output, "Sending command: %02X", frame->command);
   this->status_set_warning(output);
 
   this->cmd_active_ = true;

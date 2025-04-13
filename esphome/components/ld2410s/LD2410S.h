@@ -72,7 +72,7 @@ static const std::string RESPONSE_SPEED_FAST = "Fast";
 static const uint16_t CALIBRATION_CMD = 0x0009;
 static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
-static const uint16_t CALIBRATION_TIME_VALUE = 0x001E;  // 0x0078
+static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;  // 0x0078 // 0x001E
 
 static const uint16_t GATE_TRIGGER_THRESHOLD_READ_CMD = 0x0073;
 static const uint16_t GATE_TRIGGER_THRESHOLD_READ_REPLY = 0x0173;
@@ -123,8 +123,8 @@ static const uint16_t GATE_SNR_WRITE_CMD = 0x0074;
 static const uint16_t GATE_SNR_WRITE_REPLY = 0x0174;
 static const uint32_t GATE_SNR_WRITE_DATA[] = {
 
-    40, 40, 41, 41, 42, 42, 43, 42, 41,
-    41, 41, 41, 41, 41, 41, 41
+    34, 34, 34, 34, 34, 34, 34, 34, 34,
+    34, 34, 34, 34, 34, 34, 34
     // 5~63 dB
 
     //
@@ -343,10 +343,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   void process_ack_trigger_snr_read_(uint8_t *data);
   void process_data_energy_values_read_(uint8_t *data);
 
-  void update_ts_thresholds();
-  void update_ts_holds();
-  void update_ts_snrs();
-  void update_ts_energy_values();
+  void update_ts_thresholds_();
+  void update_ts_holds_();
+  void update_ts_snrs_();
+  void update_ts_energy_values_();
 
   std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
   void four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len);

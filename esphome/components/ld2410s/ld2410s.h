@@ -63,9 +63,9 @@ struct CmdT {
 class LD2410SListener {
  public:
   virtual void on_presence(bool presence){};
-  virtual void on_distance(int distance){};
+  virtual void on_distance(uint16_t distance){};
   virtual void on_threshold_update(bool running){};
-  virtual void on_threshold_progress(int progress){};
+  virtual void on_threshold_progress(uint16_t progress){};
   virtual void on_fw_version(std::string &val){};
   virtual void on_trigger_threshold_ts(std::string &val){};
   virtual void on_trigger_hold_ts(std::string &val){};

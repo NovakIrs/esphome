@@ -270,7 +270,7 @@ void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_comm
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
 
-  CmdFrameT cmd_frame = {.header = CMD_FRAME_HEADER, .command = command, .data_length = 0, .footer = CMD_FRAME_FOOTER};
+  CmdFrameT cmd_frame = {.header = CMD_FRAME_HEADER, .footer = CMD_FRAME_FOOTER, .command = command, .data_length = 0};
 
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {

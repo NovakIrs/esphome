@@ -907,7 +907,7 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
 
-  ESP_LOGI(TAG,
+  ESP_LOGV(TAG,
            "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
            "dist_resp_freq=%d, resp_speed=%d",
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);

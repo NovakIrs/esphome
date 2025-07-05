@@ -922,7 +922,7 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
     listener->on_fw_version(version);
   }
 
-  ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
+  ESP_LOGV(TAG, "Firmware version: %s", version.c_str());
 }
 void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.trigger, 16);

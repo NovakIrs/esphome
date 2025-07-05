@@ -701,7 +701,7 @@ size_t LD2410S::get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType ty
     return end_pos;
   }
 
-  for (int i = end_pos - min_length; i >= 0; i--) {
+  for (uint8_t i = end_pos - min_length; i >= 0; i--) {
     if (header_frame == read_int_(buffer, i, header_frame_len)) {
       return i;
     }

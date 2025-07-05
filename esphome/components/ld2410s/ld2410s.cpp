@@ -1007,14 +1007,20 @@ std::string LD2410S::format_int_(uint32_t *in, uint8_t len, uint8_t min_w) {
   if (len == 0)
     return "";
 
-  std::ostringstream oss;
+  std::string result;
   for (uint8_t i = 0; i < len; ++i) {
     if (i > 0)
-      oss << ",";
-    oss << std::setw(min_w) << std::setfill('0') << in[i];
+      result += ',';
+
+    std::string num = std::to_string(in[i]);
+
+    if (num.length() < min_w)
+      result += std::string(min_w - num.length(), '0');
+
+    result += num;
   }
 
-  return oss.str();
+  return result;
 }
 
 void LD2410S::four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len) {

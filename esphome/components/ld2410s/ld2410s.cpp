@@ -476,7 +476,7 @@ void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *appen
 
 void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
   if (!cmd_frame) {
-    // ESP_LOGD(TAG, "cmd_buffer_insert cmd_frame is empty !!! active:%d, last:%d", this->active_, this->last_);
+    ESP_LOGD(TAG, "cmd_buffer_insert cmd_frame is empty !!! active:%d, last:%d", this->active_, this->last_);
     return;
   }
   // ESP_LOGD(TAG, "cmd_add command:%0x, lengt:%d", cmd_frame->command,
@@ -492,7 +492,7 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
     uint8_t next = this->last_;
     this->cmd_buffer_inc_(next);
     if (this->commands_[next].state != CmdState::EMPTY) {
-      // ESP_LOGD(TAG, "cmd_buffer_insert Buffer FULL !!! active:%d, last:%d", this->active_, this->last_);
+      ESP_LOGD(TAG, "cmd_buffer_insert Buffer FULL !!! active:%d, last:%d", this->active_, this->last_);
       return;
     }
     this->last_ = next;

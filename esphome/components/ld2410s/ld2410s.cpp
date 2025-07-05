@@ -527,7 +527,7 @@ void LD2410S::cmd_buffer_inc_(uint8_t &index) {
 
 void LD2410S::loop_send_command_() {
   CmdT *cmd = &commands_[this->active_];
-  uint32_t now = millis();
+  uint32_t now = App.get_loop_component_start_time();
 
   if (cmd->state == CmdState::SCHEDULED) {
     // ESP_LOGD(TAG, "loop_exec Send new command active:%d, last:%d",

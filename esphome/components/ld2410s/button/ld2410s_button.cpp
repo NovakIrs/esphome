@@ -1,4 +1,4 @@
-#include "ld2410sButton.h"
+#include "ld2410s_button.h"
 
 namespace esphome {
 namespace ld2410s {

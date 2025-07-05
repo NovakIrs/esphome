@@ -19,7 +19,7 @@
 #endif
 #include <functional>
 #include <iomanip>
-#include <map>
+// #include <map>
 #include <sstream>
 
 namespace esphome {

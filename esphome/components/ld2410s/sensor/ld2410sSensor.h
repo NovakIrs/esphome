@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../LD2410S.h"
+#include "../ld2410s.h"
 #include "esphome/components/sensor/sensor.h"
 
 namespace esphome {

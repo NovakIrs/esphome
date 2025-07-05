@@ -1,7 +1,7 @@
 #pragma once
 
 #include "esphome/components/button/button.h"
-#include "../LD2410S.h"
+#include "../ld2410s.h"
 
 namespace esphome {
 namespace ld2410s {

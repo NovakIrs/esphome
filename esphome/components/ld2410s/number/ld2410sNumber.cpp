@@ -1,4 +1,4 @@
-#include "LD2410SNumber.h"
+#include "ld2410sNumber.h"
 
 namespace esphome {
 namespace ld2410s {

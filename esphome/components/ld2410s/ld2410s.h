@@ -25,6 +25,9 @@
 namespace esphome {
 namespace ld2410s {
 
+static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
+static const uint16_t NO_SUB_CMD = 0xffff;
+
 struct TriggersT {
   uint8_t selected_gate{0};
   uint32_t trigger[16];

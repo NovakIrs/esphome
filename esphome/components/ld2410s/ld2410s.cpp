@@ -113,9 +113,6 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;
 static const uint8_t CMD_EXEC_REPEAT = 3;
-static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
-
-static const uint16_t NO_SUB_CMD = 0xffff;
 
 void LD2410S::setup() {
   this->minimal_output_ = true;

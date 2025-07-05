@@ -607,8 +607,8 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 }
 
 void LD2410S::receive_(uint8_t *buffer, size_t buffer_size, size_t &end_pos) {
-  while (available()) {
-    buffer[end_pos] = read();
+  while (this->available()) {
+    buffer[end_pos] = this->read();
 
     PackageType type = this->get_frame_type_(buffer, end_pos);
     if (type != PackageType::UNKNOWN) {

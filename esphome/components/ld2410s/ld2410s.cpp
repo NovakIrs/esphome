@@ -641,7 +641,7 @@ void LD2410S::receive_() {
       this->rcv_end_pos = 0;
     } else {
       this->rcv_end_pos++;
-      if (this->rcv_end_pos >= this->rcv_buffer_size - 1) {
+      if (this->rcv_end_pos >= RCV_BUFFER_SIZE - 1) {
         this->rcv_end_pos = 0;
       }
     }

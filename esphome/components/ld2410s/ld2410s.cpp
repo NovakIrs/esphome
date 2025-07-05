@@ -128,8 +128,8 @@ void LD2410S::setup() {
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     if (available()) {
-      static uint8_t buffer[128];
-      static size_t pos = 0;
+      uint8_t buffer[128];
+      size_t pos = 0;
       this->receive_(buffer, sizeof(buffer), pos);
     } else {
       this->loop_send_command_();

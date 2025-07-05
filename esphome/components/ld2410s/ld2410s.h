@@ -147,6 +147,7 @@ class LD2410S : public uart::UARTDevice, public Component {
 #ifdef USE_SELECT
   void set_response_speed_select(select::Select *selector) { this->response_speed_select_ = selector; };
 #endif
+
  private:
   std::vector<LD2410SListener *> listeners_{};
   // Config current_config;

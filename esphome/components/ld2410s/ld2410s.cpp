@@ -606,6 +606,8 @@ void LD2410S::receive_() {
   while (this->available()) {
     this->rcv_buffer[this->rcv_end_pos] = this->read();
 
+    this->hex_diag_("rcv_buffer <", &this->rcv_buffer[0], this->rcv_end_pos + 1 - start_pos);
+
     PackageType type = this->get_frame_type_(this->rcv_buffer, this->rcv_end_pos);
     if (type != PackageType::UNKNOWN) {
       size_t start_pos = get_frame_start_(this->rcv_buffer, this->rcv_end_pos, type);

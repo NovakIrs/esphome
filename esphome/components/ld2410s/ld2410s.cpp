@@ -748,7 +748,7 @@ void LD2410S::process_short_data_frame_(uint8_t *data) {
   //            ESP_LOGD(TAG, "process_short_data_package");
 
   const bool presence_state = data[0] > 1;
-  int distance = this->two_byte_to_int_(data[1], data[2]);
+  uint16_t distance = this->encode_uint16(data[1], data[2]);
   if (!presence_state)
     distance = 0;
   // ESP_LOGD(TAG, "Presence: %x , Distance: %i", presence_state, distance);
@@ -762,7 +762,7 @@ void LD2410S::process_data_frame_(uint8_t *data) {
     case 0x01:  // standard data
     {
       const bool presence_state = data[1] > 1;
-      int distance = this->two_byte_to_int_(data[2], data[3]);
+      uint16_t distance = this->encode_uint16(data[2], data[3]);
       if (!presence_state)
         distance = 0;
       // ESP_LOGD(TAG, "Presence: %x , Distance: %i", presence_state, distance);
@@ -777,7 +777,7 @@ void LD2410S::process_data_frame_(uint8_t *data) {
 
     case 0x03:  // calibration progress
     {
-      int progress = this->two_byte_to_int_(data[1], data[2]);
+      uint16_t progress = this->encode_uint16(data[1], data[2]);
       for (auto &listener : this->listeners_) {
         if (progress == 100) {
           listener->on_threshold_progress(0);
@@ -873,9 +873,9 @@ CmdAckT LD2410S::parse_cms_frame_(uint8_t *buffer, size_t length) {
     result.result = false;
     return result;
   }
-  int data_length = this->two_byte_to_int_(buffer[start + 4], buffer[start + 5]);
+  uint16_t data_length = this->encode_uint16(buffer[start + 4], buffer[start + 5]);
   result.length = data_length;
-  int command_word = this->two_byte_to_int_(buffer[start + 6], buffer[start + 7]);
+  uint16_t command_word = this->encode_uint16(buffer[start + 6], buffer[start + 7]);
   result.command = command_word;
   bool ack = buffer[start + 8] == 0x00 && buffer[start + 9] == 0x00;
   result.result = ack;
@@ -1051,7 +1051,7 @@ int LD2410S::read_int_(const uint8_t *buffer, size_t pos, size_t len) {
   }
   return ret;
 };
-int LD2410S::two_byte_to_int_(uint8_t byte1, uint8_t byte2) { return byte1 | (byte2 << 8); };
+// int LD2410S::two_byte_to_int_(uint8_t byte1, uint8_t byte2) { return byte1 | (byte2 << 8); };
 uint32_t LD2410S::four_byte_to_int_(uint8_t byte1, uint8_t byte2, uint8_t byte3, uint8_t byte4) {
   return byte1 | (byte2 << 8) | (byte3 << 16) | (byte4 << 24);
 };

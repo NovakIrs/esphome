@@ -606,47 +606,48 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 
 void LD2410S::receive_() {
   while (this->available()) {
-    this->rcv_buffer[this->rcv_end_pos] = this->read();
+    this->rcv_buffer_[this->rcv_end_pos_] = this->read();
 
-    // this->hex_diag_("rcv_buffer <", &this->rcv_buffer[0], this->rcv_end_pos);
+    // this->hex_diag_("rcv_buffer_ <", &this->rcv_buffer_[0], this->rcv_end_pos_);
 
-    PackageType type = this->get_frame_type_(this->rcv_buffer, this->rcv_end_pos);
+    PackageType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
     if (type != PackageType::UNKNOWN) {
-      size_t start_pos = this->get_frame_start_(this->rcv_buffer, this->rcv_end_pos, type);
+      size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
 
-      if (start_pos != this->rcv_end_pos) {
-        size_t data_size = this->get_data_size_(this->rcv_buffer, this->rcv_end_pos, type, start_pos);
+      if (start_pos != this->rcv_end_pos_) {
+        size_t data_size = this->get_data_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
 
         if (data_size != 0) {
-          this->hex_diag_("<", &this->rcv_buffer[0], this->rcv_end_pos + 1 - start_pos);
+          this->hex_diag_("<", &this->rcv_buffer_[0], this->rcv_end_pos_ + 1 - start_pos);
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:
-              this->process_short_data_frame_(&this->rcv_buffer[start_pos + 1]);
+              this->process_short_data_frame_(&this->rcv_buffer_[start_pos + 1]);
               break;
             case PackageType::STD_DATA_FRAME:
-              this->process_data_frame_(&this->rcv_buffer[start_pos + 6]);
+              this->process_data_frame_(&this->rcv_buffer_[start_pos + 6]);
               break;
             case PackageType::CMD_FRAME:
-              this->process_cmd_frame_(this->rcv_buffer, this->rcv_end_pos + 1);
+              this->process_cmd_frame_(this->rcv_buffer_, this->rcv_end_pos_ + 1);
               this->cmd_buffer_finished_();
               break;
             case PackageType::BAD_SIZE:
-              this->hex_diag_("Received BAD sized package <", &this->rcv_buffer[0], this->rcv_end_pos + 1 - start_pos);
+              this->hex_diag_("Received BAD sized package <", &this->rcv_buffer_[0],
+                              this->rcv_end_pos_ + 1 - start_pos);
               break;
             default:
-              this->hex_diag_("Received Unknown Package <", &this->rcv_buffer[0], this->rcv_end_pos + 1 - start_pos);
+              this->hex_diag_("Received Unknown Package <", &this->rcv_buffer_[0], this->rcv_end_pos_ + 1 - start_pos);
               break;
           }
           //         ESP_LOGD(TAG, "after process package: reply:%s", reply);
         }
       }
 
-      this->rcv_end_pos = 0;
+      this->rcv_end_pos_ = 0;
     } else {
-      this->rcv_end_pos++;
-      if (this->rcv_end_pos >= RCV_BUFFER_SIZE - 1) {
-        this->rcv_end_pos = 0;
+      this->rcv_end_pos_++;
+      if (this->rcv_end_pos_ >= RCV_BUFFER_SIZE - 1) {
+        this->rcv_end_pos_ = 0;
       }
     }
   }

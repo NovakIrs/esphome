@@ -165,8 +165,8 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint32_t energy_values_count_ = 0;
   std::string energy_values_str_ = "";
 
-  uint8_t rcv_buffer[RCV_BUFFER_SIZE];
-  size_t rcv_end_pos = 0;
+  uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
+  size_t rcv_end_pos_ = 0;
 
   uint8_t active_ = 0;
   uint8_t last_ = 0;

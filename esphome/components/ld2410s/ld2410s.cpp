@@ -115,7 +115,6 @@ static const uint32_t CMD_EXEC_TIMEOUT = 1000;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
-  this->status_set_warning("ld2410s setup");
   this->minimal_output_ = true;
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
@@ -179,7 +178,7 @@ void LD2410S::factory_reset() {
   this->dist_freq_ = 80;
   this->resp_speed_ = 5;
 
-  for (int i = 0; i < 16; i++) {
+  for (uint8_t i = 0; i < 16; i++) {
     this->triggers_.trigger[i] = GATE_TRIGGER_THRESHOLD_WRITE_DATA[i];
     this->triggers_.hold[i] = GATE_HOLD_THRESHOLD_WRITE_DATA[i];
     this->triggers_.snr[i] = GATE_SNR_WRITE_DATA[i];
@@ -954,7 +953,7 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->update_ts_snrs_();
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
-  for (int i = 0; i < 16; i++) {
+  for (uint8_t i = 0; i < 16; i++) {
     uint32_t val = this->four_byte_to_int_(data[i * 4], data[i * 4 + 1], data[i * 4 + 2], data[i * 4 + 3]);
     this->energy_values_[i] =
         (this->energy_values_[i] * 16 * this->energy_values_count_ + val) / (this->energy_values_count_ + 1) / 16;
@@ -1018,7 +1017,7 @@ std::string LD2410S::format_int_(uint32_t *in, uint8_t len, uint8_t min_w) {
 }
 
 void LD2410S::four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len) {
-  for (int i = 0; i < out_len; i++) {
+  for (uint8_t i = 0; i < out_len; i++) {
     out[i] = this->four_byte_to_int_(in[i * 4], in[i * 4 + 1], in[i * 4 + 2], in[i * 4 + 3]);
   }
 }

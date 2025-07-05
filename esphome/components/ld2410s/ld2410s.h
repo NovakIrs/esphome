@@ -164,6 +164,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint32_t energy_values_count_ = 0;
   std::string energy_values_str_ = "";
 
+  size_t buffer_size = 128;
+  uint8_t buffer[buffer_size];
+  size_t end_pos = 0;
+
   uint8_t active_ = 0;
   uint8_t last_ = 0;
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];

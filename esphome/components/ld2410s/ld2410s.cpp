@@ -603,50 +603,46 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 }
 
 void LD2410S::receive_() {
-  size_t buffer_size = 128;
-  uint8_t buffer[buffer_size];
-  size_t end_pos = 0;
-
   while (this->available()) {
-    buffer[end_pos] = this->read();
+    this->buffer[this->end_pos] = this->read();
 
-    PackageType type = this->get_frame_type_(buffer, end_pos);
+    PackageType type = this->get_frame_type_(this->buffer, this->end_pos);
     if (type != PackageType::UNKNOWN) {
-      size_t start_pos = get_frame_start_(buffer, end_pos, type);
+      size_t start_pos = get_frame_start_(this->buffer, this->end_pos, type);
 
-      if (start_pos != end_pos) {
-        size_t data_size = get_data_size_(buffer, end_pos, type, start_pos);
+      if (start_pos != this->end_pos) {
+        size_t data_size = get_data_size_(this->buffer, this->end_pos, type, start_pos);
 
         if (data_size != 0) {
-          this->hex_diag_("<", &buffer[0], end_pos + 1 - start_pos);
+          this->hex_diag_("<", &this->buffer[0], this->end_pos + 1 - start_pos);
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:
-              this->process_short_data_frame_(&buffer[start_pos + 1]);
+              this->process_short_data_frame_(&this->buffer[start_pos + 1]);
               break;
             case PackageType::STD_DATA_FRAME:
-              this->process_data_frame_(&buffer[start_pos + 6]);
+              this->process_data_frame_(&this->buffer[start_pos + 6]);
               break;
             case PackageType::CMD_FRAME:
-              this->process_cmd_frame_(buffer, end_pos + 1);
+              this->process_cmd_frame_(this->buffer, this->end_pos + 1);
               this->cmd_buffer_finished_();
               break;
             case PackageType::BAD_SIZE:
-              this->hex_diag_("Received BAD sized package <", &buffer[0], end_pos + 1 - start_pos);
+              this->hex_diag_("Received BAD sized package <", &this->buffer[0], this->end_pos + 1 - start_pos);
               break;
             default:
-              this->hex_diag_("Received Unknown Package <", &buffer[0], end_pos + 1 - start_pos);
+              this->hex_diag_("Received Unknown Package <", &this->buffer[0], this->end_pos + 1 - start_pos);
               break;
           }
           //         ESP_LOGD(TAG, "after process package: reply:%s", reply);
         }
       }
 
-      end_pos = 0;
+      this->end_pos = 0;
     } else {
-      end_pos++;
-      if (end_pos >= buffer_size - 1) {
-        end_pos = 0;
+      this->end_pos++;
+      if (this->end_pos >= this->buffer_size - 1) {
+        this->end_pos = 0;
       }
     }
   }

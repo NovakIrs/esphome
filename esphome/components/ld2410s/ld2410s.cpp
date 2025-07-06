@@ -937,7 +937,7 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
     for (uint8_t i = 0; i < 16; i++) {
       uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
       this->energy_values_[i] =
-          (this->energy_values_[i] * 16 * this->energy_values_count_ + val) / (this->energy_values_count_ + 1) / 16;
+          (this->energy_values_[i] * this->energy_values_count_ + val) / (this->energy_values_count_ + 1);
     }
     this->energy_values_count_++;
   }

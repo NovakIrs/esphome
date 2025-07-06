@@ -929,8 +929,8 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
     this->update_ts_energy_values_();
-    for (uint8_t i = 0; i < 16; i++) {
-      this->energy_values_[i] = 0;
+    for (auto &energy_value : this->energy_values_) {
+      energy_value = 0;
     }
     this->energy_values_count_ = 0;
   } else {

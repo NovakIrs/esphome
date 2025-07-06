@@ -19,7 +19,6 @@
 #endif
 #include <functional>
 #include <iomanip>
-#include <sstream>
 
 namespace esphome {
 namespace ld2410s {

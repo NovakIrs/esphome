@@ -107,7 +107,7 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;
-static const uint16_t ENERGY_VALUES_RESET = 1000;  // number of readings before energy values averaging reset
+static const uint16_t ENERGY_VALUES_RESET = 100;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
@@ -920,6 +920,7 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
+    this->update_ts_energy_values_();
     for (uint8_t i = 0; i < 16; i++) {
       this->energy_values_[i] = 0;
     }
@@ -932,8 +933,6 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
       this->energy_values_count_++;
     }
   }
-
-  this->update_ts_energy_values_();
 }
 
 void LD2410S::update_ts_thresholds_() {

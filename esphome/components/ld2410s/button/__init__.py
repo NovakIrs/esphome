@@ -4,13 +4,9 @@ import esphome.config_validation as cv
 from esphome.const import (
     CONF_CALIBRATION,
     CONF_FACTORY_RESET,
-    # DEVICE_CLASS_IDENTIFY,
     DEVICE_CLASS_RESTART,
     DEVICE_CLASS_UPDATE,
     ENTITY_CATEGORY_CONFIG,
-    # ENTITY_CATEGORY_DIAGNOSTIC,
-    # ICON_BUG,
-    # ICON_MEMORY,
 )
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
@@ -25,8 +21,6 @@ LD2410SMinimalOutput = ld2410s_ns.class_("LD2410SMinimalOutput", button.Button)
 
 CONF_READ_ALL = "read_all"
 CONF_WRITE_ALL = "write_all"
-# CONF_CALIBRATION = "calibration"
-# CONF_FACTORY_RESET = "factory_reset"
 CONF_MINIMAL_OUTPUT = "minimal_output"
 
 CONFIG_SCHEMA = {

@@ -23,9 +23,9 @@
 namespace esphome {
 namespace ld2410s {
 
-static const size_t RCV_BUFFER_SIZE = 128;
-static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const uint16_t NO_SUB_CMD = 0xffff;
+static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
+static const size_t RCV_BUFFER_SIZE = 128;
 
 struct TriggersT {
   uint32_t trigger[16];
@@ -121,14 +121,11 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_trigger_snr_number(number::Number *trigger_snr_number) { this->trigger_snr_number_ = trigger_snr_number; };
   void set_trigger_selected_gate_number(number::Number *trigger_selected_gate_number) {
     this->trigger_selected_gate_number_ = trigger_selected_gate_number;
-#ifdef USE_NUMBER
     this->trigger_selected_gate_number_->publish_state(this->triggers_.selected_gate);
     this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
     this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
     this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
-#endif
   };
-
 #endif
 
 #ifdef USE_BUTTON
@@ -137,10 +134,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
   void set_toggle_minimal_output_button(button::Button *button) { this->toggle_minimal_output_button_ = button; };
-    // void set_enable_config_button(button::Button* button) {
-    // this->enable_config_button_ = button; }; void
-    // set_disable_config_button(button::Button* button) {
-    // this->disable_config_button_ = button; };
 #endif
 
 #ifdef USE_SELECT
@@ -156,7 +149,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
   uint32_t energy_values_[16];
-  uint32_t energy_values_count_ = 0;
+  uint16_t energy_values_count_ = 0;
   uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
   uint8_t active_ = 0;
   uint8_t last_ = 0;
@@ -192,8 +185,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   button::Button *calibration_button_{nullptr};
   button::Button *factory_reset_button_{nullptr};
   button::Button *toggle_minimal_output_button_{nullptr};
-  // button::Button* enable_config_button{ nullptr };
-  // button::Button* disable_config_button{ nullptr };
 #endif
 
 #ifdef USE_SELECT
@@ -204,18 +195,12 @@ class LD2410S : public uart::UARTDevice, public Component {
   PackageType get_frame_type_(uint8_t *buffer, size_t pos);
   size_t get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType type);
   size_t get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type, size_t start_pos);
-  // size_t get_data_start_pos_(PackageType type, size_t start_pos);
 
-  // bool process_frame_(PackageType type, uint8_t *buffer, size_t data_size);
   void process_short_data_frame_(uint8_t *data);
   void process_data_frame_(uint8_t *data);
   void process_cmd_frame_(uint8_t *buffer, size_t len);
 
   CmdAckT parse_cms_frame_(uint8_t *buffer, size_t length);
-
-  // void process_data_distance_(uint8_t *data);
-  // void process_data_progress_(uint8_t *data);
-  // void process_data_energy_levels_(uint8_t *data);
 
   void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);

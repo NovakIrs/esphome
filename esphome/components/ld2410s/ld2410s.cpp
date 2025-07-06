@@ -52,7 +52,7 @@ static const std::string RESPONSE_SPEED_FAST = "Fast";
 static const uint16_t CALIBRATION_CMD = 0x0009;
 static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
-static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;  // 0x0078 // 0x001E
+static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
 
 static const uint16_t GATE_TRIGGER_THRESHOLD_READ_CMD = 0x0073;
 static const uint16_t GATE_TRIGGER_THRESHOLD_READ_REPLY = 0x0173;
@@ -71,9 +71,6 @@ static const uint32_t GATE_TRIGGER_THRESHOLD_WRITE_DATA[] = {
     // tool default
     //  https://drive.google.com/drive/folders/1wC8KC-DaNavNbpeVouZ1HdiBzZ9YrAcg
     //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
-    //
-    // semi good
-    //   95,63,38,35,35,34,33,33,33,33,33,32,32,31,31,31
 };
 
 static const uint16_t GATE_HOLD_THRESHOLD_READ_CMD = 0x0077;
@@ -92,9 +89,6 @@ static const uint32_t GATE_HOLD_THRESHOLD_WRITE_DATA[] = {
     //   45,42,33,32,28,28,28,28,28,28,28,28,28,28,28,28
     // tool default
     //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
-    //
-    // semi good
-    //   90,60,36,33,33,33,32,32,32,32,32,31,31,30,30,30
 };
 
 static const uint16_t GATE_SNR_READ_CMD = 0x0075;
@@ -107,12 +101,13 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
     34, 34, 34, 34, 34, 34, 34
     // 5~63 dB
 
-    //
-    // semi good
-    //   35,33,33,33,33,33,33,33,33,33,33,33,33,33,33,33
+    // Factory defaults:
+    // Not available... and probably need improvement ToDo
+    // It would be good to get it from virgin ld2410s, before any calibration.
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;
+static const uint16_t ENERGY_VALUES_RESET = 1000;  // number of readings before energy values averaging reset
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
@@ -450,10 +445,6 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       break;
   }
 
-  // ESP_LOGD(TAG, "schedule_cmd_frame frame_data_adr:%04x",
-  // &cmd_frame.data[0]); this->hex_diag_("schedule_cmd_frame:",
-  // &cmd_frame.data[0], cmd_frame.data_length);
-
   this->cmd_buffer_insert_(&cmd_frame);
 }
 
@@ -478,11 +469,8 @@ void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *appen
 
 void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
   if (!cmd_frame) {
-    // ESP_LOGD(TAG, "cmd_buffer_insert cmd_frame is empty !!! active:%d, last:%d", this->active_, this->last_);
     return;
   }
-  // ESP_LOGD(TAG, "cmd_add command:%0x, lengt:%d", cmd_frame->command,
-  // cmd_frame->length);
 
   CmdT cmd;
   cmd.state = CmdState::SCHEDULED;
@@ -494,7 +482,6 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
     uint8_t next = this->last_;
     this->cmd_buffer_inc_(next);
     if (this->commands_[next].state != CmdState::EMPTY) {
-      // ESP_LOGD(TAG, "cmd_buffer_insert Buffer FULL !!! active:%d, last:%d", this->active_, this->last_);
       return;
     }
     this->last_ = next;
@@ -507,9 +494,6 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
   } else {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
-
-  // ESP_LOGD(TAG, "cmd_buffer_insert  command:%0x, lengt:%d, active:%d,
-  // last:%d", cmd->cmd_frame->command,
 }
 void LD2410S::cmd_buffer_finished_() {
   this->commands_[this->active_].state = CmdState::EMPTY;
@@ -517,9 +501,6 @@ void LD2410S::cmd_buffer_finished_() {
   if (this->commands_[this->active_ + 1].state != CmdState::EMPTY) {
     this->cmd_buffer_inc_(this->active_);
   }
-
-  // ESP_LOGD(TAG, "cmd_buffer_finished active:%d, last:%d", this->active_,
-  // this->last_);
 }
 void LD2410S::cmd_buffer_inc_(uint8_t &index) {
   index++;
@@ -533,8 +514,6 @@ void LD2410S::loop_send_command_() {
   uint32_t now = App.get_loop_component_start_time();
 
   if (cmd->state == CmdState::SCHEDULED) {
-    // ESP_LOGD(TAG, "loop_exec Send new command active:%d, last:%d",
-    // this->active, this->last_);
     this->send_command_(cmd->cmd_frame);
     cmd->state = CmdState::SENT;
     cmd->time_started = now;
@@ -555,14 +534,9 @@ void LD2410S::loop_send_command_() {
   } else if (cmd->state == CmdState::EMPTY & this->active_ == this->last_ & this->active_ != 0) {
     this->active_ = 0;
     this->last_ = 0;
-    // ESP_LOGD(TAG, "loop_exec Sending Done");
   }
 }
 void LD2410S::send_command_(CmdFrameT *frame) {
-  // ESP_LOGD(TAG, "Sending command Cmd:%04X, data_length:%d", frame->command,
-  // frame->data_length); this->hex_diag_("Sending command:", &frame->data[0],
-  // frame->data_length);
-
   char output[64];
   sprintf(output, "SendingCommand: %02X", frame->command);
   this->status_set_warning(output);
@@ -608,8 +582,6 @@ void LD2410S::receive_() {
   while (this->available()) {
     this->rcv_buffer_[this->rcv_end_pos_] = this->read();
 
-    // this->hex_diag_("rcv_buffer_ <", &this->rcv_buffer_[0], this->rcv_end_pos_);
-
     PackageType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
     if (type != PackageType::UNKNOWN) {
       size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
@@ -639,7 +611,6 @@ void LD2410S::receive_() {
               this->hex_diag_("Received Unknown Package <", &this->rcv_buffer_[0], this->rcv_end_pos_ + 1 - start_pos);
               break;
           }
-          //         ESP_LOGD(TAG, "after process package: reply:%s", reply);
         }
       }
 
@@ -735,11 +706,6 @@ size_t LD2410S::get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type
     return 0;
   }
 
-  // ESP_LOGD(TAG, "< start_pos:%d,  end_pos:%d, data_size:%d,
-  // expected_full_frame_size:%d, actual_frame_size:%d",
-  //     start_pos, end_pos, data_size,expected_full_frame_size, end_pos -
-  //     start_pos + 1);
-
   if (expected_full_frame_size != end_pos - start_pos + 1) {
     return 0;
   }
@@ -748,13 +714,11 @@ size_t LD2410S::get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type
 }
 
 void LD2410S::process_short_data_frame_(uint8_t *data) {
-  //            ESP_LOGD(TAG, "process_short_data_package");
-
   const bool presence_state = data[0] > 1;
   uint16_t distance = encode_uint16(data[2], data[1]);
   if (!presence_state)
     distance = 0;
-  // ESP_LOGD(TAG, "Presence: %x , Distance: %i", presence_state, distance);
+
   for (auto &listener : this->listeners_) {
     listener->on_presence(presence_state);
     listener->on_distance(distance);
@@ -768,12 +732,12 @@ void LD2410S::process_data_frame_(uint8_t *data) {
       uint16_t distance = encode_uint16(data[3], data[2]);
       if (!presence_state)
         distance = 0;
-      // ESP_LOGD(TAG, "Presence: %x , Distance: %i", presence_state, distance);
+
       for (auto &listener : this->listeners_) {
         listener->on_presence(presence_state);
         listener->on_distance(distance);
       }
-      // this->hex_diag_("energy < ", &data[6], 64);
+
       this->process_data_energy_values_read_(&data[6]);
       break;
     }
@@ -830,31 +794,31 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case CONFIG_MODE_START_REPLY:
-      ESP_LOGI(TAG, "Config mode enabled");
+      ESP_LOGD(TAG, "Config mode enabled");
       break;
 
     case CONFIG_MODE_END_REPLY:
-      ESP_LOGI(TAG, "Config mode disabled");
+      ESP_LOGD(TAG, "Config mode disabled");
       break;
 
     case PARAMS_WRITE_REPLY:
-      ESP_LOGI(TAG, "Config written");
+      ESP_LOGD(TAG, "Config written");
       break;
 
     case GATE_TRIGGER_THRESHOLD_WRITE_REPLY:
-      ESP_LOGI(TAG, "Trigger Thrashold written");
+      ESP_LOGD(TAG, "Trigger Thrashold written");
       break;
 
     case GATE_HOLD_THRESHOLD_WRITE_REPLY:
-      ESP_LOGI(TAG, "Trigger Hold written");
+      ESP_LOGD(TAG, "Trigger Hold written");
       break;
 
     case GATE_SNR_WRITE_REPLY:
-      ESP_LOGI(TAG, "Trigger SNR written");
+      ESP_LOGD(TAG, "Trigger SNR written");
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
-      ESP_LOGI(TAG, "Minimal Output Mode switched");
+      ESP_LOGD(TAG, "Minimal Output Mode switched");
       break;
 
     default:
@@ -923,7 +887,7 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
     listener->on_fw_version(version);
   }
 
-  ESP_LOGV(TAG, "Firmware version: %s", version.c_str());
+  ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
 }
 void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.trigger, 16);
@@ -955,11 +919,18 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->update_ts_snrs_();
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
-  for (uint8_t i = 0; i < 16; i++) {
-    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-    this->energy_values_[i] =
-        (this->energy_values_[i] * 16 * this->energy_values_count_ + val) / (this->energy_values_count_ + 1) / 16;
-    this->energy_values_count_++;
+  if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
+    for (uint8_t i = 0; i < 16; i++) {
+      this->energy_values_[i] = 0;
+    }
+    this->energy_values_count_ = 0;
+  } else {
+    for (uint8_t i = 0; i < 16; i++) {
+      uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+      this->energy_values_[i] =
+          (this->energy_values_[i] * 16 * this->energy_values_count_ + val) / (this->energy_values_count_ + 1) / 16;
+      this->energy_values_count_++;
+    }
   }
 
   this->update_ts_energy_values_();

@@ -544,7 +544,6 @@ void LD2410S::loop_send_command_() {
 }
 void LD2410S::send_command_(CmdFrameT *frame) {
   char output[64];
-  App.feed_wdt();
   sprintf(output, "SendingCommand: %02X", frame->command);
   this->status_set_warning(output);
 
@@ -587,7 +586,6 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 
 void LD2410S::receive_() {
   while (this->available()) {
-    App.feed_wdt();
     this->rcv_buffer_[this->rcv_end_pos_] = this->read();
 
     PackageType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
@@ -826,7 +824,7 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
-      ESP_LOGD(TAG, "Minimal Output Mode switched");
+      ESP_LOGW(TAG, "Minimal Output Mode switched");
       break;
 
     default:

@@ -148,28 +148,25 @@ class LD2410S : public uart::UARTDevice, public Component {
 #endif
 
  private:
-  std::vector<LD2410SListener *> listeners_{};
-  bool cmd_active_{false};
-
-  TriggersT triggers_;
-
+  size_t rcv_end_pos_ = 0;
   uint32_t max_dist_{0};
   uint32_t min_dist_{0};
   uint32_t delay_{0};
   uint32_t status_freq_{0};
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
-  bool minimal_output_{true};
   uint32_t energy_values_[16];
   uint32_t energy_values_count_ = 0;
-  std::string energy_values_str_ = "";
-
   uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
-  size_t rcv_end_pos_ = 0;
-
   uint8_t active_ = 0;
   uint8_t last_ = 0;
+  bool minimal_output_{true};
+  bool cmd_active_{false};
+
+  std::string energy_values_str_ = "";
+  std::vector<LD2410SListener *> listeners_{};
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
+  TriggersT triggers_;
 
   void loop_send_command_();
   void cmd_buffer_insert_(CmdFrameT *cmd_frame);

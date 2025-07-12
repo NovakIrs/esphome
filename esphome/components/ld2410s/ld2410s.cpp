@@ -119,7 +119,7 @@ void LD2410S::loop() {
     } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
                this->init_status_ == 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...");
-      this = > init_();
+      this->init_();
     } else {
       this->loop_send_command_();
     }

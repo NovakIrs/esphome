@@ -106,7 +106,7 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
     // It would be good to get it from virgin ld2410s, before any calibration.
 };
 
-static const uint32_t CMD_EXEC_TIMEOUT = 5000;
+static const uint32_t CMD_EXEC_TIMEOUT = 1000;   // timeout for waiting for cmd response
 static const uint16_t ENERGY_VALUES_RESET = 50;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 

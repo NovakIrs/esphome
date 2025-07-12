@@ -110,16 +110,16 @@ static const uint32_t CMD_EXEC_TIMEOUT = 5000;
 static const uint16_t ENERGY_VALUES_RESET = 50;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-void LD2410S::setup() { this->init(); }
+void LD2410S::setup() { this->init_(); }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
     if (this->available()) {
       this->receive_();
-    } else if (this->commands_[this->active_]->state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+    } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
                this->init_status_ == 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...");
-      this = > init();
+      this = > init_();
     } else {
       this->loop_send_command_();
     }

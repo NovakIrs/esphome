@@ -792,36 +792,36 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
   switch (command_word) {
     case PARAMS_READ_REPLY:
       this->process_ack_config_read_(data);
-      this->init_status_ = this->init_status_ & 0b00001000;
+      this->init_status_ = this->init_status_ | 0b00001000;
       break;
 
     case FW_READ_REPLY:
       this->process_ack_fw_read_(data);
-      this->init_status_ = this->init_status_ & 0b00000100;
+      this->init_status_ = this->init_status_ | 0b00000100;
       break;
 
     case GATE_TRIGGER_THRESHOLD_READ_REPLY:
       this->process_ack_trigger_threshold_read_(data);
-      this->init_status_ = this->init_status_ & 0b00010000;
+      this->init_status_ = this->init_status_ | 0b00010000;
       break;
 
     case GATE_HOLD_THRESHOLD_READ_REPLY:
       this->process_ack_trigger_hold_read_(data);
-      this->init_status_ = this->init_status_ & 0b00100000;
+      this->init_status_ = this->init_status_ | 0b00100000;
       break;
 
     case GATE_SNR_READ_REPLY:
       this->process_ack_trigger_snr_read_(data);
-      this->init_status_ = this->init_status_ & 0b01000000;
+      this->init_status_ = this->init_status_ | 0b01000000;
       break;
 
     case CONFIG_MODE_START_REPLY:
-      this->init_status_ = this->init_status_ & 0b00000001;
+      this->init_status_ = this->init_status_ | 0b00000001;
       ESP_LOGD(TAG, "Config mode enabled");
       break;
 
     case CONFIG_MODE_END_REPLY:
-      this->init_status_ = this->init_status_ & 0b10000000;
+      this->init_status_ = this->init_status_ | 0b10000000;
       ESP_LOGD(TAG, "Config mode disabled");
       break;
 
@@ -842,7 +842,7 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
-      this->init_status_ = this->init_status_ & 0b00000010;
+      this->init_status_ = this->init_status_ | 0b00000010;
       ESP_LOGW(TAG, "Minimal Output Mode switched");
       break;
 

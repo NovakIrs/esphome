@@ -114,7 +114,6 @@ void LD2410S::setup() { this->init_(); }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
-    ESP_LOGE(TAG, "init_status_: %x", this->init_status_);
     if (this->available()) {
       this->receive_();
     } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&

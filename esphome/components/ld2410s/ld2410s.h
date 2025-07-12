@@ -153,6 +153,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
   uint8_t active_ = 0;
   uint8_t last_ = 0;
+  uint8_t init_status_ = 0;
   bool minimal_output_{true};
   bool cmd_active_{false};
 
@@ -161,6 +162,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
   TriggersT triggers_;
 
+  void init_();
   void loop_send_command_();
   void cmd_buffer_insert_(CmdFrameT *cmd_frame);
   void cmd_buffer_finished_();

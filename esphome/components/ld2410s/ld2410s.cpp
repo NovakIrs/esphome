@@ -110,11 +110,33 @@ static const uint32_t CMD_EXEC_TIMEOUT = 5000;
 static const uint16_t ENERGY_VALUES_RESET = 50;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-void LD2410S::setup() {
+void LD2410S::setup() { this = > init(); }
+void LD2410S::loop() {
+  if (!this->cmd_active_) {
+    App.feed_wdt();
+    if (this->available()) {
+      this->receive_();
+    } else if (cmd->state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+               this->init_status_ == 0b11111111) {
+      ESP_LOGE(TAG, "Setup failed! Retry...");
+      this = > init();
+    } else {
+      this->loop_send_command_();
+    }
+  }
+}
+float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
+
+void init_() {
   App.feed_wdt();
   this->status_set_warning("setup");
 
   this->minimal_output_ = true;
+
+  this->init_status_ = 0;
+  this->active_ = 0;
+  this->last_ = 0;
+
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
   this->schedule_cmd_frame_(FW_READ_CMD);
@@ -126,18 +148,6 @@ void LD2410S::setup() {
 
   this->status_clear_warning();
 }
-void LD2410S::loop() {
-  if (!this->cmd_active_) {
-    App.feed_wdt();
-    if (this->available()) {
-      this->receive_();
-    } else {
-      this->loop_send_command_();
-    }
-  }
-}
-float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
-
 void LD2410S::read_all() {
   this->status_set_warning("read_all");
 
@@ -537,7 +547,7 @@ void LD2410S::loop_send_command_() {
         this->cmd_buffer_finished_();
       }
     }
-  } else if (cmd->state == CmdState::EMPTY & this->active_ == this->last_ & this->active_ != 0) {
+  } else if (cmd->state == CmdState::EMPTY && this->active_ == this->last_ && this->active_ != 0) {
     this->active_ = 0;
     this->last_ = 0;
   }
@@ -781,29 +791,36 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
   switch (command_word) {
     case PARAMS_READ_REPLY:
       this->process_ack_config_read_(data);
+      this->init_status_ = this->init_status_ & 0b00001000;
       break;
 
     case FW_READ_REPLY:
       this->process_ack_fw_read_(data);
+      this->init_status_ = this->init_status_ & 0b00000100;
       break;
 
     case GATE_TRIGGER_THRESHOLD_READ_REPLY:
       this->process_ack_trigger_threshold_read_(data);
+      this->init_status_ = this->init_status_ & 0b00010000;
       break;
 
     case GATE_HOLD_THRESHOLD_READ_REPLY:
       this->process_ack_trigger_hold_read_(data);
+      this->init_status_ = this->init_status_ & 0b00100000;
       break;
 
     case GATE_SNR_READ_REPLY:
       this->process_ack_trigger_snr_read_(data);
+      this->init_status_ = this->init_status_ & 0b01000000;
       break;
 
     case CONFIG_MODE_START_REPLY:
+      this->init_status_ = this->init_status_ & 0b00000001;
       ESP_LOGD(TAG, "Config mode enabled");
       break;
 
     case CONFIG_MODE_END_REPLY:
+      this->init_status_ = this->init_status_ & 0b10000000;
       ESP_LOGD(TAG, "Config mode disabled");
       break;
 
@@ -824,6 +841,7 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
+      this->init_status_ = this->init_status_ & 0b00000010;
       ESP_LOGW(TAG, "Minimal Output Mode switched");
       break;
 

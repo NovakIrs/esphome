@@ -110,7 +110,7 @@ static const uint32_t CMD_EXEC_TIMEOUT = 5000;
 static const uint16_t ENERGY_VALUES_RESET = 50;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-void LD2410S::setup() { this = > init(); }
+void LD2410S::setup() { this->init(); }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();

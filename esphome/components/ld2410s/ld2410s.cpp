@@ -116,7 +116,7 @@ void LD2410S::loop() {
     App.feed_wdt();
     if (this->available()) {
       this->receive_();
-    } else if (cmd->state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+    } else if (this->commands_[this->active_]->state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
                this->init_status_ == 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...");
       this = > init();

@@ -127,7 +127,7 @@ void LD2410S::loop() {
 }
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-void init_() {
+void LD2410S::init_() {
   App.feed_wdt();
   this->status_set_warning("setup");
 

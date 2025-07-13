@@ -1,5 +1,6 @@
 #include "ac_burst_dimmer.h"
 #include <algorithm>
+#include <numeric>
 
 namespace esphome {
 namespace ac_burst_dimmer {
@@ -12,7 +13,6 @@ void AcBurstDimmer::setup() {
       this->on_zero_cross_();
     last_zc_state_ = state;
   });
-
   out_pin_->write(false);
 }
 
@@ -23,12 +23,22 @@ void AcBurstDimmer::write_state(float level) {
   target_on_cycles_ = std::max(min_cycles_, std::min(pct / g, window_size_));
   cycle_counter_ = 0;
   polarity_flip_ = false;
+  compute_sequence_();
+}
+
+void AcBurstDimmer::compute_sequence_() {
+  burst_sequence_.clear();
+  burst_sequence_.resize(window_size_, false);
+  for (int i = 0; i < target_on_cycles_; i++) {
+    int pos = (i * window_size_ + window_size_ / 2) / target_on_cycles_;
+    if (pos < window_size_)
+      burst_sequence_[pos] = true;
+  }
 }
 
 void AcBurstDimmer::on_zero_cross_() {
   current_polarity_ = !current_polarity_;
-  cycle_counter_++;
-  if (cycle_counter_ >= window_size_) {
+  if (++cycle_counter_ >= window_size_) {
     cycle_counter_ = 0;
     if (alternate_polarity_)
       polarity_flip_ = !polarity_flip_;
@@ -38,7 +48,7 @@ void AcBurstDimmer::on_zero_cross_() {
   if (alternate_polarity_ && (window_size_ % 2 == 1))
     index = (cycle_counter_ + (polarity_flip_ ? 1 : 0)) % window_size_;
 
-  if (index < target_on_cycles_) {
+  if (index < (int) burst_sequence_.size() && burst_sequence_[index]) {
     out_pin_->write(true);
     if (!pulse_full_half_) {
       this->set_timeout("pulse_end", pulse_us_ / 1000, [this]() { out_pin_->write(false); });

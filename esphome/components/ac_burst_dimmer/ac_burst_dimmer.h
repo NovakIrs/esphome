@@ -1,3 +1,10 @@
+/*
+burst fire ac dimmer
+requires zero cross detection
+avoids DC bias by alternating if first if first or second halfway is passed
+reduces effective window if possible
+*/
+
 #pragma once
 #include "esphome/core/component.h"
 #include "esphome/components/output/binary_output.h"
@@ -21,6 +28,7 @@ class AcBurstDimmer : public Component, public output::BinaryOutput {
 
  protected:
   void on_zero_cross_();
+  void compute_sequence_();
 
   InternalGPIOPin *zc_pin_;
   output::BinaryOutput *out_pin_;
@@ -36,6 +44,8 @@ class AcBurstDimmer : public Component, public output::BinaryOutput {
   bool current_polarity_{false};
   bool polarity_flip_{false};
   bool last_zc_state_{false};
+
+  std::vector<bool> burst_sequence_;
 };
 
 }  // namespace ac_burst_dimmer

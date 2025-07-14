@@ -9,6 +9,7 @@ from esphome.const import (
     ENTITY_CATEGORY_CONFIG,
     ICON_PULSE,
     ICON_TIMELAPSE,
+    UNIT_DECIBEL,
     UNIT_HERTZ,
     UNIT_SECOND,
 )
@@ -88,18 +89,21 @@ CONFIG_SCHEMA = cv.Schema(
             LD2410STriggerThresholdNumber,
             device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_DECIBEL,
             icon="mdi:pencil",
         ),
         cv.Optional(CONF_TRIGGER_HOLD): number.number_schema(
             LD2410STriggerHoldNumber,
             device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_DECIBEL,
             icon="mdi:pencil",
         ),
         cv.Optional(CONF_TRIGGER_SNR): number.number_schema(
             LD2410STriggerSnrNumber,
             device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
             entity_category=ENTITY_CATEGORY_CONFIG,
+            unit_of_measurement=UNIT_DECIBEL,
             icon="mdi:pencil",
         ),
         cv.Optional(CONF_TRIGGER_SELECTED_GATE): number.number_schema(

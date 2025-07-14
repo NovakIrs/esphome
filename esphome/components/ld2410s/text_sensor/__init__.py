@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 from esphome.components import text_sensor
 import esphome.config_validation as cv
-from esphome.const import CONF_ID, ENTITY_CATEGORY_DIAGNOSTIC, ICON_CHIP
+from esphome.const import CONF_ID, ENTITY_CATEGORY_DIAGNOSTIC, ICON_CHIP, UNIT_DECIBEL
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
@@ -27,16 +27,24 @@ CONFIG_SCHEMA = cv.All(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon=ICON_CHIP
             ),
             cv.Optional(TRIGGER_THRESHOLD_TS): text_sensor.text_sensor_schema(
-                entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon="mdi:tune-variant"
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                unit_of_measurement=UNIT_DECIBEL,
+                icon="mdi:tune-variant",
             ),
             cv.Optional(TRIGGER_HOLD_TS): text_sensor.text_sensor_schema(
-                entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon="mdi:tune-variant"
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                unit_of_measurement=UNIT_DECIBEL,
+                icon="mdi:tune-variant",
             ),
             cv.Optional(TRIGGER_SNR_TS): text_sensor.text_sensor_schema(
-                entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon="mdi:tune-variant"
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                unit_of_measurement=UNIT_DECIBEL,
+                icon="mdi:tune-variant",
             ),
             cv.Optional(ENERGY_VALUES_TS): text_sensor.text_sensor_schema(
-                entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon="mdi:lightning-bolt"
+                entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
+                unit_of_measurement=UNIT_DECIBEL,
+                icon="mdi:lightning-bolt",
             ),
         }
     ),

@@ -902,9 +902,9 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
-  int major_v = static_cast<int>(data[0]);
-  int minor_v = static_cast<int>(data[1]);
-  int patch_v = static_cast<int>(data[2]);
+  int major_v = this->read_int_(data, 6, 2);
+  int minor_v = this->read_int_(data, 8, 2);
+  int patch_v = this->read_int_(data, 10, 2);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   for (auto &listener : this->listeners_) {

@@ -147,6 +147,8 @@ void LD2410S::init_() {
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 
   this->status_clear_warning();
+
+  this->update_ts_energy_values_();
 }
 void LD2410S::read_all() {
   this->status_set_warning("read_all");

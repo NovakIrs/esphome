@@ -107,7 +107,7 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;   // timeout for waiting for cmd response
-static const uint16_t ENERGY_VALUES_RESET = 50;  // number of readings to average energy values
+static const uint16_t ENERGY_VALUES_RESET = 10;  // number of readings to average energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() { this->init_(); }
@@ -943,26 +943,23 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->update_ts_snrs_();
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
-  // if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
-  //   this->update_ts_energy_values_();
-  //   for (auto &energy_value : this->energy_values_) {
-  //     energy_value = 0;
-  //   }
-  //   this->energy_values_count_ = 0;
-  // } else {
-  //   for (uint8_t i = 0; i < 16; i++) {
-  //     uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-  //     this->energy_values_[i] =
-  //         (this->energy_values_[i] * this->energy_values_count_ + val) / (this->energy_values_count_ + 1);
-  //   }
-  //   this->energy_values_count_++;
-  // }
+  if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
+    this->update_ts_energy_values_();
 
-  for (uint8_t i = 0; i < 16; i++) {
-    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-    this->energy_values_[i] = val;
+    for (auto &energy_value : this->energy_values_) {
+      energy_value = 0;
+    }
+    this->energy_values_count_ = 0;
+
+  } else {
+    for (uint8_t i = 0; i < 16; i++) {
+      uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+      if (val > this->energy_values_[i]) {
+        this->energy_values_[i] = val;
+      }
+    }
+    this->energy_values_count_++;
   }
-  this->update_ts_energy_values_();
 }
 
 void LD2410S::update_ts_thresholds_() {

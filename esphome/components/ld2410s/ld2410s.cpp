@@ -114,7 +114,7 @@ void LD2410S::setup() {
   this->init_();
   this->set_interval(ENERGY_VALUES_PERIOD, [this]() { this->update_ts_energy_values_(); });
   for (auto &listener : this->listeners_) {
-    listener->on_presence(0);
+    listener->on_presence(false);
     listener->on_distance(0);
   }
 }

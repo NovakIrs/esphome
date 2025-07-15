@@ -106,11 +106,14 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
     // It would be good to get it from virgin ld2410s, before any calibration.
 };
 
-static const uint32_t CMD_EXEC_TIMEOUT = 1000;   // timeout for waiting for cmd response
-static const uint16_t ENERGY_VALUES_RESET = 10;  // number of readings to average energy values
+static const uint32_t CMD_EXEC_TIMEOUT = 1000;      // timeout for waiting for cmd response
+static const uint16_t ENERGY_VALUES_PERIOD = 1000;  // period for sending and reseting max energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-void LD2410S::setup() { this->init_(); }
+void LD2410S::setup() {
+  this->init_();
+  this->set_interval(ENERGY_VALUES_PERIOD, [this]() { this->update_ts_energy_values_(); });
+}
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
@@ -147,8 +150,6 @@ void LD2410S::init_() {
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 
   this->status_clear_warning();
-
-  this->update_ts_energy_values_();
 }
 void LD2410S::read_all() {
   this->status_set_warning("read_all");
@@ -945,26 +946,15 @@ void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->update_ts_snrs_();
 }
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
-  if (this->energy_values_count_ >= ENERGY_VALUES_RESET) {
-    this->update_ts_energy_values_();
-
-    for (auto &energy_value : this->energy_values_) {
-      energy_value = 0;
+  for (uint8_t i = 0; i < 16; i++) {
+    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+    uint32_t db = 0;
+    if (val > 0) {
+      db = 10 * log10(val);
     }
-    this->energy_values_count_ = 0;
-
-  } else {
-    for (uint8_t i = 0; i < 16; i++) {
-      uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-      uint32_t db = 0;
-      if (val > 0) {
-        db = 10 * log10(val);
-      }
-      if (db > this->energy_values_[i]) {
-        this->energy_values_[i] = db;
-      }
+    if (db > this->energy_values_[i]) {
+      this->energy_values_[i] = db;
     }
-    this->energy_values_count_++;
   }
 }
 
@@ -996,15 +986,19 @@ void LD2410S::update_ts_snrs_() {
 void LD2410S::update_ts_energy_values_() {
   std::string vals = this->format_int_(this->energy_values_, 16, 2);
 
-  // if (energy_values_str_ != vals) {
-  for (auto &listener : this->listeners_) {
-    listener->on_energy_values_ts(vals);
+  if (energy_values_str_ != vals) {
+    energy_values_str_ = vals;
+
+    for (auto &listener : this->listeners_) {
+      listener->on_energy_values_ts(vals);
+    }
+
+    ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());
   }
 
-  energy_values_str_ = vals;
-  // }
-
-  ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());
+  for (auto &energy_value : this->energy_values_) {
+    energy_value = 0;
+  }
 }
 
 std::string LD2410S::format_int_(uint32_t *in, uint8_t len, uint8_t min_w) {

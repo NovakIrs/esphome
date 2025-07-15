@@ -149,7 +149,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
   uint32_t energy_values_[16];
-  uint16_t energy_values_count_ = 0;
   uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
   uint8_t active_ = 0;
   uint8_t last_ = 0;

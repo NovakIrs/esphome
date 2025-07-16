@@ -107,7 +107,7 @@ static const uint32_t GATE_SNR_WRITE_DATA[] = {
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;      // timeout for waiting for cmd response
-static const uint32_t ENERGY_VALUES_PERIOD = 1000;  // period for sending and reseting max energy values
+static const uint32_t ENERGY_VALUES_PERIOD = 4000;  // period for sending and reseting max energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {

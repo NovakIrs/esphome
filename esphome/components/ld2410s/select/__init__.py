@@ -10,23 +10,6 @@ CODEOWNERS = ["@NovakIrs"]
 CONF_RESPONSE_SPEED = "response_speed"
 CONF_SELECTS = ["Normal", "Fast"]
 
-
-CMD_EXEC = "exec_command"
-CMD_EXEC_SELECTS = [
-    "Switch Output Mode",
-    "Start Calibration",
-    "Factory Reset",
-    "Read Trigger Thresholds",
-    "Read Hold Thresholds",
-    "Read Signal To Noise Rations",
-    "Read Config",
-    "Read Firmware Version",
-    "Read s/n",
-    "Read ",
-    "Enable Configuration",
-    "Disable Configuration",
-]
-
 LD2410sResponseSpeedSelect = ld2410s_ns.class_(
     "LD2410sResponseSpeedSelect", cg.Component
 )

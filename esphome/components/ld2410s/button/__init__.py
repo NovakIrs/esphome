@@ -11,17 +11,15 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
 LD2410SReadAll = ld2410s_ns.class_("LD2410SReadAll", button.Button)
 LD2410SApplyConfigButton = ld2410s_ns.class_("LD2410SApplyConfigButton", button.Button)
 LD2410SCalibration = ld2410s_ns.class_("LD2410SCalibration", button.Button)
 LD2410SFactoryReset = ld2410s_ns.class_("LD2410SFactoryReset", button.Button)
 LD2410SMinimalOutput = ld2410s_ns.class_("LD2410SMinimalOutput", button.Button)
 
+CONF_MINIMAL_OUTPUT = "minimal_output"
 CONF_READ_ALL = "read_all"
 CONF_WRITE_ALL = "write_all"
-CONF_MINIMAL_OUTPUT = "minimal_output"
 
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),

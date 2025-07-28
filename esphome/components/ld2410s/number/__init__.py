@@ -16,8 +16,6 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
 LD2410SMaxDistanceNumber = ld2410s_ns.class_("LD2410SMaxDistanceNumber", number.Number)
 LD2410SMinDistanceNumber = ld2410s_ns.class_("LD2410SMinDistanceNumber", number.Number)
 LD2410SDelayNumber = ld2410s_ns.class_("LD2410SDelayNumber", number.Number)
@@ -37,12 +35,12 @@ LD2410STriggerSelectedGateNumber = ld2410s_ns.class_(
     "LD2410STriggerSelectedGateNumber", number.Number
 )
 
+CONF_DISTANCE_GROUP = "distance_group"
+CONF_DISTANCE_REPORTING_FREQUENCY = "distance_reporting_frequency"
 CONF_MAX_DISTANCE = "max_distance"
 CONF_MIN_DISTANCE = "min_distance"
 CONF_NO_DELAY = "no_delay"
-CONF_DISTANCE_GROUP = "distance_group"
 CONF_STATUS_REPORTING_FREQUENCY = "status_reporting_frequency"
-CONF_DISTANCE_REPORTING_FREQUENCY = "distance_reporting_frequency"
 CONF_TRIGGER_THRESHOLD = "trigger_threshold"
 CONF_TRIGGER_HOLD = "trigger_hold"
 CONF_TRIGGER_SNR = "trigger_snr"
@@ -52,13 +50,13 @@ CONF_TRIGGER_SELECTED_GATE = "trigger_selected_gate"
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-        cv.Inclusive(CONF_MAX_DISTANCE, DISTANCE_GROUP): number.number_schema(
+        cv.Inclusive(CONF_MAX_DISTANCE, CONF_DISTANCE_GROUP): number.number_schema(
             LD2410SMaxDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             entity_category=ENTITY_CATEGORY_CONFIG,
             icon="mdi:arrow-collapse-right",
         ),
-        cv.Inclusive(CONF_MIN_DISTANCE, DISTANCE_GROUP): number.number_schema(
+        cv.Inclusive(CONF_MIN_DISTANCE, CONF_DISTANCE_GROUP): number.number_schema(
             LD2410SMinDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             entity_category=ENTITY_CATEGORY_CONFIG,

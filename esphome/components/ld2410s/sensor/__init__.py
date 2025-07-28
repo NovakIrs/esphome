@@ -5,8 +5,6 @@ from esphome.const import CONF_ID, DEVICE_CLASS_DISTANCE, UNIT_CENTIMETER, UNIT_
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
 LD2410SSensor = ld2410s_ns.class_("LD2410SSensor", sensor.Sensor, cg.Component)
 
 TARGET_DISTANCE = "target_distance"

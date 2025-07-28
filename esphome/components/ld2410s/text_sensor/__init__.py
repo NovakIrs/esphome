@@ -5,8 +5,6 @@ from esphome.const import CONF_ID, ENTITY_CATEGORY_DIAGNOSTIC, ICON_CHIP
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
 LD2410STextSensor = ld2410s_ns.class_(
     "LD2410STextSensor", text_sensor.TextSensor, cg.Component
 )

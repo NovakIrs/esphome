@@ -5,8 +5,6 @@ from esphome.const import CONF_HAS_TARGET, CONF_ID, DEVICE_CLASS_OCCUPANCY
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
 LD2410SBinarySensor = ld2410s_ns.class_(
     "LD2410SBinarySensor", binary_sensor.BinarySensor, cg.Component
 )

@@ -5,10 +5,8 @@ from esphome.const import ENTITY_CATEGORY_CONFIG
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-CODEOWNERS = ["@NovakIrs"]
-
-CONF_RESPONSE_SPEED = "response_speed"
 CONF_SELECTS = ["Normal", "Fast"]
+CONF_RESPONSE_SPEED = "response_speed"
 
 LD2410sResponseSpeedSelect = ld2410s_ns.class_(
     "LD2410sResponseSpeedSelect", cg.Component

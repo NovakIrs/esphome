@@ -587,7 +587,7 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   memcpy(cmd_buffer + frame->length, &frame->footer, sizeof(frame->footer));
   frame->length += sizeof(frame->footer);
 
-  this->hex_diag(">", cmd_buffer, frame->length);
+  esphome::ld2410s::LD2410S::hex_diag(">", cmd_buffer, frame->length);
 
   // WRITE
   for (uint16_t index = 0; index < frame->length; index++) {
@@ -613,7 +613,7 @@ void LD2410S::receive_() {
         size_t data_size = this->get_data_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
 
     if (type != PackageType::UNKNOWN && start_pos != this->rcv_end_pos_ && payload_size > 0) {
-      this->hex_diag("<", &this->rcv_buffer_[0], this->rcv_end_pos_ + 1 - start_pos);
+      esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[0], this->rcv_end_pos_ + 1 - start_pos);
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:
@@ -698,7 +698,7 @@ size_t LD2410S::get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType ty
   }
 
   for (uint8_t i = end_pos - min_length; i >= 0; i--) {
-    if (header_frame == this->read_int(buffer, i, header_frame_len)) {
+    if (header_frame == esphome::ld2410s::LD2410S::read_int(buffer, i, header_frame_len)) {
       return i;
     }
   }
@@ -717,7 +717,7 @@ size_t LD2410S::get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type
 
     case PackageType::STD_DATA_FRAME:
     case PackageType::CMD_FRAME:
-      payload_size = this->read_int(buffer, start_pos + 4, 2);
+      payload_size = esphome::ld2410s::LD2410S::read_int(buffer, start_pos + 4, 2);
       expected_full_frame_size = 4 + 2 + payload_size + 4;
       break;
 
@@ -884,12 +884,12 @@ CmdAckT LD2410S::parse_cms_frame_(uint8_t *buffer, size_t length) {
 }
 
 void LD2410S::process_ack_config_read_(uint8_t *data) {
-  this->max_dist_ = this->read_int(data, 0, 4);
-  this->min_dist_ = this->read_int(data, 4, 4);
-  this->delay_ = this->read_int(data, 8, 4);
-  this->status_freq_ = this->read_int(data, 12, 4);
-  this->dist_freq_ = this->read_int(data, 16, 4);
-  this->resp_speed_ = this->read_int(data, 20, 4);
+  this->max_dist_ = esphome::ld2410s::LD2410S::read_int(data, 0, 4);
+  this->min_dist_ = esphome::ld2410s::LD2410S::read_int(data, 4, 4);
+  this->delay_ = esphome::ld2410s::LD2410S::read_int(data, 8, 4);
+  this->status_freq_ = esphome::ld2410s::LD2410S::read_int(data, 12, 4);
+  this->dist_freq_ = esphome::ld2410s::LD2410S::read_int(data, 16, 4);
+  this->resp_speed_ = esphome::ld2410s::LD2410S::read_int(data, 20, 4);
 
 #ifdef USE_NUMBER
   this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
@@ -909,9 +909,9 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
-  int major_v = this->read_int(data, 4, 2);
-  int minor_v = this->read_int(data, 6, 2);
-  int patch_v = this->read_int(data, 8, 2);
+  int major_v = esphome::ld2410s::LD2410S::read_int(data, 4, 2);
+  int minor_v = esphome::ld2410s::LD2410S::read_int(data, 6, 2);
+  int patch_v = esphome::ld2410s::LD2410S::read_int(data, 8, 2);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   for (auto &listener : this->listeners_) {
@@ -922,7 +922,7 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
 }
 
 void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
-  this->four_byte_to_int_array(data, this->triggers_.trigger, 16);
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.trigger, 16);
 #ifdef USE_NUMBER
   this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
 #endif
@@ -931,7 +931,7 @@ void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
 }
 
 void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
-  this->four_byte_to_int_array(data, this->triggers_.hold, 16);
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.hold, 16);
 #ifdef USE_NUMBER
   this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
 #endif
@@ -940,7 +940,7 @@ void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
 }
 
 void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
-  this->four_byte_to_int_array(data, this->triggers_.snr, 16);
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.snr, 16);
 #ifdef USE_NUMBER
   this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
 #endif
@@ -962,7 +962,7 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
 }
 
 void LD2410S::publish_state_ts_thresholds_() {
-  std::string vals = this->format_int(this->triggers_.trigger, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.trigger, 16, 2);
 
   for (auto &listener : this->listeners_) {
     listener->on_trigger_threshold(vals);
@@ -970,7 +970,7 @@ void LD2410S::publish_state_ts_thresholds_() {
   ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
 }
 void LD2410S::publish_state_ts_holds_() {
-  std::string vals = this->format_int(this->triggers_.hold, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.hold, 16, 2);
 
   for (auto &listener : this->listeners_) {
     listener->on_trigger_hold(vals);
@@ -978,7 +978,7 @@ void LD2410S::publish_state_ts_holds_() {
   ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
 }
 void LD2410S::publish_state_ts_snrs_() {
-  std::string vals = this->format_int(this->triggers_.snr, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.snr, 16, 2);
 
   for (auto &listener : this->listeners_) {
     listener->on_trigger_snr(vals);
@@ -987,7 +987,7 @@ void LD2410S::publish_state_ts_snrs_() {
   ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
 }
 void LD2410S::publish_state_ts_energy_values_() {
-  std::string vals = this->format_int(this->energy_values_, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->energy_values_, 16, 2);
 
   if (energy_values_str_ != vals) {
     energy_values_str_ = vals;

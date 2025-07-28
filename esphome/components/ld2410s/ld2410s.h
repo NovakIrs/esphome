@@ -223,10 +223,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   void update_ts_snrs_();
   void update_ts_energy_values_();
 
-  std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
-  void four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len);
-  void hex_diag_(const char *msg, const uint8_t *data, size_t length);
-  int read_int_(const uint8_t *buffer, size_t pos, size_t len);
+  static std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
+  static void four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len);
+  static void hex_diag_(const char *msg, const uint8_t *data, size_t length);
+  static int read_int_(const uint8_t *buffer, size_t pos, size_t len);
 };
 
 }  // namespace ld2410s

@@ -17,28 +17,28 @@ class LD2410STextSensor : public LD2410SListener, public Component, text_sensor:
   void set_trigger_threshold_text_sensor(text_sensor::TextSensor *tsensor) {
     this->trigger_threshold_text_sensor_ = tsensor;
   };
-  void on_trigger_threshold_ts(std::string &val) override {
+  void on_trigger_threshold(std::string &val) override {
     if (this->trigger_threshold_text_sensor_ != nullptr) {
       this->trigger_threshold_text_sensor_->publish_state(val);
     }
   }
 
   void set_trigger_hold_text_sensor(text_sensor::TextSensor *tsensor) { this->trigger_hold_text_sensor_ = tsensor; };
-  void on_trigger_hold_ts(std::string &val) override {
+  void on_trigger_hold(std::string &val) override {
     if (this->trigger_hold_text_sensor_ != nullptr) {
       this->trigger_hold_text_sensor_->publish_state(val);
     }
   }
 
   void set_trigger_snr_text_sensor(text_sensor::TextSensor *tsensor) { this->trigger_snr_text_sensor_ = tsensor; };
-  void on_trigger_snr_ts(std::string &val) override {
+  void on_trigger_snr(std::string &val) override {
     if (this->trigger_snr_text_sensor_ != nullptr) {
       this->trigger_snr_text_sensor_->publish_state(val);
     }
   }
 
   void set_energy_values_text_sensor(text_sensor::TextSensor *tsensor) { this->energy_values_text_sensor_ = tsensor; };
-  void on_energy_values_ts(std::string &val) override {
+  void on_energy_values(std::string &val) override {
     if (this->energy_values_text_sensor_ != nullptr) {
       this->energy_values_text_sensor_->publish_state(val);
     }

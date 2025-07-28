@@ -11,10 +11,10 @@ LD2410STextSensor = ld2410s_ns.class_(
 
 FW_VERSION = "fw_version"
 
-CONF_ENERGY_VALUES = "energy_values_ts"
-CONF_TRIGGER_THRESHOLD = "trigger_threshold_ts"
-CONF_TRIGGER_HOLD = "trigger_hold_ts"
-CONF_TRIGGER_SNR = "trigger_snr_ts"
+CONF_ENERGY_VALUES = "energy_values"
+CONF_TRIGGER_THRESHOLD = "trigger_threshold"
+CONF_TRIGGER_HOLD = "trigger_hold"
+CONF_TRIGGER_SNR = "trigger_snr"
 
 CONFIG_SCHEMA = cv.All(
     cv.COMPONENT_SCHEMA.extend(

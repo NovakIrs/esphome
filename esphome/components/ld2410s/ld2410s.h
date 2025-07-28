@@ -66,10 +66,10 @@ class LD2410SListener {
   virtual void on_threshold_update(bool running){};
   virtual void on_threshold_progress(uint16_t progress){};
   virtual void on_fw_version(std::string &val){};
-  virtual void on_trigger_threshold_ts(std::string &val){};
-  virtual void on_trigger_hold_ts(std::string &val){};
-  virtual void on_trigger_snr_ts(std::string &val){};
-  virtual void on_energy_values_ts(std::string &val){};
+  virtual void on_trigger_threshold(std::string &val){};
+  virtual void on_trigger_hold(std::string &val){};
+  virtual void on_trigger_snr(std::string &val){};
+  virtual void on_energy_values(std::string &val){};
 };
 
 class LD2410S : public uart::UARTDevice, public Component {
@@ -218,10 +218,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   void process_ack_trigger_snr_read_(uint8_t *data);
   void process_data_energy_values_read_(uint8_t *data);
 
-  void update_ts_thresholds_();
-  void update_ts_holds_();
-  void update_ts_snrs_();
-  void update_ts_energy_values_();
+  void publish_state_ts_thresholds_();
+  void publish_state_ts_holds_();
+  void publish_state_ts_snrs_();
+  void publish_state_ts_energy_values_();
 
   static std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
   static void four_byte_to_int_array_(uint8_t *in, uint32_t *out, uint8_t out_len);

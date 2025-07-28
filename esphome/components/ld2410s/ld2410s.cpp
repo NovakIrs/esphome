@@ -112,7 +112,7 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
   this->init_();
-  this->set_interval(ENERGY_VALUES_PERIOD, [this]() { this->update_ts_energy_values_(); });
+  this->set_interval(ENERGY_VALUES_PERIOD, [this]() { this->publish_state_ts_energy_values_(); });
   for (auto &listener : this->listeners_) {
     listener->on_presence(false);
     listener->on_distance(0);
@@ -258,18 +258,18 @@ void LD2410S::set_trigger_selected_gate(float trigger_selected_gate) {
 void LD2410S::set_trigger_threshold(float trigger_threshold) {
   this->triggers_.trigger[this->triggers_.selected_gate] = trigger_threshold;
   this->schedule_cmd_("set_trigger_threshold\0", GATE_TRIGGER_THRESHOLD_WRITE_CMD, this->triggers_.selected_gate);
-  this->update_ts_thresholds_();
+  this->publish_state_ts_thresholds_();
 }
 void LD2410S::set_trigger_hold(float trigger_hold) {
   this->triggers_.hold[this->triggers_.selected_gate] = trigger_hold;
   this->schedule_cmd_("set_trigger_hold\0", GATE_HOLD_THRESHOLD_WRITE_CMD, this->triggers_.selected_gate);
-  this->update_ts_holds_();
+  this->publish_state_ts_holds_();
 }
 void LD2410S::set_trigger_snr(float trigger_snr) {
   this->triggers_.snr[this->triggers_.selected_gate] = trigger_snr;
   this->schedule_cmd_("set_trigger_snr\0", GATE_SNR_WRITE_CMD, this->triggers_.selected_gate);
 
-  this->update_ts_snrs_();
+  this->publish_state_ts_snrs_();
 }
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
@@ -920,35 +920,34 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
 
   ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
 }
+
 void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.trigger, 16);
 #ifdef USE_NUMBER
   this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
 #endif
 
-  std::string vals = this->format_int_(this->triggers_.trigger, 16, 2);
-
-  for (auto &listener : this->listeners_) {
-    listener->on_trigger_threshold_ts(vals);
-  }
-  this->update_ts_thresholds_();
+  this->publish_state_ts_thresholds_();
 }
+
 void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.hold, 16);
 #ifdef USE_NUMBER
   this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
 #endif
 
-  this->update_ts_holds_();
+  this->publish_state_ts_holds_();
 }
+
 void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
   this->four_byte_to_int_array_(data, this->triggers_.snr, 16);
 #ifdef USE_NUMBER
   this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
 #endif
 
-  this->update_ts_snrs_();
+  this->publish_state_ts_snrs_();
 }
+
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   for (uint8_t i = 0; i < 16; i++) {
     uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
@@ -962,39 +961,39 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   }
 }
 
-void LD2410S::update_ts_thresholds_() {
+void LD2410S::publish_state_ts_thresholds_() {
   std::string vals = this->format_int_(this->triggers_.trigger, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_threshold_ts(vals);
+    listener->on_trigger_threshold(vals);
   }
   ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
 }
-void LD2410S::update_ts_holds_() {
+void LD2410S::publish_state_ts_holds_() {
   std::string vals = this->format_int_(this->triggers_.hold, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_hold_ts(vals);
+    listener->on_trigger_hold(vals);
   }
   ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
 }
-void LD2410S::update_ts_snrs_() {
+void LD2410S::publish_state_ts_snrs_() {
   std::string vals = this->format_int_(this->triggers_.snr, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_snr_ts(vals);
+    listener->on_trigger_snr(vals);
   }
 
   ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
 }
-void LD2410S::update_ts_energy_values_() {
+void LD2410S::publish_state_ts_energy_values_() {
   std::string vals = this->format_int_(this->energy_values_, 16, 2);
 
   if (energy_values_str_ != vals) {
     energy_values_str_ = vals;
 
     for (auto &listener : this->listeners_) {
-      listener->on_energy_values_ts(vals);
+      listener->on_energy_values(vals);
     }
 
     ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());

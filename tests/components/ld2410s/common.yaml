@@ -27,13 +27,13 @@ text_sensor:
   - platform: ld2410s
     fw_version:
       name: Firmware version
-    trigger_threshold_ts:
+    trigger_threshold:
       name: Triggers Threshold
-    trigger_hold_ts:
+    trigger_hold:
       name: Triggers Hold
-    trigger_snr_ts:
+    trigger_snr:
       name: Triggers SNR
-    energy_values_ts:
+    energy_values:
       name: Energy Values
 
 number:

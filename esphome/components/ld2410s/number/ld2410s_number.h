@@ -40,34 +40,35 @@ class LD2410SStatusReportingFreqNumber : public number::Number, public Parented<
  protected:
   void control(float status_reporting_freq) override;
 };
-class LD2410STriggerHoldNumber : public number::Number, public Parented<LD2410S> {
+
+class LD2410SThresholdSelectedGateNumber : public number::Number, public Parented<LD2410S> {
  public:
-  LD2410STriggerHoldNumber() = default;
+  LD2410SThresholdSelectedGateNumber() = default;
 
  protected:
-  void control(float trigger_hold) override;
+  void control(float threshold_selected_gate) override;
 };
-class LD2410STriggerSelectedGateNumber : public number::Number, public Parented<LD2410S> {
+
+class LD2410SThresholdTriggerNumber : public number::Number, public Parented<LD2410S> {
  public:
-  LD2410STriggerSelectedGateNumber() = default;
+  LD2410SThresholdTriggerNumber() = default;
 
  protected:
-  void control(float trigger_selected_gate) override;
+  void control(float threshold_trigger) override;
 };
-class LD2410STriggerSnrNumber : public number::Number, public Parented<LD2410S> {
+class LD2410SThresholdHoldNumber : public number::Number, public Parented<LD2410S> {
  public:
-  LD2410STriggerSnrNumber() = default;
+  LD2410SThresholdHoldNumber() = default;
 
  protected:
-  void control(float trigger_snr) override;
+  void control(float threshold_hold) override;
 };
-class LD2410STriggerThresholdNumber : public number::Number, public Parented<LD2410S> {
+class LD2410SThresholdSnrNumber : public number::Number, public Parented<LD2410S> {
  public:
-  LD2410STriggerThresholdNumber() = default;
+  LD2410SThresholdSnrNumber() = default;
 
  protected:
-  void control(float trigger_threshold) override;
+  void control(float threshold_snr) override;
 };
-
 }  // namespace ld2410s
 }  // namespace esphome

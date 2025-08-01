@@ -27,7 +27,7 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const size_t RCV_BUFFER_SIZE = 128;
 
-struct TriggersT {
+struct ThresholdsT {
   uint32_t trigger[16];
   uint32_t hold[16];
   uint32_t snr[16];
@@ -63,12 +63,12 @@ class LD2410SListener {
  public:
   virtual void on_presence(bool presence){};
   virtual void on_distance(uint16_t distance){};
-  virtual void on_threshold_update(bool running){};
-  virtual void on_threshold_progress(uint16_t progress){};
+  virtual void on_calibration_update(bool running){};
+  virtual void on_calibration_progress(uint16_t progress){};
   virtual void on_fw_version(std::string &val){};
-  virtual void on_trigger_threshold(std::string &val){};
-  virtual void on_trigger_hold(std::string &val){};
-  virtual void on_trigger_snr(std::string &val){};
+  virtual void on_threshold_trigger(std::string &val){};
+  virtual void on_threshold_hold(std::string &val){};
+  virtual void on_threshold_snr(std::string &val){};
   virtual void on_energy_values(std::string &val){};
 };
 
@@ -91,10 +91,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_max_distance(float max_distance);
   void set_min_distance(float min_distance);
   void set_status_reporting_freq(float status_reporting_freq);
-  void set_trigger_selected_gate(float trigger_selected_gate);
-  void set_trigger_threshold(float trigger_threshold);
-  void set_trigger_hold(float trigger_hold);
-  void set_trigger_snr(float trigger_snr);
+  void set_threshold_selected_gate(float threshold_selected_gate);
+  void set_threshold_trigger(float threshold_trigger);
+  void set_threshold_hold(float threshold_hold);
+  void set_threshold_snr(float threshold_snr);
   void set_response_speed_select(const std::string &response_speed_select);
 
 #ifdef USE_NUMBER
@@ -112,19 +112,21 @@ class LD2410S : public uart::UARTDevice, public Component {
     this->distance_reporting_freq_number_ = distance_reporting_freq_number;
   };
 
-  void set_trigger_threshold_number(number::Number *trigger_threshold_number) {
-    this->trigger_threshold_number_ = trigger_threshold_number;
+  void set_threshold_trigger_number(number::Number *threshold_trigger_number) {
+    this->threshold_trigger_number_ = threshold_trigger_number;
   };
-  void set_trigger_hold_number(number::Number *trigger_hold_number) {
-    this->trigger_hold_number_ = trigger_hold_number;
+  void set_threshold_hold_number(number::Number *threshold_hold_number) {
+    this->threshold_hold_number_ = threshold_hold_number;
   };
-  void set_trigger_snr_number(number::Number *trigger_snr_number) { this->trigger_snr_number_ = trigger_snr_number; };
-  void set_trigger_selected_gate_number(number::Number *trigger_selected_gate_number) {
-    this->trigger_selected_gate_number_ = trigger_selected_gate_number;
-    this->trigger_selected_gate_number_->publish_state(this->triggers_.selected_gate);
-    this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
-    this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
-    this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
+  void set_threshold_snr_number(number::Number *threshold_snr_number) {
+    this->threshold_snr_number_ = threshold_snr_number;
+  };
+  void set_threshold_selected_gate_number(number::Number *threshold_selected_gate_number) {
+    this->threshold_selected_gate_number_ = threshold_selected_gate_number;
+    this->threshold_selected_gate_number_->publish_state(this->thresholds_.selected_gate);
+    this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
+    this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
+    this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
   };
 #endif
 
@@ -159,7 +161,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   std::string energy_values_str_ = "";
   std::vector<LD2410SListener *> listeners_{};
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
-  TriggersT triggers_;
+  ThresholdsT thresholds_;
 
   void init_();
   void loop_send_command_();
@@ -174,10 +176,10 @@ class LD2410S : public uart::UARTDevice, public Component {
   number::Number *status_reporting_freq_number_{nullptr};
   number::Number *distance_reporting_freq_number_{nullptr};
 
-  number::Number *trigger_threshold_number_{nullptr};
-  number::Number *trigger_hold_number_{nullptr};
-  number::Number *trigger_snr_number_{nullptr};
-  number::Number *trigger_selected_gate_number_{nullptr};
+  number::Number *threshold_trigger_number_{nullptr};
+  number::Number *threshold_hold_number_{nullptr};
+  number::Number *threshold_snr_number_{nullptr};
+  number::Number *threshold_selected_gate_number_{nullptr};
 #endif
 
 #ifdef USE_BUTTON
@@ -213,9 +215,9 @@ class LD2410S : public uart::UARTDevice, public Component {
 
   void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
-  void process_ack_trigger_threshold_read_(uint8_t *data);
-  void process_ack_trigger_hold_read_(uint8_t *data);
-  void process_ack_trigger_snr_read_(uint8_t *data);
+  void process_ack_threshold_trigger_read_(uint8_t *data);
+  void process_ack_threshold_hold_read_(uint8_t *data);
+  void process_ack_threshold_snr_read_(uint8_t *data);
   void process_data_energy_values_read_(uint8_t *data);
 
   void publish_state_ts_thresholds_();

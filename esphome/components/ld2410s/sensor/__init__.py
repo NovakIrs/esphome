@@ -8,7 +8,7 @@ from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 LD2410SSensor = ld2410s_ns.class_("LD2410SSensor", sensor.Sensor, cg.Component)
 
 CONF_TARGET_DISTANCE = "target_distance"
-CONF_THRESHOLD_UPDATE = "threshold_update"
+CONF_CALIBRATION_PROGRESS = "calibration_progress"
 
 CONFIG_SCHEMA = cv.All(
     cv.COMPONENT_SCHEMA.extend(
@@ -20,7 +20,7 @@ CONFIG_SCHEMA = cv.All(
                 unit_of_measurement=UNIT_CENTIMETER,
                 icon="mdi:arrow-left-right",
             ),
-            cv.Optional(CONF_THRESHOLD_UPDATE): sensor.sensor_schema(
+            cv.Optional(CONF_CALIBRATION_PROGRESS): sensor.sensor_schema(
                 unit_of_measurement=UNIT_PERCENT,
                 icon="mdi:percent",
             ),
@@ -35,8 +35,8 @@ async def to_code(config):
     if CONF_TARGET_DISTANCE in config:
         sens = await sensor.new_sensor(config[CONF_TARGET_DISTANCE])
         cg.add(var.set_distance_sensor(sens))
-    if CONF_THRESHOLD_UPDATE in config:
-        sens = await sensor.new_sensor(config[CONF_THRESHOLD_UPDATE])
-        cg.add(var.set_threshold_update_sensor(sens))
+    if CONF_CALIBRATION_PROGRESS in config:
+        sens = await sensor.new_sensor(config[CONF_CALIBRATION_PROGRESS])
+        cg.add(var.set_calibration_progress_sensor(sens))
     ld2410s = await cg.get_variable(config[CONF_LD2410S_ID])
     cg.add(ld2410s.register_listener(var))

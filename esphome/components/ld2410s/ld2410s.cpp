@@ -54,11 +54,11 @@ static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
 static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
 
-static const uint16_t GATE_TRIGGER_THRESHOLD_READ_CMD = 0x0073;
-static const uint16_t GATE_TRIGGER_THRESHOLD_READ_REPLY = 0x0173;
-static const uint16_t GATE_TRIGGER_THRESHOLD_WRITE_CMD = 0x0072;
-static const uint16_t GATE_TRIGGER_THRESHOLD_WRITE_REPLY = 0x0172;
-static const uint32_t GATE_TRIGGER_THRESHOLD_WRITE_DATA[] = {
+static const uint16_t GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
+static const uint16_t GATE_THRESHOLD_TRIGGER_READ_REPLY = 0x0173;
+static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
+static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_REPLY = 0x0172;
+static const uint32_t GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
 
     48, 42, 36, 34, 32, 31, 31, 31, 31,
     31, 31, 31, 31, 31, 31, 31
@@ -73,11 +73,11 @@ static const uint32_t GATE_TRIGGER_THRESHOLD_WRITE_DATA[] = {
     //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
 };
 
-static const uint16_t GATE_HOLD_THRESHOLD_READ_CMD = 0x0077;
-static const uint16_t GATE_HOLD_THRESHOLD_READ_REPLY = 0x0177;
-static const uint16_t GATE_HOLD_THRESHOLD_WRITE_CMD = 0x0076;
-static const uint16_t GATE_HOLD_THRESHOLD_WRITE_REPLY = 0x0176;
-static const uint32_t GATE_HOLD_THRESHOLD_WRITE_DATA[] = {
+static const uint16_t GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
+static const uint16_t GATE_THRESHOLD_HOLD_READ_REPLY = 0x0177;
+static const uint16_t GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
+static const uint16_t GATE_THRESHOLD_HOLD_WRITE_REPLY = 0x0176;
+static const uint32_t GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
 
     45, 42, 33, 32, 28, 28, 28, 28, 28,
     28, 28, 28, 28, 28, 28, 28
@@ -91,11 +91,11 @@ static const uint32_t GATE_HOLD_THRESHOLD_WRITE_DATA[] = {
     //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
 };
 
-static const uint16_t GATE_SNR_READ_CMD = 0x0075;
-static const uint16_t GATE_SNR_READ_REPLY = 0x0175;
-static const uint16_t GATE_SNR_WRITE_CMD = 0x0074;
-static const uint16_t GATE_SNR_WRITE_REPLY = 0x0174;
-static const uint32_t GATE_SNR_WRITE_DATA[] = {
+static const uint16_t GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
+static const uint16_t GATE_THRESHOLD_SNR_READ_REPLY = 0x0175;
+static const uint16_t GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
+static const uint16_t GATE_THRESHOLD_SNR_WRITE_REPLY = 0x0174;
+static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
 
     34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34
@@ -148,9 +148,9 @@ void LD2410S::init_() {
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
   this->schedule_cmd_frame_(FW_READ_CMD);
   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 
   this->status_clear_warning();
@@ -161,9 +161,9 @@ void LD2410S::read_all() {
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(FW_READ_CMD);
   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 
   this->status_clear_warning();
@@ -174,14 +174,14 @@ void LD2410S::write_all() {
 
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
   this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
 
   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
 
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
   this->status_clear_warning();
@@ -198,9 +198,9 @@ void LD2410S::factory_reset() {
   this->resp_speed_ = 5;
 
   for (uint8_t i = 0; i < 16; i++) {
-    this->triggers_.trigger[i] = GATE_TRIGGER_THRESHOLD_WRITE_DATA[i];
-    this->triggers_.hold[i] = GATE_HOLD_THRESHOLD_WRITE_DATA[i];
-    this->triggers_.snr[i] = GATE_SNR_WRITE_DATA[i];
+    this->thresholds_.trigger[i] = GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
+    this->thresholds_.hold[i] = GATE_THRESHOLD_HOLD_WRITE_DATA[i];
+    this->thresholds_.snr[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
   }
 
   this->status_set_warning("factory_reset");
@@ -209,14 +209,14 @@ void LD2410S::factory_reset() {
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
 
   this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
 
   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_TRIGGER_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_HOLD_THRESHOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_SNR_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
 
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
   this->status_clear_warning();
@@ -246,28 +246,28 @@ void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
   this->status_freq_ = status_reporting_freq * 10;
   this->schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
 }
-void LD2410S::set_trigger_selected_gate(float trigger_selected_gate) {
-  this->triggers_.selected_gate = trigger_selected_gate;
+void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
+  this->thresholds_.selected_gate = threshold_selected_gate;
 #ifdef USE_NUMBER
-  this->trigger_selected_gate_number_->publish_state(this->triggers_.selected_gate);
-  this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
-  this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
-  this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
+  this->threshold_selected_gate_number_->publish_state(this->thresholds_.selected_gate);
+  this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
+  this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
+  this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
 #endif
 }
-void LD2410S::set_trigger_threshold(float trigger_threshold) {
-  this->triggers_.trigger[this->triggers_.selected_gate] = trigger_threshold;
-  this->schedule_cmd_("set_trigger_threshold\0", GATE_TRIGGER_THRESHOLD_WRITE_CMD, this->triggers_.selected_gate);
+void LD2410S::set_threshold_trigger(float threshold_trigger) {
+  this->thresholds_.trigger[this->thresholds_.selected_gate] = threshold_trigger;
+  this->schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_.selected_gate);
   this->publish_state_ts_thresholds_();
 }
-void LD2410S::set_trigger_hold(float trigger_hold) {
-  this->triggers_.hold[this->triggers_.selected_gate] = trigger_hold;
-  this->schedule_cmd_("set_trigger_hold\0", GATE_HOLD_THRESHOLD_WRITE_CMD, this->triggers_.selected_gate);
+void LD2410S::set_threshold_hold(float threshold_hold) {
+  this->thresholds_.hold[this->thresholds_.selected_gate] = threshold_hold;
+  this->schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_.selected_gate);
   this->publish_state_ts_holds_();
 }
-void LD2410S::set_trigger_snr(float trigger_snr) {
-  this->triggers_.snr[this->triggers_.selected_gate] = trigger_snr;
-  this->schedule_cmd_("set_trigger_snr\0", GATE_SNR_WRITE_CMD, this->triggers_.selected_gate);
+void LD2410S::set_threshold_snr(float threshold_snr) {
+  this->thresholds_.snr[this->thresholds_.selected_gate] = threshold_snr;
+  this->schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_.selected_gate);
 
   this->publish_state_ts_snrs_();
 }
@@ -415,9 +415,9 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       this->cmd_frame_append_data_(&cmd_frame, &CALIBRATION_TIME_VALUE, 1);
       break;
 
-    case GATE_TRIGGER_THRESHOLD_READ_CMD:
-    case GATE_HOLD_THRESHOLD_READ_CMD:
-    case GATE_SNR_READ_CMD:
+    case GATE_THRESHOLD_TRIGGER_READ_CMD:
+    case GATE_THRESHOLD_HOLD_READ_CMD:
+    case GATE_THRESHOLD_SNR_READ_CMD:
       if (sub_command != NO_SUB_CMD) {
         this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
       } else {
@@ -427,38 +427,38 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       }
       break;
 
-    case GATE_TRIGGER_THRESHOLD_WRITE_CMD:
+    case GATE_THRESHOLD_TRIGGER_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
-        this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.trigger[sub_command], 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.trigger[sub_command], 1);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
           this->cmd_frame_append_data_(&cmd_frame, &i, 1);
-          this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.trigger[i], 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.trigger[i], 1);
         }
       }
       break;
 
-    case GATE_HOLD_THRESHOLD_WRITE_CMD:
+    case GATE_THRESHOLD_HOLD_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
-        this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.hold[sub_command], 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.hold[sub_command], 1);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
           this->cmd_frame_append_data_(&cmd_frame, &i, 1);
-          this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.hold[i], 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.hold[i], 1);
         }
       }
       break;
 
-    case GATE_SNR_WRITE_CMD:
+    case GATE_THRESHOLD_SNR_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
-        this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.snr[sub_command], 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.snr[sub_command], 1);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
           this->cmd_frame_append_data_(&cmd_frame, &i, 1);
-          this->cmd_frame_append_data_(&cmd_frame, &this->triggers_.snr[i], 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_.snr[i], 1);
         }
       }
       break;
@@ -770,12 +770,12 @@ void LD2410S::process_data_frame_(uint8_t *data) {
       uint16_t progress = encode_uint16(data[2], data[1]);
       for (auto &listener : this->listeners_) {
         if (progress == 100) {
-          listener->on_threshold_progress(0);
-          listener->on_threshold_update(false);
+          listener->on_calibration_progress(0);
+          listener->on_calibration_update(false);
           this->read_all();
         } else {
-          listener->on_threshold_progress(progress);
-          listener->on_threshold_update(true);
+          listener->on_calibration_progress(progress);
+          listener->on_calibration_update(true);
         }
       }
       break;
@@ -806,18 +806,18 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       this->init_status_ = this->init_status_ | 0b00000100;
       break;
 
-    case GATE_TRIGGER_THRESHOLD_READ_REPLY:
-      this->process_ack_trigger_threshold_read_(data);
+    case GATE_THRESHOLD_TRIGGER_READ_REPLY:
+      this->process_ack_threshold_trigger_read_(data);
       this->init_status_ = this->init_status_ | 0b00010000;
       break;
 
-    case GATE_HOLD_THRESHOLD_READ_REPLY:
-      this->process_ack_trigger_hold_read_(data);
+    case GATE_THRESHOLD_HOLD_READ_REPLY:
+      this->process_ack_threshold_hold_read_(data);
       this->init_status_ = this->init_status_ | 0b00100000;
       break;
 
-    case GATE_SNR_READ_REPLY:
-      this->process_ack_trigger_snr_read_(data);
+    case GATE_THRESHOLD_SNR_READ_REPLY:
+      this->process_ack_threshold_snr_read_(data);
       this->init_status_ = this->init_status_ | 0b01000000;
       break;
 
@@ -835,15 +835,15 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       ESP_LOGD(TAG, "Config written");
       break;
 
-    case GATE_TRIGGER_THRESHOLD_WRITE_REPLY:
+    case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
       ESP_LOGD(TAG, "Trigger Thrashold written");
       break;
 
-    case GATE_HOLD_THRESHOLD_WRITE_REPLY:
+    case GATE_THRESHOLD_HOLD_WRITE_REPLY:
       ESP_LOGD(TAG, "Trigger Hold written");
       break;
 
-    case GATE_SNR_WRITE_REPLY:
+    case GATE_THRESHOLD_SNR_WRITE_REPLY:
       ESP_LOGD(TAG, "Trigger SNR written");
       break;
 
@@ -921,28 +921,28 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
 }
 
-void LD2410S::process_ack_trigger_threshold_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.trigger, 16);
+void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.trigger, 16);
 #ifdef USE_NUMBER
-  this->trigger_threshold_number_->publish_state(this->triggers_.trigger[this->triggers_.selected_gate]);
+  this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
 #endif
 
   this->publish_state_ts_thresholds_();
 }
 
-void LD2410S::process_ack_trigger_hold_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.hold, 16);
+void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.hold, 16);
 #ifdef USE_NUMBER
-  this->trigger_hold_number_->publish_state(this->triggers_.hold[this->triggers_.selected_gate]);
+  this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
 #endif
 
   this->publish_state_ts_holds_();
 }
 
-void LD2410S::process_ack_trigger_snr_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->triggers_.snr, 16);
+void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.snr, 16);
 #ifdef USE_NUMBER
-  this->trigger_snr_number_->publish_state(this->triggers_.snr[this->triggers_.selected_gate]);
+  this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
 #endif
 
   this->publish_state_ts_snrs_();
@@ -962,26 +962,26 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
 }
 
 void LD2410S::publish_state_ts_thresholds_() {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.trigger, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.trigger, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_threshold(vals);
+    listener->on_threshold_trigger(vals);
   }
   ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
 }
 void LD2410S::publish_state_ts_holds_() {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.hold, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.hold, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_hold(vals);
+    listener->on_threshold_hold(vals);
   }
   ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
 }
 void LD2410S::publish_state_ts_snrs_() {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->triggers_.snr, 16, 2);
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.snr, 16, 2);
 
   for (auto &listener : this->listeners_) {
-    listener->on_trigger_snr(vals);
+    listener->on_threshold_snr(vals);
   }
 
   ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());

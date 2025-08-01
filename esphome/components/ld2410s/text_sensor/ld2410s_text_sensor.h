@@ -14,26 +14,28 @@ class LD2410STextSensor : public LD2410SListener, public Component, text_sensor:
     }
   }
 
-  void set_trigger_threshold_text_sensor(text_sensor::TextSensor *tsensor) {
-    this->trigger_threshold_text_sensor_ = tsensor;
+  void set_threshold_trigger_text_sensor(text_sensor::TextSensor *tsensor) {
+    this->threshold_trigger_text_sensor_ = tsensor;
   };
-  void on_trigger_threshold(std::string &val) override {
-    if (this->trigger_threshold_text_sensor_ != nullptr) {
-      this->trigger_threshold_text_sensor_->publish_state(val);
+  void on_threshold_trigger(std::string &val) override {
+    if (this->threshold_trigger_text_sensor_ != nullptr) {
+      this->threshold_trigger_text_sensor_->publish_state(val);
     }
   }
 
-  void set_trigger_hold_text_sensor(text_sensor::TextSensor *tsensor) { this->trigger_hold_text_sensor_ = tsensor; };
-  void on_trigger_hold(std::string &val) override {
-    if (this->trigger_hold_text_sensor_ != nullptr) {
-      this->trigger_hold_text_sensor_->publish_state(val);
+  void set_threshold_hold_text_sensor(text_sensor::TextSensor *tsensor) {
+    this->threshold_hold_text_sensor_ = tsensor;
+  };
+  void on_threshold_hold(std::string &val) override {
+    if (this->threshold_hold_text_sensor_ != nullptr) {
+      this->threshold_hold_text_sensor_->publish_state(val);
     }
   }
 
-  void set_trigger_snr_text_sensor(text_sensor::TextSensor *tsensor) { this->trigger_snr_text_sensor_ = tsensor; };
-  void on_trigger_snr(std::string &val) override {
-    if (this->trigger_snr_text_sensor_ != nullptr) {
-      this->trigger_snr_text_sensor_->publish_state(val);
+  void set_threshold_snr_text_sensor(text_sensor::TextSensor *tsensor) { this->threshold_snr_text_sensor_ = tsensor; };
+  void on_threshold_snr(std::string &val) override {
+    if (this->threshold_snr_text_sensor_ != nullptr) {
+      this->threshold_snr_text_sensor_->publish_state(val);
     }
   }
 
@@ -46,9 +48,9 @@ class LD2410STextSensor : public LD2410SListener, public Component, text_sensor:
 
  private:
   text_sensor::TextSensor *fw_version_text_sensor_{nullptr};
-  text_sensor::TextSensor *trigger_threshold_text_sensor_{nullptr};
-  text_sensor::TextSensor *trigger_hold_text_sensor_{nullptr};
-  text_sensor::TextSensor *trigger_snr_text_sensor_{nullptr};
+  text_sensor::TextSensor *threshold_trigger_text_sensor_{nullptr};
+  text_sensor::TextSensor *threshold_hold_text_sensor_{nullptr};
+  text_sensor::TextSensor *threshold_snr_text_sensor_{nullptr};
   text_sensor::TextSensor *energy_values_text_sensor_{nullptr};
 };
 

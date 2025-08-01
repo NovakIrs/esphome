@@ -27,24 +27,24 @@ void LD2410SStatusReportingFreqNumber::control(float status_reporting_freq) {
   this->parent_->set_status_reporting_freq(status_reporting_freq);
 }
 
-void LD2410STriggerSelectedGateNumber::control(float trigger_selected_gate) {
-  this->publish_state(trigger_selected_gate);
-  this->parent_->set_trigger_selected_gate(trigger_selected_gate);
+void LD2410SThresholdSelectedGateNumber::control(float threshold_selected_gate) {
+  this->publish_state(threshold_selected_gate);
+  this->parent_->set_threshold_selected_gate(threshold_selected_gate);
 }
 
-void LD2410STriggerThresholdNumber::control(float trigger_threshold) {
-  this->publish_state(trigger_threshold);
-  this->parent_->set_trigger_threshold(trigger_threshold);
+void LD2410SThresholdTriggerNumber::control(float threshold_trigger) {
+  this->publish_state(threshold_trigger);
+  this->parent_->set_threshold_trigger(threshold_trigger);
 }
 
-void LD2410STriggerHoldNumber::control(float trigger_hold) {
-  this->publish_state(trigger_hold);
-  this->parent_->set_trigger_hold(trigger_hold);
+void LD2410SThresholdHoldNumber::control(float threshold_hold) {
+  this->publish_state(threshold_hold);
+  this->parent_->set_threshold_hold(threshold_hold);
 }
 
-void LD2410STriggerSnrNumber::control(float trigger_snr) {
-  this->publish_state(trigger_snr);
-  this->parent_->set_trigger_snr(trigger_snr);
+void LD2410SThresholdSnrNumber::control(float threshold_snr) {
+  this->publish_state(threshold_snr);
+  this->parent_->set_threshold_snr(threshold_snr);
 }
 
 }  // namespace ld2410s

@@ -225,7 +225,10 @@ void LD2410S::toggle_minimal() {
   this->minimal_output_ = !this->minimal_output_;
   this->schedule_cmd_("toggle_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
 }
-
+void LD2410S::set_minimal_output(bool state) {
+  this->minimal_output_ = state;
+  this->schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
+}
 void LD2410S::set_delay(float delay) {
   this->delay_ = delay;
   this->schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);

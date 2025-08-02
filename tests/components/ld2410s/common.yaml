@@ -13,26 +13,26 @@ sensor:
   - platform: ld2410s
     target_distance:
       name: Target Distance
-    threshold_update:
-      name: Threshold update progress
+    calibration_progress:
+      name: Calibration progress
 
 binary_sensor:
   - platform: ld2410s
     has_target:
       name: Presence
-    has_threshold_update:
-      name: Threshold update running
+    has_calibration_running:
+      name: Calibration running
 
 text_sensor:
   - platform: ld2410s
     fw_version:
       name: Firmware version
-    trigger_threshold:
-      name: Triggers Threshold
-    trigger_hold:
-      name: Triggers Hold
-    trigger_snr:
-      name: Triggers SNR
+    threshold_trigger:
+      name: Threshold Triggers
+    threshold_hold:
+      name: Threshold Hold
+    threshold_snr:
+      name: Threshold SNR
     energy_values:
       name: Energy Values
 
@@ -49,14 +49,14 @@ number:
     distance_reporting_frequency:
       name: Distance reporting frequency
 
-    trigger_threshold:
-      name: Trigger Gate Threshold
-    trigger_hold:
-      name: Trigger Gate Hold
-    trigger_snr:
-      name: Trigger Gate SNR
-    trigger_selected_gate:
-      name: Trigger Selected Gate
+    threshold_trigger:
+      name: Threshold Trigger
+    threshold_hold:
+      name: TThreshold Hold
+    threshold_snr:
+      name: Threshold SNR
+    threshold_selected_gate:
+      name: Threshold Selected Gate
 
 button:
   - platform: ld2410s

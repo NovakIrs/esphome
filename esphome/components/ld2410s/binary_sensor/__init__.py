@@ -9,7 +9,7 @@ LD2410SBinarySensor = ld2410s_ns.class_(
     "LD2410SBinarySensor", binary_sensor.BinarySensor, cg.Component
 )
 
-HAS_CALIBRATION_UPDATE = "has_calibration_update"
+HAS_CALIBRATION_RUNNING = "has_calibration_running"
 
 CONFIG_SCHEMA = cv.All(
     cv.COMPONENT_SCHEMA.extend(
@@ -19,7 +19,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_HAS_TARGET): binary_sensor.binary_sensor_schema(
                 device_class=DEVICE_CLASS_OCCUPANCY, icon="mdi:motion-sensor"
             ),
-            cv.Optional(HAS_CALIBRATION_UPDATE): binary_sensor.binary_sensor_schema(
+            cv.Optional(HAS_CALIBRATION_RUNNING): binary_sensor.binary_sensor_schema(
                 icon="mdi:exclamation"
             ),
         }
@@ -33,8 +33,8 @@ async def to_code(config):
     if CONF_HAS_TARGET in config:
         sens = await binary_sensor.new_binary_sensor(config[CONF_HAS_TARGET])
         cg.add(var.set_presence_sensor(sens))
-    if HAS_CALIBRATION_UPDATE in config:
-        sens = await binary_sensor.new_binary_sensor(config[HAS_CALIBRATION_UPDATE])
+    if HAS_CALIBRATION_RUNNING in config:
+        sens = await binary_sensor.new_binary_sensor(config[HAS_CALIBRATION_RUNNING])
         cg.add(var.set_calibration_update_sensor(sens))
     ld2410s = await cg.get_variable(config[CONF_LD2410S_ID])
     cg.add(ld2410s.register_listener(var))

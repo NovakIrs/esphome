@@ -15,7 +15,7 @@ LD2410sExecCommandSelect = ld2410s_ns.class_("LD241s0ExecCommandSelect", cg.Comp
 
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-    cv.Required(CONF_RESPONSE_SPEED): select.select_schema(
+    cv.Optional(CONF_RESPONSE_SPEED): select.select_schema(
         LD2410sResponseSpeedSelect,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:speedometer",

@@ -39,7 +39,6 @@ LD2410SThresholdSelectedGateNumber = ld2410s_ns.class_(
     "LD2410SThresholdSelectedGateNumber", number.Number
 )
 
-CONF_DISTANCE_GROUP = "distance_group"
 CONF_DISTANCE_REPORTING_FREQUENCY = "distance_reporting_frequency"
 CONF_MAX_DISTANCE = "max_distance"
 CONF_MIN_DISTANCE = "min_distance"
@@ -54,13 +53,13 @@ CONF_THRESHOLD_SELECTED_GATE = "threshold_selected_gate"
 CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-        cv.Inclusive(CONF_MAX_DISTANCE, CONF_DISTANCE_GROUP): number.number_schema(
+        cv.Optional(CONF_MAX_DISTANCE): number.number_schema(
             LD2410SMaxDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             entity_category=ENTITY_CATEGORY_CONFIG,
             icon="mdi:arrow-collapse-right",
         ),
-        cv.Inclusive(CONF_MIN_DISTANCE, CONF_DISTANCE_GROUP): number.number_schema(
+        cv.Optional(CONF_MIN_DISTANCE): number.number_schema(
             LD2410SMinDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             entity_category=ENTITY_CATEGORY_CONFIG,

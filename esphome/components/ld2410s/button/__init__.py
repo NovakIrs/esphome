@@ -11,11 +11,15 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-LD2410SReadAll = ld2410s_ns.class_("LD2410SReadAll", button.Button)
+LD2410SReadAllButton = ld2410s_ns.class_("LD2410SReadAllButton", button.Button)
 LD2410SApplyConfigButton = ld2410s_ns.class_("LD2410SApplyConfigButton", button.Button)
-LD2410SCalibration = ld2410s_ns.class_("LD2410SCalibration", button.Button)
-LD2410SFactoryReset = ld2410s_ns.class_("LD2410SFactoryReset", button.Button)
-LD2410SMinimalOutput = ld2410s_ns.class_("LD2410SMinimalOutput", button.Button)
+LD2410SCalibrationButton = ld2410s_ns.class_("LD2410SCalibrationButton", button.Button)
+LD2410SFactoryResetButton = ld2410s_ns.class_(
+    "LD2410SFactoryResetButton", button.Button
+)
+LD2410SMinimalOutputButton = ld2410s_ns.class_(
+    "LD2410SMinimalOutputButton", button.Button
+)
 
 CONF_MINIMAL_OUTPUT = "minimal_output"
 CONF_READ_ALL = "read_all"
@@ -23,32 +27,32 @@ CONF_WRITE_ALL = "write_all"
 
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-    cv.Required(CONF_READ_ALL): button.button_schema(
-        LD2410SReadAll,
+    cv.Optional(CONF_READ_ALL): button.button_schema(
+        LD2410SReadAllButton,
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:reload",
     ),
-    cv.Required(CONF_WRITE_ALL): button.button_schema(
+    cv.Optional(CONF_WRITE_ALL): button.button_schema(
         LD2410SApplyConfigButton,
         device_class=DEVICE_CLASS_RESTART,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:content-save",
     ),
-    cv.Required(CONF_CALIBRATION): button.button_schema(
-        LD2410SCalibration,
+    cv.Optional(CONF_CALIBRATION): button.button_schema(
+        LD2410SCalibrationButton,
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:refresh-auto",
     ),
-    cv.Required(CONF_FACTORY_RESET): button.button_schema(
-        LD2410SFactoryReset,
+    cv.Optional(CONF_FACTORY_RESET): button.button_schema(
+        LD2410SFactoryResetButton,
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:factory",
     ),
-    cv.Required(CONF_MINIMAL_OUTPUT): button.button_schema(
-        LD2410SMinimalOutput,
+    cv.Optional(CONF_MINIMAL_OUTPUT): button.button_schema(
+        LD2410SMinimalOutputButton,
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:arrow-collapse-horizontal",

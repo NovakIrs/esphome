@@ -78,8 +78,8 @@ class LD2410SListener {
 
 class LD2410S : public uart::UARTDevice, public Component {
 #ifdef USE_BUTTON
-  SUB_BUTTON(start_calibration)  // calibration_button_ // set_calibration_button
-  SUB_BUTTON(factory_reset)      // factory_reset_button_  // set_factory_reset_button
+  SUB_BUTTON(calibration)    // calibration_button_ // set_calibration_button
+  SUB_BUTTON(factory_reset)  // factory_reset_button_  // set_factory_reset_button
 #endif
   // #ifdef USE_BUTTON
   //   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
@@ -102,7 +102,7 @@ class LD2410S : public uart::UARTDevice, public Component {
 
   void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
-  void start_calibration();
+  void calibration();
   void factory_reset();
 
   void set_minimal_output(bool state);

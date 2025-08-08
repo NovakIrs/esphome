@@ -136,7 +136,7 @@ void LD2410S::dump_config() {
 #ifdef USE_BUTTON
   ESP_LOGCONFIG(TAG, "Buttons:");
   LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
-  LOG_BUTTON("  ", "Start calibration", this->start_calibration_button_);
+  LOG_BUTTON("  ", "Start calibration", this->calibration_button_);
 #endif
 
 #ifdef USE_SWITCH
@@ -180,7 +180,7 @@ void LD2410S::read_all_thresholds_() {
 
   this->status_clear_warning();
 }
-void LD2410S::start_calibration() { this->schedule_cmd_("start_calibration\0", CALIBRATION_CMD); }
+void LD2410S::calibration() { this->schedule_cmd_("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   this->minimal_output_ = true;
 

@@ -77,12 +77,8 @@ class LD2410SListener {
 
 class LD2410S : public uart::UARTDevice, public Component {
 #ifdef USE_BUTTON
-  // calibration_button_
-  // set_calibration_button
-  SUB_BUTTON(calibration_button_)
-  // factory_reset_button_
-  // set_factory_reset_button
-  SUB_BUTTON(factory_reset_button_)
+  SUB_BUTTON(start_calibration)  // calibration_button_ // set_calibration_button
+  SUB_BUTTON(factory_reset)      // factory_reset_button_  // set_factory_reset_button
 #endif
   // #ifdef USE_BUTTON
   //   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
@@ -94,9 +90,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   // #endif
 
 #ifdef USE_SWITCH
-  // minimal_output_switch_
-  // set_minimal_output_switch
-  SUB_SWITCH(minimal_output_)
+  SUB_SWITCH(minimal_output)  // minimal_output_switch_  // set_minimal_output_switch
 #endif
 
  public:
@@ -159,7 +153,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_response_speed_select(select::Select *selector) { this->response_speed_select_ = selector; };
 #endif
 
- private:
+ protected:
   size_t rcv_end_pos_ = 0;
   uint32_t max_dist_{0};
   uint32_t min_dist_{0};

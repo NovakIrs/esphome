@@ -136,12 +136,12 @@ void LD2410S::dump_config() {
 #ifdef USE_BUTTON
   ESP_LOGCONFIG(TAG, "Buttons:");
   LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
-  LOG_BUTTON("  ", "Start calibration", this->start_calibration_);
+  LOG_BUTTON("  ", "Start calibration", this->start_calibration_button_);
 #endif
 
 #ifdef USE_SWITCH
   ESP_LOGCONFIG(TAG, "Switches:");
-  LOG_SWITCH("  ", "Minimal Output", this->minimal_output_);
+  LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
 #endif
 }
 

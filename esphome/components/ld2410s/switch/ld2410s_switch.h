@@ -6,7 +6,7 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410SMinimalOutputSwitch : public switch_::Switch, public Parented<LD2410SComponent> {
+class LD2410SMinimalOutputSwitch : public switch_::Switch, public Parented<LD2410S> {
  public:
   LD2410SMinimalOutputSwitch() = default;
 

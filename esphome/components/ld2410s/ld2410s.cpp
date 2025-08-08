@@ -132,7 +132,7 @@ void LD2410S::loop() {
     }
   }
 }
-void LD2450Component::dump_config() {
+void LD2410S::dump_config() {
 #ifdef USE_SWITCH
   ESP_LOGCONFIG(TAG, "Switches:");
   LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);

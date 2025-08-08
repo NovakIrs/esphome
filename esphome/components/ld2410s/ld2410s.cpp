@@ -132,6 +132,13 @@ void LD2410S::loop() {
     }
   }
 }
+void LD2450Component::dump_config() {
+#ifdef USE_SWITCH
+  ESP_LOGCONFIG(TAG, "Switches:");
+  LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
+#endif
+}
+
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 void LD2410S::init_() {
@@ -155,35 +162,46 @@ void LD2410S::init_() {
 
   this->status_clear_warning();
 }
-void LD2410S::read_all() {
-  this->status_set_warning("read_all");
+// void LD2410S::read_all() {
+//   this->status_set_warning("read_all");
+
+//   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+//   this->schedule_cmd_frame_(FW_READ_CMD);
+//   this->schedule_cmd_frame_(PARAMS_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+//   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+
+//   this->status_clear_warning();
+// }
+// void LD2410S::write_all() {
+//   this->status_set_warning("write_all");
+//   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+
+//   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
+//   this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
+
+//   this->schedule_cmd_frame_(PARAMS_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+
+//   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+//   this->status_clear_warning();
+// }
+void LD2410S::read_all_thresholds() {
+  this->status_set_warning("read_all_thresholds");
 
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-  this->schedule_cmd_frame_(FW_READ_CMD);
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 
-  this->status_clear_warning();
-}
-void LD2410S::write_all() {
-  this->status_set_warning("write_all");
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-  this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
-
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
   this->status_clear_warning();
 }
 void LD2410S::calibration() { this->schedule_cmd_("start_calibration\0", CALIBRATION_CMD); }
@@ -220,10 +238,6 @@ void LD2410S::factory_reset() {
 
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
   this->status_clear_warning();
-}
-void LD2410S::toggle_minimal() {
-  this->minimal_output_ = !this->minimal_output_;
-  this->schedule_cmd_("toggle_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
 }
 void LD2410S::set_minimal_output(bool state) {
   this->minimal_output_ = state;
@@ -775,7 +789,7 @@ void LD2410S::process_data_frame_(uint8_t *data) {
         if (progress == 100) {
           listener->on_calibration_progress(0);
           listener->on_calibration_update(false);
-          this->read_all();
+          this->read_all_thresholds();
         } else {
           listener->on_calibration_progress(progress);
           listener->on_calibration_update(true);
@@ -839,7 +853,7 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
-      ESP_LOGD(TAG, "Trigger Thrashold written");
+      ESP_LOGD(TAG, "Trigger Threshold written");
       break;
 
     case GATE_THRESHOLD_HOLD_WRITE_REPLY:
@@ -851,8 +865,8 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
+      this->process_ack_minimal_output_(data);
       this->init_status_ = this->init_status_ | 0b00000010;
-      ESP_LOGW(TAG, "Minimal Output Mode switched");
       break;
 
     default:
@@ -949,6 +963,14 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
 #endif
 
   this->publish_state_ts_snrs_();
+}
+
+void LD2410S::process_ack_minimal_output_(uint8_t *data) {
+#ifdef USE_SWITCH
+  this->minimal_output_switch_->publish_state(this->minimal_output_);
+#endif
+
+  ESP_LOGW(TAG, "Minimal Output Mode switched");
 }
 
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {

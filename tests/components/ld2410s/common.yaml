@@ -60,18 +60,17 @@ number:
 
 button:
   - platform: ld2410s
-    read_all:
-      name: Read configuration
-    write_all:
-      name: Write configuration
     calibration:
       name: Start auto calibration
     factory_reset:
       name: Factory reset
-    minimal_output:
-      name: Toggle minimal output
 
 select:
   - platform: ld2410s
     response_speed:
       name: Response speed
+
+switch:
+  - platform: ld2410s
+    minimal_output:
+      name: Minimal output

@@ -95,15 +95,16 @@ class LD2410S : public uart::UARTDevice, public Component {
  public:
   void setup() override;
   void loop() override;
+  void dump_config() override;
   float get_setup_priority() const override;
 
   void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
-  void read_all();
-  void write_all();
+  // void read_all();
+  // void write_all();
+  void read_all_thresholds();
   void calibration();
   void factory_reset();
-  void toggle_minimal();
 
   void set_minimal_output(bool state);
   void set_delay(float delay);
@@ -151,11 +152,8 @@ class LD2410S : public uart::UARTDevice, public Component {
 #endif
 
 #ifdef USE_BUTTON
-  void set_read_all_button(button::Button *button) { this->read_all_button_ = button; };
-  void set_write_all_button(button::Button *button) { this->write_all_button_ = button; };
   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
-  void set_toggle_minimal_output_button(button::Button *button) { this->toggle_minimal_output_button_ = button; };
 #endif
 
 #ifdef USE_SELECT
@@ -203,11 +201,8 @@ class LD2410S : public uart::UARTDevice, public Component {
 #endif
 
 #ifdef USE_BUTTON
-  button::Button *read_all_button_{nullptr};
-  button::Button *write_all_button_{nullptr};
   button::Button *calibration_button_{nullptr};
   button::Button *factory_reset_button_{nullptr};
-  button::Button *toggle_minimal_output_button_{nullptr};
 #endif
 
 #ifdef USE_SELECT
@@ -238,6 +233,8 @@ class LD2410S : public uart::UARTDevice, public Component {
   void process_ack_threshold_trigger_read_(uint8_t *data);
   void process_ack_threshold_hold_read_(uint8_t *data);
   void process_ack_threshold_snr_read_(uint8_t *data);
+  void process_ack_minimal_output_(uint8_t *data);
+
   void process_data_energy_values_read_(uint8_t *data);
 
   void publish_state_ts_thresholds_();

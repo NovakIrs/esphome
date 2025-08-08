@@ -76,6 +76,22 @@ class LD2410SListener {
 };
 
 class LD2410S : public uart::UARTDevice, public Component {
+// #ifdef USE_SWITCH
+//   switch::Switch *minimal_output_switch_{nullptr};
+// #endif
+// #ifdef USE_SWITCH
+//   void set_minimal_output_switch(switch::Switch *minimal_output_switch) {
+//     this->minimal_output_switch_ = minimal_output_;
+//     // this->minimal_output_switch_->publish_state(this->minimal_output_);
+//   };
+// #endif
+
+// minimal_output_switch_
+// set_minimal_output_switch
+#ifdef USE_SWITCH
+  SUB_SWITCH(minimal_output)
+#endif
+
  public:
   void setup() override;
   void loop() override;
@@ -142,13 +158,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   void set_toggle_minimal_output_button(button::Button *button) { this->toggle_minimal_output_button_ = button; };
 #endif
 
-#ifdef USE_SWITCH
-  void set_minimal_output_switch(switch ::Switch *switch) {
-    this->minimal_output_switch_ = switch;
-    this->minimal_output_switch_->publish_state(this->minimal_output_);
-  };
-#endif
-
 #ifdef USE_SELECT
   void set_response_speed_select(select::Select *selector) { this->response_speed_select_ = selector; };
 #endif
@@ -199,11 +208,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   button::Button *calibration_button_{nullptr};
   button::Button *factory_reset_button_{nullptr};
   button::Button *toggle_minimal_output_button_{nullptr};
-#endif
-
-#ifdef USE_SWITCH
-  switch
-    ::Switch *minimal_output_switch_{nullptr};
 #endif
 
 #ifdef USE_SELECT

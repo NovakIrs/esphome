@@ -6,20 +6,12 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410SCalibrationButton : public button::Button, public Parented<LD2410S> {
- public:
-  LD2410SCalibrationButton() = default;
-
- protected:
-  void press_action() override;
-};
-
 class LD2410SFactoryResetButton : public button::Button, public Parented<LD2410S> {
  public:
   LD2410SFactoryResetButton() = default;
 
  protected:
-  void press_action() override;
+  void press_action() override { this->parent_->factory_reset(); }
 };
 
 }  // namespace ld2410s

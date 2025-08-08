@@ -10,7 +10,9 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-LD2410SCalibrationButton = ld2410s_ns.class_("LD2410SCalibrationButton", button.Button)
+LD2410SStartCalibrationButton = ld2410s_ns.class_(
+    "LD2410SStartCalibrationButton", button.Button
+)
 LD2410SFactoryResetButton = ld2410s_ns.class_(
     "LD2410SFactoryResetButton", button.Button
 )
@@ -18,7 +20,7 @@ LD2410SFactoryResetButton = ld2410s_ns.class_(
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
     cv.Optional(CONF_CALIBRATION): button.button_schema(
-        LD2410SCalibrationButton,
+        LD2410SStartCalibrationButton,
         device_class=DEVICE_CLASS_UPDATE,
         entity_category=ENTITY_CATEGORY_CONFIG,
         icon="mdi:refresh-auto",

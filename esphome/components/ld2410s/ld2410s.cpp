@@ -162,38 +162,8 @@ void LD2410S::init_() {
 
   this->status_clear_warning();
 }
-// void LD2410S::read_all() {
-//   this->status_set_warning("read_all");
 
-//   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-//   this->schedule_cmd_frame_(FW_READ_CMD);
-//   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-//   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-
-//   this->status_clear_warning();
-// }
-// void LD2410S::write_all() {
-//   this->status_set_warning("write_all");
-//   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-
-//   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-//   this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
-
-//   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-//   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-
-//   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-//   this->status_clear_warning();
-// }
-void LD2410S::read_all_thresholds() {
+void LD2410S::read_all_thresholds_() {
   this->status_set_warning("read_all_thresholds");
 
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
@@ -204,7 +174,7 @@ void LD2410S::read_all_thresholds() {
 
   this->status_clear_warning();
 }
-void LD2410S::calibration() { this->schedule_cmd_("start_calibration\0", CALIBRATION_CMD); }
+void LD2410S::start_calibration() { this->schedule_cmd_("start_calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   this->minimal_output_ = true;
 
@@ -789,7 +759,7 @@ void LD2410S::process_data_frame_(uint8_t *data) {
         if (progress == 100) {
           listener->on_calibration_progress(0);
           listener->on_calibration_update(false);
-          this->read_all_thresholds();
+          this->read_all_thresholds_();
         } else {
           listener->on_calibration_progress(progress);
           listener->on_calibration_update(true);

@@ -76,20 +76,27 @@ class LD2410SListener {
 };
 
 class LD2410S : public uart::UARTDevice, public Component {
-// #ifdef USE_SWITCH
-//   switch::Switch *minimal_output_switch_{nullptr};
-// #endif
-// #ifdef USE_SWITCH
-//   void set_minimal_output_switch(switch::Switch *minimal_output_switch) {
-//     this->minimal_output_switch_ = minimal_output_;
-//     // this->minimal_output_switch_->publish_state(this->minimal_output_);
-//   };
-// #endif
+#ifdef USE_BUTTON
+  // calibration_button_
+  // set_calibration_button
+  SUB_BUTTON(calibration_button_)
+  // factory_reset_button_
+  // set_factory_reset_button
+  SUB_BUTTON(factory_reset_button_)
+#endif
+  // #ifdef USE_BUTTON
+  //   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
+  //   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
+  // #endif
+  // #ifdef USE_BUTTON
+  //   button::Button *calibration_button_{nullptr};
+  //   button::Button *factory_reset_button_{nullptr};
+  // #endif
 
-// minimal_output_switch_
-// set_minimal_output_switch
 #ifdef USE_SWITCH
-  SUB_SWITCH(minimal_output)
+  // minimal_output_switch_
+  // set_minimal_output_switch
+  SUB_SWITCH(minimal_output_)
 #endif
 
  public:
@@ -100,10 +107,7 @@ class LD2410S : public uart::UARTDevice, public Component {
 
   void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
-  // void read_all();
-  // void write_all();
-  void read_all_thresholds();
-  void calibration();
+  void start_calibration();
   void factory_reset();
 
   void set_minimal_output(bool state);
@@ -151,11 +155,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   };
 #endif
 
-#ifdef USE_BUTTON
-  void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
-  void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
-#endif
-
 #ifdef USE_SELECT
   void set_response_speed_select(select::Select *selector) { this->response_speed_select_ = selector; };
 #endif
@@ -182,6 +181,7 @@ class LD2410S : public uart::UARTDevice, public Component {
   ThresholdsT thresholds_;
 
   void init_();
+  void read_all_thresholds_();
   void loop_send_command_();
   void cmd_buffer_insert_(CmdFrameT *cmd_frame);
   void cmd_buffer_finished_();
@@ -198,11 +198,6 @@ class LD2410S : public uart::UARTDevice, public Component {
   number::Number *threshold_hold_number_{nullptr};
   number::Number *threshold_snr_number_{nullptr};
   number::Number *threshold_selected_gate_number_{nullptr};
-#endif
-
-#ifdef USE_BUTTON
-  button::Button *calibration_button_{nullptr};
-  button::Button *factory_reset_button_{nullptr};
 #endif
 
 #ifdef USE_SELECT

@@ -12,9 +12,9 @@ LD2410STextSensor = ld2410s_ns.class_(
 FW_VERSION = "fw_version"
 
 CONF_ENERGY_VALUES = "energy_values"
-CONF_THRESHOLD_TRIGGER = "threshold_trigger"
-CONF_THRESHOLD_HOLD = "threshold_hold"
-CONF_THRESHOLD_SNR = "threshold_snr"
+CONF_THRESHOLD_TRIGGERS = "threshold_triggers"
+CONF_THRESHOLD_HOLDS = "threshold_holds"
+CONF_THRESHOLD_SNRS = "threshold_snrs"
 
 CONFIG_SCHEMA = cv.All(
     cv.COMPONENT_SCHEMA.extend(
@@ -24,15 +24,15 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(FW_VERSION): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon=ICON_CHIP
             ),
-            cv.Optional(CONF_THRESHOLD_TRIGGER): text_sensor.text_sensor_schema(
+            cv.Optional(CONF_THRESHOLD_TRIGGERS): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                 icon="mdi:tune-variant",
             ),
-            cv.Optional(CONF_THRESHOLD_HOLD): text_sensor.text_sensor_schema(
+            cv.Optional(CONF_THRESHOLD_HOLDS): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                 icon="mdi:tune-variant",
             ),
-            cv.Optional(CONF_THRESHOLD_SNR): text_sensor.text_sensor_schema(
+            cv.Optional(CONF_THRESHOLD_SNRS): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
                 icon="mdi:tune-variant",
             ),
@@ -53,16 +53,16 @@ async def to_code(config):
         sens = await text_sensor.new_text_sensor(config[FW_VERSION])
         cg.add(var.set_fw_version_text_sensor(sens))
 
-    if CONF_THRESHOLD_TRIGGER in config:
-        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_TRIGGER])
+    if CONF_THRESHOLD_TRIGGERS in config:
+        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_TRIGGERS])
         cg.add(var.set_threshold_trigger_text_sensor(sens))
 
-    if CONF_THRESHOLD_HOLD in config:
-        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_HOLD])
+    if CONF_THRESHOLD_HOLDS in config:
+        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_HOLDS])
         cg.add(var.set_threshold_hold_text_sensor(sens))
 
-    if CONF_THRESHOLD_SNR in config:
-        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_SNR])
+    if CONF_THRESHOLD_SNRS in config:
+        sens = await text_sensor.new_text_sensor(config[CONF_THRESHOLD_SNRS])
         cg.add(var.set_threshold_snr_text_sensor(sens))
 
     if CONF_ENERGY_VALUES in config:

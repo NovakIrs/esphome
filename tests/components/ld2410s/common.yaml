@@ -27,12 +27,12 @@ text_sensor:
   - platform: ld2410s
     fw_version:
       name: Firmware version
-    threshold_trigger:
+    threshold_triggers:
       name: Threshold Triggers
-    threshold_hold:
-      name: Threshold Hold
-    threshold_snr:
-      name: Threshold SNR
+    threshold_holds:
+      name: Threshold Holds
+    threshold_snrs:
+      name: Threshold SNRs
     energy_values:
       name: Energy Values
 
@@ -52,7 +52,7 @@ number:
     threshold_trigger:
       name: Threshold Trigger
     threshold_hold:
-      name: TThreshold Hold
+      name: Threshold Hold
     threshold_snr:
       name: Threshold SNR
     threshold_selected_gate:

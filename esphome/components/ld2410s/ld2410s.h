@@ -93,12 +93,28 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_BINARY_SENSOR(presence)
   SUB_BINARY_SENSOR(calibration_update)
 #endif
+#ifdef USE_SENSOR
+  SUB_SENSOR(calibration_progress)
+  SUB_SENSOR(distance)
+#endif
 #ifdef USE_BUTTON
   SUB_BUTTON(calibration)
   SUB_BUTTON(factory_reset)
 #endif
+
+  // #ifdef USE_TEXT_SENSOR
+  //   SUB_TEXT_SENSOR(mac)
+  //   SUB_TEXT_SENSOR(version)
+  // #endif
+  // #ifdef USE_NUMBER
+  //   SUB_NUMBER(presence_timeout)
+  // #endif
+
 #ifdef USE_SWITCH
   SUB_SWITCH(minimal_output)
+#endif
+#ifdef USE_SELECT
+  SUB_SELECT(response_speed)
 #endif
 
  public:
@@ -157,10 +173,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   };
 #endif
 
-#ifdef USE_SELECT
-  void set_response_speed_select(select::Select *selector) { this->response_speed_select_ = selector; };
-#endif
-
  protected:
   size_t rcv_end_pos_ = 0;
   uint32_t max_dist_{0};
@@ -200,10 +212,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   number::Number *threshold_hold_number_{nullptr};
   number::Number *threshold_snr_number_{nullptr};
   number::Number *threshold_selected_gate_number_{nullptr};
-#endif
-
-#ifdef USE_SELECT
-  select::Select *response_speed_select_{nullptr};
 #endif
 
   void receive_();

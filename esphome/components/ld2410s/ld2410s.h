@@ -15,7 +15,12 @@
 #ifdef USE_SELECT
 #include "esphome/components/select/select.h"
 #endif
-
+#ifdef USE_SENSOR
+#include "esphome/components/sensor/sensor.h"
+#endif
+#ifdef USE_BINARY_SENSOR
+#include "esphome/components/binary_sensor/binary_sensor.h"
+#endif
 #include "esphome/core/automation.h"
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
@@ -23,8 +28,12 @@
 #include <functional>
 #include <iomanip>
 
+#include "esphome/components/ld24xx/ld24xx.h"
+
 namespace esphome {
 namespace ld2410s {
+
+using namespace ld24xx;
 
 // Constants
 static const uint16_t NO_SUB_CMD = 0xffff;
@@ -76,22 +85,17 @@ class LD2410SListener {
   virtual void on_energy_values(std::string &val){};
 };
 
-class LD2410S : public uart::UARTDevice, public Component {
-#ifdef USE_BUTTON
-  SUB_BUTTON(calibration)    // calibration_button_ // set_calibration_button
-  SUB_BUTTON(factory_reset)  // factory_reset_button_  // set_factory_reset_button
+class LD2410S : public Component, public uart::UARTDevice {
+#ifdef USE_BINARY_SENSOR
+  SUB_BINARY_SENSOR(presence)
+  SUB_BINARY_SENSOR(calibration_update)
 #endif
-  // #ifdef USE_BUTTON
-  //   void set_calibration_button(button::Button *button) { this->calibration_button_ = button; };
-  //   void set_factory_reset_button(button::Button *button) { this->factory_reset_button_ = button; };
-  // #endif
-  // #ifdef USE_BUTTON
-  //   button::Button *calibration_button_{nullptr};
-  //   button::Button *factory_reset_button_{nullptr};
-  // #endif
-
+#ifdef USE_BUTTON
+  SUB_BUTTON(calibration)
+  SUB_BUTTON(factory_reset)
+#endif
 #ifdef USE_SWITCH
-  SUB_SWITCH(minimal_output)  // minimal_output_switch_  // set_minimal_output_switch
+  SUB_SWITCH(minimal_output)
 #endif
 
  public:

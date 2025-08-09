@@ -32,7 +32,7 @@ async def to_code(config):
     ld2410s = await cg.get_variable(config[CONF_LD2410S_ID])
     if has_target_config := config.get(CONF_HAS_TARGET):
         sens = await binary_sensor.new_binary_sensor(has_target_config)
-        cg.add(ld2410s.set_presence_sensor(sens))
+        cg.add(ld2410s.set_presence_binary_sensor(sens))
     if calibration_running_config := config.get(HAS_CALIBRATION_RUNNING):
         sens = await binary_sensor.new_binary_sensor(calibration_running_config)
-        cg.add(ld2410s.set_calibration_update_sensor(sens))
+        cg.add(ld2410s.set_calibration_update_binary_sensor(sens))

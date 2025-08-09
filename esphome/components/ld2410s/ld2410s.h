@@ -1,9 +1,11 @@
 #pragma once
 
-#include "esphome/core/component.h"
-#include "esphome/core/helpers.h"
-#include "esphome/core/defines.h"
+#include "esphome/core/application.h"
 #include "esphome/core/automation.h"
+#include "esphome/core/component.h"
+#include "esphome/core/defines.h"
+#include "esphome/core/helpers.h"
+#include "esphome/core/log.h"
 
 #include "esphome/components/uart/uart.h"
 // #include "esphome/components/ld24xx/ld24xx.h"
@@ -108,8 +110,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_NUMBER(no_delay)
   SUB_NUMBER(status_reporting_freq)
   SUB_NUMBER(distance_reporting_freq)
-#endif
-#ifdef USE_NUMBER
   SUB_NUMBER(threshold_trigger)
   SUB_NUMBER(threshold_hold)
   SUB_NUMBER(threshold_snr)

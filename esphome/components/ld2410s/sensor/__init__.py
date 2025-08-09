@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 from esphome.components import sensor
 import esphome.config_validation as cv
-from esphome.const import CONF_ID, DEVICE_CLASS_DISTANCE, UNIT_CENTIMETER, UNIT_PERCENT
+from esphome.const import DEVICE_CLASS_DISTANCE, UNIT_CENTIMETER, UNIT_PERCENT
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
@@ -32,13 +32,11 @@ CONFIG_SCHEMA = {
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
-    await cg.register_component(var, config)
-    if CONF_CALIBRATION_PROGRESS in config:
-        sens = await sensor.new_sensor(config[CONF_CALIBRATION_PROGRESS])
-        cg.add(var.set_calibration_progress_sensor(sens))
-    if CONF_TARGET_DISTANCE in config:
-        sens = await sensor.new_sensor(config[CONF_TARGET_DISTANCE])
-        cg.add(var.set_distance_sensor(sens))
     ld2410s = await cg.get_variable(config[CONF_LD2410S_ID])
-    cg.add(ld2410s.register_listener(var))
+
+    if calibration_progress_config := config.get(CONF_CALIBRATION_PROGRESS):
+        sens = await sensor.new_sensor(calibration_progress_config)
+        cg.add(ld2410s.set_calibration_progress_sensor(sens))
+    if target_distance_config := config.get(CONF_TARGET_DISTANCE):
+        sens = await sensor.new_sensor(target_distance_config)
+        cg.add(ld2410s.set_distance_sensor(sens))

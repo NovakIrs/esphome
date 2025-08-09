@@ -112,11 +112,11 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 void LD2410S::setup() {
   this->init_();
 
-  this->publish_distance_(0);
-  this->publish_presence_(false);
+  this->publish_distance_(0, true);
+  this->publish_presence_(false, true);
 
-  this->publish_calibration_progress_(0);
-  this->publish_calibration_runing_(false);
+  this->publish_calibration_progress_(0, true);
+  this->publish_calibration_runing_(false, true);
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {

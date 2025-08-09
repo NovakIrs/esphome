@@ -1,5 +1,11 @@
 #include "ld2410s.h"
 
+#pragma once
+
+#include "esphome/core/application.h"
+#include "esphome/core/defines.h"
+#include <functional>
+
 namespace esphome {
 namespace ld2410s {
 

@@ -272,6 +272,7 @@ void LD2410S::set_response_speed_select(const std::string &response_speed_select
   this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
   this->schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 }
+
 void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command) {
   this->status_set_warning(msg);
 
@@ -921,7 +922,6 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
 
   this->publish_fw_version_(version);
 }
-
 void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
   esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.trigger, 16);
 #ifdef USE_NUMBER
@@ -930,7 +930,6 @@ void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
 
   this->publish_threshold_trigger_();
 }
-
 void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
   esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.hold, 16);
 #ifdef USE_NUMBER
@@ -939,7 +938,6 @@ void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
 
   this->publish_threshold_hold_();
 }
-
 void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
   esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.snr, 16);
 #ifdef USE_NUMBER
@@ -948,7 +946,6 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
 
   this->publish_threshold_snr_();
 }
-
 void LD2410S::process_ack_minimal_output_(uint8_t *data) {
 #ifdef USE_SWITCH
   this->minimal_output_switch_->publish_state(this->minimal_output_);

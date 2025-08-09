@@ -256,17 +256,17 @@ void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->thresholds_.trigger[this->thresholds_.selected_gate] = threshold_trigger;
   this->schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_.selected_gate);
-  // this->publish_threshold_trigger_();
+  this->publish_threshold_trigger_();
 }
 void LD2410S::set_threshold_hold(float threshold_hold) {
   this->thresholds_.hold[this->thresholds_.selected_gate] = threshold_hold;
   this->schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_.selected_gate);
-  // this->publish_threshold_hold_();
+  this->publish_threshold_hold_();
 }
 void LD2410S::set_threshold_snr(float threshold_snr) {
   this->thresholds_.snr[this->thresholds_.selected_gate] = threshold_snr;
   this->schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_.selected_gate);
-  // this->publish_threshold_snr_();
+  this->publish_threshold_snr_();
 }
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;

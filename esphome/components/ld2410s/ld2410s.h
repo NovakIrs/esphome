@@ -113,7 +113,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_NUMBER(threshold_trigger)
   SUB_NUMBER(threshold_hold)
   SUB_NUMBER(threshold_snr)
-  SUB_NUMBER(threshold_selected)
+  SUB_NUMBER(threshold_selected_gate)
 #endif
 
  public:

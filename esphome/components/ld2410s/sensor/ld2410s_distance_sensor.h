@@ -6,7 +6,7 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410SSensor : public LD2410SListener, public Component, sensor::Sensor {
+class LD2410SDistanceSensor : public LD2410SListener, public Component, sensor::Sensor {
  public:
   void set_distance_sensor(sensor::Sensor *sensor) { this->distance_sensor_ = sensor; }
   void on_distance(uint16_t distance) override {

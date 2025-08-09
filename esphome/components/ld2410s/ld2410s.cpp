@@ -618,6 +618,9 @@ void LD2410S::receive_() {
 
     if (type != PackageType::UNKNOWN) {
       esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[start_pos], this->rcv_end_pos_ + 1 - start_pos);
+      if (start_pos > 0) {
+        ESP_LOGW(TAG, "Frame starting at %x", start_pos);
+      }
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:

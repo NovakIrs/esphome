@@ -3,14 +3,14 @@ from esphome.components import sensor
 import esphome.config_validation as cv
 from esphome.const import DEVICE_CLASS_DISTANCE, UNIT_CENTIMETER, UNIT_PERCENT
 
-from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
+from .. import CONF_LD2410S_ID, LD2410S  # , ld2410s_ns
 
 # LD2410SCalibrationProgressSensor = ld2410s_ns.class_(
 #     "LD2410SCalibrationProgressSensor", sensor.Sensor, cg.Component
 # )
-LD2410SDistanceSensor = ld2410s_ns.class_(
-    "LD2410SDistanceSensor", sensor.Sensor, cg.Component
-)
+# LD2410SDistanceSensor = ld2410s_ns.class_(
+#     "LD2410SDistanceSensor", sensor.Sensor, cg.Component
+# )
 
 CONF_CALIBRATION_PROGRESS = "calibration_progress"
 CONF_TARGET_DISTANCE = "target_distance"
@@ -23,7 +23,7 @@ CONFIG_SCHEMA = {
         icon="mdi:percent",
     ),
     cv.Optional(CONF_TARGET_DISTANCE): sensor.sensor_schema(
-        LD2410SDistanceSensor,
+        # LD2410SDistanceSensor,
         device_class=DEVICE_CLASS_DISTANCE,
         unit_of_measurement=UNIT_CENTIMETER,
         icon="mdi:arrow-left-right",

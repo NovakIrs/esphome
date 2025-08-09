@@ -117,6 +117,8 @@ void LD2410S::setup() {
 
   this->publish_calibration_progress_(0, true);
   this->publish_calibration_runing_(false, true);
+
+  this->set_threshold_selected_gate(0);
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {

@@ -776,6 +776,8 @@ void LD2410S::process_data_frame_(uint8_t *data) {
     case 0x03:  // calibration progress
     {
       uint16_t progress = encode_uint16(data[2], data[1]);
+      ESP_LOGD(TAG, "Calibration progress: %d", progress);
+
       for (auto &listener : this->listeners_) {
         if (progress == 100) {
           listener->on_calibration_progress(0);
@@ -787,13 +789,12 @@ void LD2410S::process_data_frame_(uint8_t *data) {
         }
       }
 
-      if (progress == 100) {
-        if (this->calibration_progress_sensor_ != nullptr) {
+      if (this->calibration_progress_sensor_ != nullptr) {
+        ESP_LOGD(TAG, "calibration_progress_sensor_ existis, publishing...");
+        if (progress == 100) {
           this->calibration_progress_sensor_->publish_state(0);
         } else {
-          if (this->calibration_progress_sensor_ != nullptr) {
-            this->calibration_progress_sensor_->publish_state(progress);
-          }
+          this->calibration_progress_sensor_->publish_state(progress);
         }
       }
 

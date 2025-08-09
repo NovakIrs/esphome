@@ -978,7 +978,7 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   this->publish_state_ts_energy_values_();
 }
 
-void LD2410S::publish_distance_(uint16_t distance, bool force_publish = false) {
+void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
 #ifdef USE_SENSOR
   if (this->distance_sensor_ != nullptr) {
     if (this->distance_sensor_->state != distance || force_publish) {
@@ -987,7 +987,7 @@ void LD2410S::publish_distance_(uint16_t distance, bool force_publish = false) {
   }
 #endif
 }
-void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false) {
+void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {
 #ifdef USE_SENSOR
   if (this->calibration_progress_sensor_ != nullptr) {
     if (calibration_progress == 100) {
@@ -1002,7 +1002,7 @@ void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool 
   }
 #endif
 }
-void LD2410S::publish_presence_(bool presence, bool force_publish = false) {
+void LD2410S::publish_presence_(bool presence, bool force_publish) {
 #ifdef USE_BINARY_SENSOR
   if (this->presence_binary_sensor_ != nullptr) {
     if (this->presence_binary_sensor_->state != presence || force_publish) {
@@ -1011,7 +1011,7 @@ void LD2410S::publish_presence_(bool presence, bool force_publish = false) {
   }
 #endif
 }
-void LD2410S::publish_calibration_runing_(bool running, bool force_publish = false) {
+void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
 #ifdef USE_BINARY_SENSOR
   if (this->calibration_runing_binary_sensor_ != nullptr) {
     if (this->calibration_runing_binary_sensor_->state != running || force_publish) {

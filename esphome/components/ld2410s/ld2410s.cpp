@@ -1011,7 +1011,7 @@ void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
 #endif
 }
 
-void LD2410S::publish_fw_version_(std::string version, bool force_publish) {
+void LD2410S::publish_fw_version_(const std::string version, bool force_publish) {
 #ifdef USE_TEXT_SENSOR
   if (this->fw_version_text_sensor_ != nullptr) {
     if (this->fw_version_text_sensor_->state != version || force_publish) {

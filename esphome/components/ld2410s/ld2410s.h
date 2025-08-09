@@ -236,7 +236,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   void publish_presence_(bool presence, bool force_publish = false);
   void publish_calibration_runing_(bool running, bool force_publish = false);
 
-  void publish_fw_version_(std::string version, bool force_publish = false);
+  void publish_fw_version_(const std::string version, bool force_publish = false);
   void publish_threshold_trigger_(bool force_publish = false);
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);

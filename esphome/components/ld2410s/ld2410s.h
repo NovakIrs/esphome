@@ -1,6 +1,6 @@
 #pragma once
 
-#define LD2410S_V2
+#define LD2410S_V2x
 
 #include "esphome/core/application.h"
 #include "esphome/core/automation.h"

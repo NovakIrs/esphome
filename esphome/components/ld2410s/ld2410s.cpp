@@ -3,11 +3,6 @@
 namespace esphome {
 namespace ld2410s {
 
-static const char *const TAG = "ld2410s";
-
-static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
-static const uint8_t CMD_EXEC_REPEAT = 3;
-
 void LD2410S::setup() {
   this->init_();
 

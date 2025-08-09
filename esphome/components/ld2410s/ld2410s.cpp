@@ -5,105 +5,6 @@ namespace ld2410s {
 
 static const char *const TAG = "ld2410s";
 
-static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
-static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
-
-static const uint32_t STD_DATA_FRAME_HEADER = 0xF1F2F3F4;
-static const uint32_t STD_DATA_FRAME_FOOTER = 0xF5F6F7F8;
-
-static const uint32_t CMD_FRAME_HEADER = 0xFAFBFCFD;
-static const uint32_t CMD_FRAME_FOOTER = 0x01020304;
-
-static const uint16_t CONFIG_MODE_START_CMD = 0x00FF;
-static const uint16_t CONFIG_MODE_START_REPLY = 0x01FF;
-static const uint8_t CONFIG_MODE_START_VALUE[] = {0x01, 0x00};
-
-static const uint16_t CONFIG_MODE_END_CMD = 0x00FE;
-static const uint16_t CONFIG_MODE_END_REPLY = 0x01FE;
-
-static const uint16_t OUTPUT_MODE_SWITCH_CMD = 0x007A;
-static const uint16_t OUTPUT_MODE_SWITCH_REPLY = 0x017A;
-static const uint8_t OUTPUT_MODE_VALUE_STD[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
-static const uint8_t OUTPUT_MODE_VALUE_MIN[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-static const uint16_t FW_READ_CMD = 0x0000;
-static const uint16_t FW_READ_REPLY = 0x0100;
-
-static const uint16_t SN_READ_CMD = 0x0011;
-static const uint16_t SN_READ_REPLY = 0x0111;
-static const uint16_t SN_WRITE_CMD = 0x0010;
-static const uint16_t SN_WRITE_REPLY = 0x0110;
-
-static const uint16_t PARAMS_READ_CMD = 0x0071;
-static const uint16_t PARAMS_READ_REPLY = 0x0171;
-static const uint16_t PARAMS_WRITE_CMD = 0x0070;
-static const uint16_t PARAMS_WRITE_REPLY = 0x0170;
-static const uint16_t CFG_MAX_DETECTION_VALUE = 0x0005;
-static const uint16_t CFG_MIN_DETECTION_VALUE = 0x000A;
-static const uint16_t CFG_NO_DELAY_VALUE = 0x0006;
-static const uint16_t CFG_STATUS_FREQ_VALUE = 0x0002;
-static const uint16_t CFG_DISTANCE_FREQ_VALUE = 0x000C;
-static const uint16_t CFG_RESPONSE_SPEED_VALUE = 0x000B;
-static const std::string RESPONSE_SPEED_NORMAL = "Normal";
-static const std::string RESPONSE_SPEED_FAST = "Fast";
-
-static const uint16_t CALIBRATION_CMD = 0x0009;
-static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
-static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
-static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
-
-static const uint16_t GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
-static const uint16_t GATE_THRESHOLD_TRIGGER_READ_REPLY = 0x0173;
-static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
-static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_REPLY = 0x0172;
-static const uint32_t GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
-
-    48, 42, 36, 34, 32, 31, 31, 31, 31,
-    31, 31, 31, 31, 31, 31, 31
-    // 10~95 dB
-
-    // Factory defaults:
-    // tool - reset
-    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
-    //   48,42,36,34,32,31,31,31,31,31,31,31,31,31,31,31
-    // tool default
-    //  https://drive.google.com/drive/folders/1wC8KC-DaNavNbpeVouZ1HdiBzZ9YrAcg
-    //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
-};
-
-static const uint16_t GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
-static const uint16_t GATE_THRESHOLD_HOLD_READ_REPLY = 0x0177;
-static const uint16_t GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
-static const uint16_t GATE_THRESHOLD_HOLD_WRITE_REPLY = 0x0176;
-static const uint32_t GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
-
-    45, 42, 33, 32, 28, 28, 28, 28, 28,
-    28, 28, 28, 28, 28, 28, 28
-    // 10~95 dB
-
-    // Factory defaults:
-    // tool - reset
-    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
-    //   45,42,33,32,28,28,28,28,28,28,28,28,28,28,28,28
-    // tool default
-    //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
-};
-
-static const uint16_t GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
-static const uint16_t GATE_THRESHOLD_SNR_READ_REPLY = 0x0175;
-static const uint16_t GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
-static const uint16_t GATE_THRESHOLD_SNR_WRITE_REPLY = 0x0174;
-static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
-
-    34, 34, 34, 34, 34, 34, 34, 34, 34,
-    34, 34, 34, 34, 34, 34, 34
-    // 5~63 dB
-
-    // Factory defaults:
-    // Not available... and probably need improvement ToDo
-    // It would be good to get it from virgin ld2410s, before any calibration.
-};
-
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
@@ -116,7 +17,9 @@ void LD2410S::setup() {
   this->publish_calibration_progress_(0, true);
   this->publish_calibration_runing_(false, true);
 
+#ifdef LD2410S_V2
   this->set_threshold_selected_gate(0);
+#endif
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
@@ -144,8 +47,34 @@ void LD2410S::dump_config() {
   LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
 #endif
 }
-
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
+
+void LD2410S::set_delay(float delay) {
+  this->delay_ = delay;
+  this->schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
+}
+void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
+  this->dist_freq_ = distance_reporting_freq * 10;
+  this->schedule_cmd_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
+}
+void LD2410S::set_max_distance(float max_distance) {
+  this->max_dist_ = static_cast<float>(max_distance) / 0.7f;
+  this->schedule_cmd_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
+}
+void LD2410S::set_min_distance(float min_distance) {
+  this->min_dist_ = static_cast<float>(min_distance) / 0.7f;
+  this->schedule_cmd_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
+}
+void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
+  this->status_freq_ = status_reporting_freq * 10;
+  this->schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
+}
+void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
+  this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
+  this->schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
+}
+
+// PROTECTED
 
 void LD2410S::init_() {
   App.feed_wdt();
@@ -161,18 +90,6 @@ void LD2410S::init_() {
   this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
   this->schedule_cmd_frame_(FW_READ_CMD);
   this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-
-  this->status_clear_warning();
-}
-
-void LD2410S::read_all_thresholds_() {
-  this->status_set_warning("read_all_thresholds");
-
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
@@ -215,63 +132,6 @@ void LD2410S::factory_reset() {
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
   this->status_clear_warning();
 }
-void LD2410S::set_minimal_output(bool state) {
-  this->minimal_output_ = state;
-  if (!state) {
-    for (auto &energy_value : this->energy_values_) {
-      energy_value = 0;
-    }
-  }
-  this->schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
-}
-void LD2410S::set_delay(float delay) {
-  this->delay_ = delay;
-  this->schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
-}
-void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
-  this->dist_freq_ = distance_reporting_freq * 10;
-  this->schedule_cmd_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
-}
-void LD2410S::set_max_distance(float max_distance) {
-  this->max_dist_ = static_cast<float>(max_distance) / 0.7f;
-  this->schedule_cmd_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
-}
-void LD2410S::set_min_distance(float min_distance) {
-  this->min_dist_ = static_cast<float>(min_distance) / 0.7f;
-  this->schedule_cmd_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
-}
-void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
-  this->status_freq_ = status_reporting_freq * 10;
-  this->schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
-}
-void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
-  this->thresholds_.selected_gate = threshold_selected_gate;
-#ifdef USE_NUMBER
-  this->threshold_selected_gate_number_->publish_state(this->thresholds_.selected_gate);
-  this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
-  this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
-  this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
-#endif
-}
-void LD2410S::set_threshold_trigger(float threshold_trigger) {
-  this->thresholds_.trigger[this->thresholds_.selected_gate] = threshold_trigger;
-  this->schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_.selected_gate);
-  this->publish_threshold_trigger_();
-}
-void LD2410S::set_threshold_hold(float threshold_hold) {
-  this->thresholds_.hold[this->thresholds_.selected_gate] = threshold_hold;
-  this->schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_.selected_gate);
-  this->publish_threshold_hold_();
-}
-void LD2410S::set_threshold_snr(float threshold_snr) {
-  this->thresholds_.snr[this->thresholds_.selected_gate] = threshold_snr;
-  this->schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_.selected_gate);
-  this->publish_threshold_snr_();
-}
-void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
-  this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
-  this->schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
-}
 
 void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command) {
   this->status_set_warning(msg);
@@ -282,7 +142,6 @@ void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_comm
 
   this->status_clear_warning();
 }
-
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
 
@@ -468,7 +327,6 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_buffer_insert_(&cmd_frame);
 }
-
 void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size) {
   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
          append_data_size * sizeof(*append_data));
@@ -767,7 +625,10 @@ void LD2410S::process_data_frame_(uint8_t *data) {
       this->publish_distance_(distance);
       this->publish_presence_(presence_state);
 
+#ifdef LD2410S_V2
       this->process_data_energy_values_read_(&data[6]);
+#endif
+
       break;
     }
 
@@ -777,7 +638,11 @@ void LD2410S::process_data_frame_(uint8_t *data) {
 
       if (progress == 100) {
         this->publish_calibration_runing_(false);
+
+#ifdef LD2410S_V2
         this->read_all_thresholds_();
+#endif
+
       } else {
         this->publish_calibration_runing_(true);
       }
@@ -808,22 +673,34 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case FW_READ_REPLY:
+
+#ifdef LD2410S_V2
       this->process_ack_fw_read_(data);
+#endif
       this->init_status_ = this->init_status_ | 0b00000100;
       break;
 
     case GATE_THRESHOLD_TRIGGER_READ_REPLY:
+
+#ifdef LD2410S_V2
       this->process_ack_threshold_trigger_read_(data);
+#endif
       this->init_status_ = this->init_status_ | 0b00010000;
       break;
 
     case GATE_THRESHOLD_HOLD_READ_REPLY:
+
+#ifdef LD2410S_V2
       this->process_ack_threshold_hold_read_(data);
+#endif
       this->init_status_ = this->init_status_ | 0b00100000;
       break;
 
     case GATE_THRESHOLD_SNR_READ_REPLY:
+
+#ifdef LD2410S_V2
       this->process_ack_threshold_snr_read_(data);
+#endif
       this->init_status_ = this->init_status_ | 0b01000000;
       break;
 
@@ -854,7 +731,10 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       break;
 
     case OUTPUT_MODE_SWITCH_REPLY:
+
+#ifdef LD2410S_V2
       this->process_ack_minimal_output_(data);
+#endif
       this->init_status_ = this->init_status_ | 0b00000010;
       break;
 
@@ -914,59 +794,6 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
            "dist_resp_freq=%d, resp_speed=%d",
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
-void LD2410S::process_ack_fw_read_(const uint8_t *data) {
-  int major_v = esphome::ld2410s::LD2410S::read_int(data, 4, 2);
-  int minor_v = esphome::ld2410s::LD2410S::read_int(data, 6, 2);
-  int patch_v = esphome::ld2410s::LD2410S::read_int(data, 8, 2);
-  std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
-
-  this->publish_fw_version_(version);
-}
-void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.trigger, 16);
-#ifdef USE_NUMBER
-  this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
-#endif
-
-  this->publish_threshold_trigger_();
-}
-void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.hold, 16);
-#ifdef USE_NUMBER
-  this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
-#endif
-
-  this->publish_threshold_hold_();
-}
-void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
-  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.snr, 16);
-#ifdef USE_NUMBER
-  this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
-#endif
-
-  this->publish_threshold_snr_();
-}
-void LD2410S::process_ack_minimal_output_(uint8_t *data) {
-#ifdef USE_SWITCH
-  this->minimal_output_switch_->publish_state(this->minimal_output_);
-#endif
-
-  ESP_LOGW(TAG, "Minimal Output Mode switched");
-}
-
-void LD2410S::process_data_energy_values_read_(uint8_t *data) {
-  for (uint8_t i = 0; i < 16; i++) {
-    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-    uint32_t db = 0;
-    if (val > 0) {
-      db = 10 * log10(val);
-    }
-    if (db > this->energy_values_[i]) {
-      this->energy_values_[i] = db;
-    }
-  }
-  this->publish_energy_values_();
-}
 
 void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
 #ifdef USE_SENSOR
@@ -1011,100 +838,11 @@ void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
 #endif
 }
 
-void LD2410S::publish_fw_version_(const std::string &version, bool force_publish) {
-#ifdef USE_TEXT_SENSOR
-  if (this->fw_version_text_sensor_ != nullptr) {
-    if (this->fw_version_text_sensor_->state != version || force_publish) {
-      this->fw_version_text_sensor_->publish_state(version);
-    }
-  }
-#endif
-  ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
-}
-
-void LD2410S::publish_threshold_trigger_(bool force_publish) {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.trigger, 16, 2);
-
-#ifdef USE_TEXT_SENSOR
-  if (this->threshold_trigger_text_sensor_ != nullptr) {
-    if (this->threshold_trigger_text_sensor_->state != vals || force_publish) {
-      this->threshold_trigger_text_sensor_->publish_state(vals);
-    }
-  }
-#endif
-  ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
-}
-void LD2410S::publish_threshold_hold_(bool force_publish) {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.hold, 16, 2);
-
-#ifdef USE_TEXT_SENSOR
-  if (this->threshold_hold_text_sensor_ != nullptr) {
-    if (this->threshold_hold_text_sensor_->state != vals || force_publish) {
-      this->threshold_hold_text_sensor_->publish_state(vals);
-    }
-  }
-#endif
-  ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
-}
-void LD2410S::publish_threshold_snr_(bool force_publish) {
-  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.snr, 16, 2);
-
-#ifdef USE_TEXT_SENSOR
-  if (this->threshold_snr_text_sensor_ != nullptr) {
-    if (this->threshold_snr_text_sensor_->state != vals || force_publish) {
-      this->threshold_snr_text_sensor_->publish_state(vals);
-    }
-  }
-#endif
-  ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
-}
-
-void LD2410S::publish_energy_values_(bool force_publish) {
-  this->energy_values_str_ = esphome::ld2410s::LD2410S::format_int(this->energy_values_, 16, 2);
-
-#ifdef USE_TEXT_SENSOR
-  if (this->energy_values_text_sensor_ != nullptr) {
-    if (this->energy_values_text_sensor_->state != this->energy_values_str_ || force_publish) {
-      this->energy_values_text_sensor_->publish_state(this->energy_values_str_);
-    }
-  }
-#endif
-  ESP_LOGD(TAG, "Energy Values: %s", this->energy_values_str_.c_str());
-}
-
-std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
-  if (len == 0)
-    return "";
-
-  std::string result;
-  int sum = 0;
-  for (uint8_t i = 0; i < len; ++i) {
-    sum += in[i];
-
-    if (i > 0)
-      result += ',';
-
-    std::string num = std::to_string(in[i]);
-
-    if (num.length() < min_w)
-      result += std::string(min_w - num.length(), '0');
-
-    result += num;
-  }
-
-  if (sum == 0) {
-    result = "";
-  }
-
-  return result;
-}
-
 void LD2410S::four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len) {
   for (uint8_t i = 0; i < out_len; i++) {
     out[i] = encode_uint32(in[i * 4 + 3], in[i * 4 + 2], in[i * 4 + 1], in[i * 4 + 0]);
   }
 }
-
 void LD2410S::hex_diag(const char *msg, const uint8_t *data, size_t length) {
   char output[length * 3 + 1];
 
@@ -1119,16 +857,15 @@ void LD2410S::hex_diag(const char *msg, const uint8_t *data, size_t length) {
 
   ESP_LOGD(TAG, "%s %s ", msg, output);
 }
-
-// int LD2410S::read_int(const uint8_t *buffer, size_t pos, size_t len) {
-//   unsigned int ret = 0;
-//   int shift = 0;
-//   for (size_t i = 0; i < len; i++) {
-//     ret |= static_cast<unsigned int>(buffer[pos + i]) << shift;
-//     shift += 8;
-//   }
-//   return ret;
-// };
+int LD2410S::read_int(const uint8_t *buffer, size_t pos, size_t len) {
+  unsigned int ret = 0;
+  int shift = 0;
+  for (size_t i = 0; i < len; i++) {
+    ret |= static_cast<unsigned int>(buffer[pos + i]) << shift;
+    shift += 8;
+  }
+  return ret;
+};
 
 }  // namespace ld2410s
 }  // namespace esphome

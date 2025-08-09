@@ -13,7 +13,10 @@ class LD2410SThresholdTriggerNumber : public number::Number, public Parented<LD2
  protected:
   void control(float threshold_trigger) override {
     this->publish_state(threshold_trigger);
+
+#ifdef LD2410S_V2
     this->parent_->set_threshold_trigger(threshold_trigger);
+#endif
   }
 };
 

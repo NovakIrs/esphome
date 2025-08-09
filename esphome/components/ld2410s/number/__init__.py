@@ -44,12 +44,10 @@ CONF_MAX_DISTANCE = "max_distance"
 CONF_MIN_DISTANCE = "min_distance"
 CONF_NO_DELAY = "no_delay"
 CONF_STATUS_REPORTING_FREQUENCY = "status_reporting_frequency"
-
 CONF_THRESHOLD_TRIGGER = "threshold_trigger"
 CONF_THRESHOLD_HOLD = "threshold_hold"
 CONF_THRESHOLD_SNR = "threshold_snr"
 CONF_THRESHOLD_SELECTED_GATE = "threshold_selected_gate"
-
 
 CONFIG_SCHEMA = {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),

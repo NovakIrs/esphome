@@ -8,6 +8,13 @@
 #include "esphome/components/uart/uart.h"
 // #include "esphome/components/ld24xx/ld24xx.h"
 
+#ifdef USE_SENSOR
+#include "esphome/components/sensor/sensor.h"
+#endif
+#ifdef USE_BINARY_SENSOR
+#include "esphome/components/binary_sensor/binary_sensor.h"
+#endif
+
 #ifdef USE_NUMBER
 #include "esphome/components/number/number.h"
 #endif
@@ -19,12 +26,6 @@
 #endif
 #ifdef USE_SELECT
 #include "esphome/components/select/select.h"
-#endif
-#ifdef USE_SENSOR
-#include "esphome/components/sensor/sensor.h"
-#endif
-#ifdef USE_BINARY_SENSOR
-#include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
@@ -77,8 +78,8 @@ struct CmdT {
 
 class LD2410SListener {
  public:
-  virtual void on_presence(bool presence){};
-  virtual void on_calibration_update(bool running){};
+  // virtual void on_presence(bool presence){};
+  // virtual void on_calibration_update(bool running){};
   virtual void on_fw_version(std::string &val){};
   virtual void on_threshold_trigger(std::string &val){};
   virtual void on_threshold_hold(std::string &val){};
@@ -242,6 +243,8 @@ class LD2410S : public Component, public uart::UARTDevice {
 
   void publish_distance_(uint16_t distance);
   void publish_calibration_progress_(uint16_t calibration_progress);
+  void publish_presence_(bool presence);
+  void publish_calibration_update_(bool running);
 
   void publish_state_ts_thresholds_();
   void publish_state_ts_holds_();

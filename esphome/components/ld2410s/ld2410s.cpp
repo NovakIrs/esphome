@@ -113,11 +113,10 @@ void LD2410S::setup() {
   this->init_();
 
   this->publish_distance_(0);
-  this->publish_calibration_progress_(0);
+  this->publish_presence_(false);
 
-  for (auto &listener : this->listeners_) {
-    listener->on_presence(false);
-  }
+  this->publish_calibration_progress_(0);
+  this->publish_calibration_update_(false);
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
@@ -753,11 +752,8 @@ void LD2410S::process_short_data_frame_(uint8_t *data) {
   if (!presence_state)
     distance = 0;
 
-  for (auto &listener : this->listeners_) {
-    listener->on_presence(presence_state);
-  }
-
   this->publish_distance_(distance);
+  this->publish_presence_(presence_state);
 }
 void LD2410S::process_data_frame_(uint8_t *data) {
   switch (data[0]) {
@@ -768,11 +764,8 @@ void LD2410S::process_data_frame_(uint8_t *data) {
       if (!presence_state)
         distance = 0;
 
-      for (auto &listener : this->listeners_) {
-        listener->on_presence(presence_state);
-      }
-
       this->publish_distance_(distance);
+      this->publish_presence_(presence_state);
 
       this->process_data_energy_values_read_(&data[6]);
       break;
@@ -784,10 +777,10 @@ void LD2410S::process_data_frame_(uint8_t *data) {
 
       for (auto &listener : this->listeners_) {
         if (progress == 100) {
-          listener->on_calibration_update(false);
+          this->publish_calibration_update_(false);
           this->read_all_thresholds_();
         } else {
-          listener->on_calibration_update(true);
+          this->publish_calibration_update_(true);
         }
       }
 
@@ -1000,6 +993,20 @@ void LD2410S::publish_calibration_progress_(uint16_t calibration_progress) {
     } else {
       this->calibration_progress_sensor_->publish_state(calibration_progress);
     }
+  }
+#endif
+}
+void LD2410S::publish_presence_(bool presence) {
+#ifdef USE_BINARY_SENSOR
+  if (this->presence_binary_sensor_ != nullptr) {
+    this->presence_binary_sensor_->publish_state(presence);
+  }
+#endif
+}
+void LD2410S::publish_calibration_update_(bool running) {
+#ifdef USE_BINARY_SENSOR
+  if (this->calibration_update_binary_sensor_ != nullptr) {
+    this->calibration_update_binary_sensor_->publish_state(running);
   }
 #endif
 }

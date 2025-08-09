@@ -76,14 +76,14 @@ struct CmdT {
   CmdFrameT *cmd_frame;
 };
 
-class LD2410SListener {
- public:
-  virtual void on_fw_version(std::string &val){};
-  virtual void on_threshold_trigger(std::string &val){};
-  virtual void on_threshold_hold(std::string &val){};
-  virtual void on_threshold_snr(std::string &val){};
-  virtual void on_energy_values(std::string &val){};
-};
+// class LD2410SListener {
+//  public:
+//   virtual void on_fw_version(std::string &val){};
+//   virtual void on_threshold_trigger(std::string &val){};
+//   virtual void on_threshold_hold(std::string &val){};
+//   virtual void on_threshold_snr(std::string &val){};
+//   virtual void on_energy_values(std::string &val){};
+// };
 
 class LD2410S : public Component, public uart::UARTDevice {
 #ifdef USE_SENSOR
@@ -94,15 +94,19 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_BINARY_SENSOR(presence)
   SUB_BINARY_SENSOR(calibration_runing)
 #endif
+#ifdef USE_TEXT_SENSOR
+  SUB_TEXT_SENSOR(fw_version)
+  SUB_TEXT_SENSOR(threshold_trigger)
+  SUB_TEXT_SENSOR(threshold_hold)
+  SUB_TEXT_SENSOR(threshold_snr)
+  SUB_TEXT_SENSOR(energy_values)
+#endif
+
 #ifdef USE_BUTTON
   SUB_BUTTON(calibration)
   SUB_BUTTON(factory_reset)
 #endif
 
-  // #ifdef USE_TEXT_SENSOR
-  //   SUB_TEXT_SENSOR(mac)
-  //   SUB_TEXT_SENSOR(version)
-  // #endif
   // #ifdef USE_NUMBER
   //   SUB_NUMBER(presence_timeout)
   // #endif
@@ -120,7 +124,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   void dump_config() override;
   float get_setup_priority() const override;
 
-  void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
+  // void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
   void calibration();
   void factory_reset();
@@ -187,7 +191,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   bool cmd_active_{false};
 
   std::string energy_values_str_ = "";
-  std::vector<LD2410SListener *> listeners_{};
+  // std::vector<LD2410SListener *> listeners_{};
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
   ThresholdsT thresholds_;
 
@@ -244,10 +248,11 @@ class LD2410S : public Component, public uart::UARTDevice {
   void publish_presence_(bool presence, bool force_publish = false);
   void publish_calibration_runing_(bool running, bool force_publish = false);
 
-  void publish_state_ts_thresholds_();
-  void publish_state_ts_holds_();
-  void publish_state_ts_snrs_();
-  void publish_state_ts_energy_values_();
+  void publish_fw_version_(std::string version, bool force_publish = false);
+  void publish_threshold_trigger_(bool force_publish = false);
+  void publish_threshold_hold_(bool force_publish = false);
+  void publish_threshold_snr_(bool force_publish = false);
+  void publish_energy_values_(bool force_publish = false);
 
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);

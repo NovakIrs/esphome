@@ -978,43 +978,43 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   this->publish_state_ts_energy_values_();
 }
 
-void LD2410S::publish_distance_(uint16_t distance) {
+void LD2410S::publish_distance_(uint16_t distance, bool force_publish = false) {
 #ifdef USE_SENSOR
   if (this->distance_sensor_ != nullptr) {
-    if (this->distance_sensor_->state != distance) {
+    if (this->distance_sensor_->state != distance || force_publish) {
       this->distance_sensor_->publish_state(distance);
     }
   }
 #endif
 }
-void LD2410S::publish_calibration_progress_(uint16_t calibration_progress) {
+void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false) {
 #ifdef USE_SENSOR
   if (this->calibration_progress_sensor_ != nullptr) {
     if (calibration_progress == 100) {
-      if (this->calibration_progress_sensor_->state != 0) {
+      if (this->calibration_progress_sensor_->state != 0 || force_publish) {
         this->calibration_progress_sensor_->publish_state(0);
       }
     } else {
-      if (this->calibration_progress_sensor_->state != calibration_progress) {
+      if (this->calibration_progress_sensor_->state != calibration_progress || force_publish) {
         this->calibration_progress_sensor_->publish_state(calibration_progress);
       }
     }
   }
 #endif
 }
-void LD2410S::publish_presence_(bool presence) {
+void LD2410S::publish_presence_(bool presence, bool force_publish = false) {
 #ifdef USE_BINARY_SENSOR
   if (this->presence_binary_sensor_ != nullptr) {
-    if (this->presence_binary_sensor_->state != presence) {
+    if (this->presence_binary_sensor_->state != presence || force_publish) {
       this->presence_binary_sensor_->publish_state(presence);
     }
   }
 #endif
 }
-void LD2410S::publish_calibration_runing_(bool running) {
+void LD2410S::publish_calibration_runing_(bool running, bool force_publish = false) {
 #ifdef USE_BINARY_SENSOR
   if (this->calibration_runing_binary_sensor_ != nullptr) {
-    if (this->calibration_runing_binary_sensor_->state != running) {
+    if (this->calibration_runing_binary_sensor_->state != running || force_publish) {
       this->calibration_runing_binary_sensor_->publish_state(running);
     }
   }

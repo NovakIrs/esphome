@@ -239,10 +239,10 @@ class LD2410S : public Component, public uart::UARTDevice {
 
   void process_data_energy_values_read_(uint8_t *data);
 
-  void publish_distance_(uint16_t distance);
-  void publish_calibration_progress_(uint16_t calibration_progress);
-  void publish_presence_(bool presence);
-  void publish_calibration_runing_(bool running);
+  void publish_distance_(uint16_t distance, bool force_publish = false);
+  void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
+  void publish_presence_(bool presence, bool force_publish = false);
+  void publish_calibration_runing_(bool running, bool force_publish = false);
 
   void publish_state_ts_thresholds_();
   void publish_state_ts_holds_();

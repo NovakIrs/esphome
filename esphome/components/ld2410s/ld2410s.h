@@ -14,9 +14,8 @@
 #ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
-
-#ifdef USE_NUMBER
-#include "esphome/components/number/number.h"
+#ifdef USE_TEXT_SENSOR
+#include "esphome/components/text_sensor/text_sensor.h"
 #endif
 #ifdef USE_BUTTON
 #include "esphome/components/button/button.h"
@@ -27,8 +26,8 @@
 #ifdef USE_SELECT
 #include "esphome/components/select/select.h"
 #endif
-#ifdef USE_TEXT_SENSOR
-#include "esphome/components/text_sensor/text_sensor.h"
+#ifdef USE_NUMBER
+#include "esphome/components/number/number.h"
 #endif
 
 #include <functional>
@@ -92,21 +91,19 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_TEXT_SENSOR(threshold_snr)
   SUB_TEXT_SENSOR(energy_values)
 #endif
-
 #ifdef USE_BUTTON
   SUB_BUTTON(calibration)
   SUB_BUTTON(factory_reset)
 #endif
-
-  // #ifdef USE_NUMBER
-  //   SUB_NUMBER(presence_timeout)
-  // #endif
-
 #ifdef USE_SWITCH
   SUB_SWITCH(minimal_output)
 #endif
 #ifdef USE_SELECT
   SUB_SELECT(response_speed)
+#endif
+
+#ifdef USE_NUMBER
+  SUB_NUMBER(max_distance)
 #endif
 
  public:
@@ -131,9 +128,9 @@ class LD2410S : public Component, public uart::UARTDevice {
   void set_response_speed_select(const std::string &response_speed_select);
 
 #ifdef USE_NUMBER
-  void set_max_distance_number(number::Number *max_distance_number) {
-    this->max_distance_number_ = max_distance_number;
-  };
+  // void set_max_distance_number(number::Number *max_distance_number) {
+  //   this->max_distance_number_ = max_distance_number;
+  // };
   void set_min_distance_number(number::Number *min_distance_number) {
     this->min_distance_number_ = min_distance_number;
   };
@@ -191,7 +188,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   void cmd_buffer_inc_(uint8_t &index);
 
 #ifdef USE_NUMBER
-  number::Number *max_distance_number_{nullptr};
+  // number::Number *max_distance_number_{nullptr};
   number::Number *min_distance_number_{nullptr};
   number::Number *no_delay_number_{nullptr};
   number::Number *status_reporting_freq_number_{nullptr};

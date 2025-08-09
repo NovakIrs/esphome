@@ -13,7 +13,10 @@ class LD2410SThresholdHoldNumber : public number::Number, public Parented<LD2410
  protected:
   void control(float threshold_hold) override {
     this->publish_state(threshold_hold);
+
+#ifdef LD2410S_V2
     this->parent_->set_threshold_hold(threshold_hold);
+#endif
   }
 };
 

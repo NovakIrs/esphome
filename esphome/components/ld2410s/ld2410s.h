@@ -1,5 +1,9 @@
 #pragma once
 
+#define LD2410S_V2
+
+#include "ld2410s_const.h"
+
 #include "esphome/core/application.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
@@ -103,7 +107,6 @@ class LD2410S : public Component, public uart::UARTDevice {
 #ifdef USE_SELECT
   SUB_SELECT(response_speed)
 #endif
-
 #ifdef USE_NUMBER
   SUB_NUMBER(max_distance)
   SUB_NUMBER(min_distance)
@@ -122,20 +125,22 @@ class LD2410S : public Component, public uart::UARTDevice {
   void dump_config() override;
   float get_setup_priority() const override;
 
-  void calibration();
-  void factory_reset();
-
-  void set_minimal_output(bool state);
   void set_delay(float delay);
   void set_distance_reporting_freq(float distance_reporting_freq);
   void set_max_distance(float max_distance);
   void set_min_distance(float min_distance);
   void set_status_reporting_freq(float status_reporting_freq);
+  void set_response_speed_select(const std::string &response_speed_select);
+
+#ifdef LD2410S_V2
+  void read_all_thresholds_();
+
+  void set_minimal_output(bool state);
   void set_threshold_selected_gate(float threshold_selected_gate);
   void set_threshold_trigger(float threshold_trigger);
   void set_threshold_hold(float threshold_hold);
   void set_threshold_snr(float threshold_snr);
-  void set_response_speed_select(const std::string &response_speed_select);
+#endif
 
  protected:
   size_t rcv_end_pos_ = 0;
@@ -158,11 +163,21 @@ class LD2410S : public Component, public uart::UARTDevice {
   ThresholdsT thresholds_;
 
   void init_();
-  void read_all_thresholds_();
-  void loop_send_command_();
+  void calibration();
+  void factory_reset();
+
+  void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
+  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
+  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
+
   void cmd_buffer_insert_(CmdFrameT *cmd_frame);
   void cmd_buffer_finished_();
   void cmd_buffer_inc_(uint8_t &index);
+
+  void loop_send_command_();
+  void send_command_(CmdFrameT *cmd_frame);
 
   void receive_();
   PackageType get_frame_type_(uint8_t *buffer, size_t pos);
@@ -172,18 +187,20 @@ class LD2410S : public Component, public uart::UARTDevice {
   void process_short_data_frame_(uint8_t *data);
   void process_data_frame_(uint8_t *data, size_t data_size);
   void process_cmd_frame_(uint8_t *buffer, size_t len);
-
   CmdAckT parse_cms_frame_(uint8_t *buffer, size_t length);
 
-  void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
-
-  void send_command_(CmdFrameT *cmd_frame);
-
   void process_ack_config_read_(uint8_t *data);
+
+  void publish_distance_(uint16_t distance, bool force_publish = false);
+  void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
+  void publish_presence_(bool presence, bool force_publish = false);
+  void publish_calibration_runing_(bool running, bool force_publish = false);
+
+  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
+  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
+  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
+
+#ifdef LD2410S_V2
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);
   void process_ack_threshold_hold_read_(uint8_t *data);
@@ -192,21 +209,19 @@ class LD2410S : public Component, public uart::UARTDevice {
 
   void process_data_energy_values_read_(uint8_t *data);
 
-  void publish_distance_(uint16_t distance, bool force_publish = false);
-  void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
-  void publish_presence_(bool presence, bool force_publish = false);
-  void publish_calibration_runing_(bool running, bool force_publish = false);
-
   void publish_fw_version_(const std::string &version, bool force_publish = false);
+
   void publish_threshold_trigger_(bool force_publish = false);
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
+
   void publish_energy_values_(bool force_publish = false);
 
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
-  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
-  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
-  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
+#endif
+
+#ifdef LD2410S_V2
+#endif
 };
 
 }  // namespace ld2410s

@@ -602,14 +602,22 @@ void LD2410S::receive_() {
     this->rcv_buffer_[this->rcv_end_pos_] = this->read();
 
     PackageType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
+    // PackageType based on frame footer.
+
+    size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
+    // Frame start position based on frame header search, starting from the frame end.
+    if (start_pos == this->rcv_end_pos_) {
+      type == PackageType::UNKNOWN;
+    }
+
+    size_t payload_size = this->get_payload_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
+    // Payload size = frame size - header - footer
+    if (payload_size == 0) {
+      type == PackageType::UNKNOWN;
+    }
+
     if (type != PackageType::UNKNOWN) {
-      size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
-
-      if (start_pos != this->rcv_end_pos_) {
-        size_t data_size = this->get_data_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
-
-    if (type != PackageType::UNKNOWN && start_pos != this->rcv_end_pos_ && payload_size > 0) {
-      esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[0], this->rcv_end_pos_);
+      esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[start_pos], this->rcv_end_pos_ + 1);
 
           switch (type) {
             case PackageType::SHORT_DATA_FRAME:

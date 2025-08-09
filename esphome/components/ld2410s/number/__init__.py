@@ -16,7 +16,7 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-LD2410SMaxDistanceNumber = ld2410s_ns.class_("LD2410SMaxDistanceNumber", number.Number)
+# LD2410SMaxDistanceNumber = ld2410s_ns.class_("LD2410SMaxDistanceNumber", number.Number)
 LD2410SMinDistanceNumber = ld2410s_ns.class_("LD2410SMinDistanceNumber", number.Number)
 LD2410SDelayNumber = ld2410s_ns.class_("LD2410SDelayNumber", number.Number)
 LD2410SStatusReportingFreqNumber = ld2410s_ns.class_(
@@ -54,7 +54,7 @@ CONFIG_SCHEMA = cv.Schema(
     {
         cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
         cv.Optional(CONF_MAX_DISTANCE): number.number_schema(
-            LD2410SMaxDistanceNumber,
+            # LD2410SMaxDistanceNumber,
             device_class=DEVICE_CLASS_DISTANCE,
             entity_category=ENTITY_CATEGORY_CONFIG,
             icon="mdi:arrow-collapse-right",

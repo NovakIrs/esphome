@@ -111,9 +111,12 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
   this->init_();
+
+  this->publish_distance_(0);
+  this->publish_calibration_progress_(0);
+
   for (auto &listener : this->listeners_) {
     listener->on_presence(false);
-    listener->on_distance(0);
   }
 }
 void LD2410S::loop() {
@@ -752,13 +755,9 @@ void LD2410S::process_short_data_frame_(uint8_t *data) {
 
   for (auto &listener : this->listeners_) {
     listener->on_presence(presence_state);
-    // listener->on_distance(distance);
   }
 
-  if (this->distance_sensor_ != nullptr) {
-    ESP_LOGD(TAG, "distance_sensor_ existis, publishing...");
-    this->distance_sensor_->publish_state(distance);
-  }
+  this->publish_distance_(distance);
 }
 void LD2410S::process_data_frame_(uint8_t *data) {
   switch (data[0]) {
@@ -771,13 +770,9 @@ void LD2410S::process_data_frame_(uint8_t *data) {
 
       for (auto &listener : this->listeners_) {
         listener->on_presence(presence_state);
-        // listener->on_distance(distance);
       }
 
-      if (this->distance_sensor_ != nullptr) {
-        ESP_LOGD(TAG, "distance_sensor_ existis, publishing...");
-        this->distance_sensor_->publish_state(distance);
-      }
+      this->publish_distance_(distance);
 
       this->process_data_energy_values_read_(&data[6]);
       break;
@@ -786,27 +781,17 @@ void LD2410S::process_data_frame_(uint8_t *data) {
     case 0x03:  // calibration progress
     {
       uint16_t progress = encode_uint16(data[2], data[1]);
-      ESP_LOGD(TAG, "Calibration progress: %d", progress);
 
       for (auto &listener : this->listeners_) {
         if (progress == 100) {
-          // listener->on_calibration_progress(0);
           listener->on_calibration_update(false);
           this->read_all_thresholds_();
         } else {
-          // listener->on_calibration_progress(progress);
           listener->on_calibration_update(true);
         }
       }
 
-      if (this->calibration_progress_sensor_ != nullptr) {
-        ESP_LOGD(TAG, "calibration_progress_sensor_ existis, publishing...");
-        if (progress == 100) {
-          this->calibration_progress_sensor_->publish_state(0);
-        } else {
-          this->calibration_progress_sensor_->publish_state(progress);
-        }
-      }
+      this->publish_calibration_progress_(progress);
 
       break;
     }
@@ -998,6 +983,25 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
     }
   }
   this->publish_state_ts_energy_values_();
+}
+
+void LD2410S::publish_distance_(uint16_t distance) {
+#ifdef USE_SENSOR
+  if (this->distance_sensor_ != nullptr) {
+    this->distance_sensor_->publish_state(distance);
+  }
+#endif
+}
+void LD2410S::publish_calibration_progress_(uint16_t calibration_progress) {
+#ifdef USE_SENSOR
+  if (this->calibration_progress_sensor_ != nullptr) {
+    if (calibration_progress == 100) {
+      this->calibration_progress_sensor_->publish_state(0);
+    } else {
+      this->calibration_progress_sensor_->publish_state(calibration_progress);
+    }
+  }
+#endif
 }
 
 void LD2410S::publish_state_ts_thresholds_() {

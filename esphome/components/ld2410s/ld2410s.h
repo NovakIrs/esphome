@@ -78,9 +78,7 @@ struct CmdT {
 class LD2410SListener {
  public:
   virtual void on_presence(bool presence){};
-  // virtual void on_distance(uint16_t distance){};
   virtual void on_calibration_update(bool running){};
-  // virtual void on_calibration_progress(uint16_t progress){};
   virtual void on_fw_version(std::string &val){};
   virtual void on_threshold_trigger(std::string &val){};
   virtual void on_threshold_hold(std::string &val){};
@@ -241,6 +239,9 @@ class LD2410S : public Component, public uart::UARTDevice {
   void process_ack_minimal_output_(uint8_t *data);
 
   void process_data_energy_values_read_(uint8_t *data);
+
+  void publish_distance_(uint16_t distance);
+  void publish_calibration_progress_(uint16_t calibration_progress);
 
   void publish_state_ts_thresholds_();
   void publish_state_ts_holds_();

@@ -1,8 +1,13 @@
 #pragma once
 
-#include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 #include "esphome/core/helpers.h"
+#include "esphome/core/defines.h"
+#include "esphome/core/automation.h"
+
+#include "esphome/components/uart/uart.h"
+#include "esphome/components/ld24xx/ld24xx.h"
+
 #ifdef USE_NUMBER
 #include "esphome/components/number/number.h"
 #endif
@@ -21,14 +26,12 @@
 #ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
-#include "esphome/core/automation.h"
 #ifdef USE_TEXT_SENSOR
 #include "esphome/components/text_sensor/text_sensor.h"
 #endif
+
 #include <functional>
 #include <iomanip>
-
-#include "esphome/components/ld24xx/ld24xx.h"
 
 namespace esphome {
 namespace ld2410s {

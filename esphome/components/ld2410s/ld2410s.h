@@ -104,6 +104,10 @@ class LD2410S : public Component, public uart::UARTDevice {
 
 #ifdef USE_NUMBER
   SUB_NUMBER(max_distance)
+  SUB_NUMBER(min_distance)
+  SUB_NUMBER(no_delay)
+  SUB_NUMBER(status_reporting_freq)
+  SUB_NUMBER(distance_reporting_freq)
 #endif
 
  public:
@@ -131,16 +135,16 @@ class LD2410S : public Component, public uart::UARTDevice {
   // void set_max_distance_number(number::Number *max_distance_number) {
   //   this->max_distance_number_ = max_distance_number;
   // };
-  void set_min_distance_number(number::Number *min_distance_number) {
-    this->min_distance_number_ = min_distance_number;
-  };
-  void set_no_delay_number(number::Number *delay_number) { this->no_delay_number_ = delay_number; };
-  void set_status_reporting_freq_number(number::Number *status_reporting_freq_number) {
-    this->status_reporting_freq_number_ = status_reporting_freq_number;
-  };
-  void set_distance_reporting_freq_number(number::Number *distance_reporting_freq_number) {
-    this->distance_reporting_freq_number_ = distance_reporting_freq_number;
-  };
+  // void set_min_distance_number(number::Number *min_distance_number) {
+  //   this->min_distance_number_ = min_distance_number;
+  // };
+  // void set_no_delay_number(number::Number *delay_number) { this->no_delay_number_ = delay_number; };
+  // void set_status_reporting_freq_number(number::Number *status_reporting_freq_number) {
+  //   this->status_reporting_freq_number_ = status_reporting_freq_number;
+  // };
+  // void set_distance_reporting_freq_number(number::Number *distance_reporting_freq_number) {
+  //   this->distance_reporting_freq_number_ = distance_reporting_freq_number;
+  // };
 
   void set_threshold_trigger_number(number::Number *threshold_trigger_number) {
     this->threshold_trigger_number_ = threshold_trigger_number;
@@ -189,10 +193,10 @@ class LD2410S : public Component, public uart::UARTDevice {
 
 #ifdef USE_NUMBER
   // number::Number *max_distance_number_{nullptr};
-  number::Number *min_distance_number_{nullptr};
-  number::Number *no_delay_number_{nullptr};
-  number::Number *status_reporting_freq_number_{nullptr};
-  number::Number *distance_reporting_freq_number_{nullptr};
+  // number::Number *min_distance_number_{nullptr};
+  // number::Number *no_delay_number_{nullptr};
+  // number::Number *status_reporting_freq_number_{nullptr};
+  // number::Number *distance_reporting_freq_number_{nullptr};
 
   number::Number *threshold_trigger_number_{nullptr};
   number::Number *threshold_hold_number_{nullptr};

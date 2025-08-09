@@ -16,7 +16,7 @@ from esphome.const import (
 
 from .. import CONF_LD2410S_ID, LD2410S, ld2410s_ns
 
-# LD2410SMaxDistanceNumber = ld2410s_ns.class_("LD2410SMaxDistanceNumber", number.Number)
+LD2410SMaxDistanceNumber = ld2410s_ns.class_("LD2410SMaxDistanceNumber", number.Number)
 LD2410SMinDistanceNumber = ld2410s_ns.class_("LD2410SMinDistanceNumber", number.Number)
 LD2410SDelayNumber = ld2410s_ns.class_("LD2410SDelayNumber", number.Number)
 LD2410SStatusReportingFreqNumber = ld2410s_ns.class_(
@@ -50,71 +50,73 @@ CONF_THRESHOLD_SNR = "threshold_snr"
 CONF_THRESHOLD_SELECTED_GATE = "threshold_selected_gate"
 
 
-CONFIG_SCHEMA = cv.Schema(
-    {
-        cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-        cv.Optional(CONF_MAX_DISTANCE): number.number_schema(
-            # LD2410SMaxDistanceNumber,
-            device_class=DEVICE_CLASS_DISTANCE,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            icon="mdi:arrow-collapse-right",
-        ),
-        cv.Optional(CONF_MIN_DISTANCE): number.number_schema(
-            LD2410SMinDistanceNumber,
-            device_class=DEVICE_CLASS_DISTANCE,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            icon="mdi:arrow-collapse-left",
-        ),
-        cv.Optional(CONF_NO_DELAY): number.number_schema(
-            LD2410SDelayNumber,
-            device_class=DEVICE_CLASS_DURATION,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_SECOND,
-            icon=ICON_TIMELAPSE,
-        ),
-        cv.Optional(CONF_STATUS_REPORTING_FREQUENCY): number.number_schema(
-            LD2410SStatusReportingFreqNumber,
-            device_class=DEVICE_CLASS_FREQUENCY,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_HERTZ,
-            icon=ICON_PULSE,
-        ),
-        cv.Optional(CONF_DISTANCE_REPORTING_FREQUENCY): number.number_schema(
-            LD2410SDistReportingFreqNumber,
-            device_class=DEVICE_CLASS_FREQUENCY,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_HERTZ,
-            icon=ICON_PULSE,
-        ),
-        cv.Optional(CONF_THRESHOLD_TRIGGER): number.number_schema(
-            LD2410SThresholdTriggerNumber,
-            device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_DECIBEL,
-            icon="mdi:pencil",
-        ),
-        cv.Optional(CONF_THRESHOLD_HOLD): number.number_schema(
-            LD2410SThresholdHoldNumber,
-            device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_DECIBEL,
-            icon="mdi:pencil",
-        ),
-        cv.Optional(CONF_THRESHOLD_SNR): number.number_schema(
-            LD2410SThresholdSnrNumber,
-            device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            unit_of_measurement=UNIT_DECIBEL,
-            icon="mdi:pencil",
-        ),
-        cv.Optional(CONF_THRESHOLD_SELECTED_GATE): number.number_schema(
-            LD2410SThresholdSelectedGateNumber,
-            device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
-            entity_category=ENTITY_CATEGORY_CONFIG,
-            icon="mdi:tune-variant",
-        ),
-    }
-)
+CONFIG_SCHEMA = {
+    # cv.Schema(
+    # {
+    cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
+    cv.Optional(CONF_MAX_DISTANCE): number.number_schema(
+        LD2410SMaxDistanceNumber,
+        device_class=DEVICE_CLASS_DISTANCE,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        icon="mdi:arrow-collapse-right",
+    ),
+    cv.Optional(CONF_MIN_DISTANCE): number.number_schema(
+        LD2410SMinDistanceNumber,
+        device_class=DEVICE_CLASS_DISTANCE,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        icon="mdi:arrow-collapse-left",
+    ),
+    cv.Optional(CONF_NO_DELAY): number.number_schema(
+        LD2410SDelayNumber,
+        device_class=DEVICE_CLASS_DURATION,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_SECOND,
+        icon=ICON_TIMELAPSE,
+    ),
+    cv.Optional(CONF_STATUS_REPORTING_FREQUENCY): number.number_schema(
+        LD2410SStatusReportingFreqNumber,
+        device_class=DEVICE_CLASS_FREQUENCY,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_HERTZ,
+        icon=ICON_PULSE,
+    ),
+    cv.Optional(CONF_DISTANCE_REPORTING_FREQUENCY): number.number_schema(
+        LD2410SDistReportingFreqNumber,
+        device_class=DEVICE_CLASS_FREQUENCY,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_HERTZ,
+        icon=ICON_PULSE,
+    ),
+    cv.Optional(CONF_THRESHOLD_TRIGGER): number.number_schema(
+        LD2410SThresholdTriggerNumber,
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_DECIBEL,
+        icon="mdi:pencil",
+    ),
+    cv.Optional(CONF_THRESHOLD_HOLD): number.number_schema(
+        LD2410SThresholdHoldNumber,
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_DECIBEL,
+        icon="mdi:pencil",
+    ),
+    cv.Optional(CONF_THRESHOLD_SNR): number.number_schema(
+        LD2410SThresholdSnrNumber,
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        unit_of_measurement=UNIT_DECIBEL,
+        icon="mdi:pencil",
+    ),
+    cv.Optional(CONF_THRESHOLD_SELECTED_GATE): number.number_schema(
+        LD2410SThresholdSelectedGateNumber,
+        device_class=DEVICE_CLASS_SIGNAL_STRENGTH,
+        entity_category=ENTITY_CATEGORY_CONFIG,
+        icon="mdi:tune-variant",
+    ),
+}
+
+# )
 
 
 async def to_code(config):

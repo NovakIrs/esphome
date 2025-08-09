@@ -6,7 +6,7 @@
 #include "esphome/core/automation.h"
 
 #include "esphome/components/uart/uart.h"
-#include "esphome/components/ld24xx/ld24xx.h"
+// #include "esphome/components/ld24xx/ld24xx.h"
 
 #ifdef USE_NUMBER
 #include "esphome/components/number/number.h"
@@ -36,7 +36,7 @@
 namespace esphome {
 namespace ld2410s {
 
-using namespace ld24xx;
+// using namespace ld24xx;
 
 // Constants
 static const uint16_t NO_SUB_CMD = 0xffff;

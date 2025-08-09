@@ -69,29 +69,6 @@ void LD2410S::set_response_speed_select(const std::string &response_speed_select
   this->schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 }
 
-// PROTECTED
-
-void LD2410S::init_() {
-  App.feed_wdt();
-  this->status_set_warning("setup");
-
-  this->minimal_output_ = true;
-
-  this->init_status_ = 0;
-  this->active_ = 0;
-  this->last_ = 0;
-
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-  this->schedule_cmd_frame_(FW_READ_CMD);
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-
-  this->status_clear_warning();
-}
 void LD2410S::calibration() { this->schedule_cmd_("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   this->minimal_output_ = true;
@@ -125,6 +102,30 @@ void LD2410S::factory_reset() {
   this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
 
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->status_clear_warning();
+}
+
+// PROTECTED
+
+void LD2410S::init_() {
+  App.feed_wdt();
+  this->status_set_warning("setup");
+
+  this->minimal_output_ = true;
+
+  this->init_status_ = 0;
+  this->active_ = 0;
+  this->last_ = 0;
+
+  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
+  this->schedule_cmd_frame_(FW_READ_CMD);
+  this->schedule_cmd_frame_(PARAMS_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+
   this->status_clear_warning();
 }
 

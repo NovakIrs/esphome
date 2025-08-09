@@ -2,8 +2,6 @@
 
 #define LD2410S_V2
 
-#include "ld2410s_const.h"
-
 #include "esphome/core/application.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
@@ -38,6 +36,8 @@
 
 #include <functional>
 #include <iomanip>
+
+#include "ld2410s_const.h"
 
 namespace esphome {
 namespace ld2410s {
@@ -132,6 +132,9 @@ class LD2410S : public Component, public uart::UARTDevice {
   void set_status_reporting_freq(float status_reporting_freq);
   void set_response_speed_select(const std::string &response_speed_select);
 
+  void calibration();
+  void factory_reset();
+
 #ifdef LD2410S_V2
   void read_all_thresholds_();
 
@@ -163,8 +166,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   ThresholdsT thresholds_;
 
   void init_();
-  void calibration();
-  void factory_reset();
 
   void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);

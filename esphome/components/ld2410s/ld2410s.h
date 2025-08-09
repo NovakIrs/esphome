@@ -78,8 +78,6 @@ struct CmdT {
 
 class LD2410SListener {
  public:
-  // virtual void on_presence(bool presence){};
-  // virtual void on_calibration_update(bool running){};
   virtual void on_fw_version(std::string &val){};
   virtual void on_threshold_trigger(std::string &val){};
   virtual void on_threshold_hold(std::string &val){};
@@ -94,7 +92,7 @@ class LD2410S : public Component, public uart::UARTDevice {
 #endif
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(presence)
-  SUB_BINARY_SENSOR(calibration_update)
+  SUB_BINARY_SENSOR(calibration_runing)
 #endif
 #ifdef USE_BUTTON
   SUB_BUTTON(calibration)
@@ -244,7 +242,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   void publish_distance_(uint16_t distance);
   void publish_calibration_progress_(uint16_t calibration_progress);
   void publish_presence_(bool presence);
-  void publish_calibration_update_(bool running);
+  void publish_calibration_runing_(bool running);
 
   void publish_state_ts_thresholds_();
   void publish_state_ts_holds_();

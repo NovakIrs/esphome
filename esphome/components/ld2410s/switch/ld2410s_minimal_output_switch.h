@@ -11,7 +11,10 @@ class LD2410SMinimalOutputSwitch : public switch_::Switch, public Parented<LD241
   LD2410SMinimalOutputSwitch() = default;
 
  protected:
-  void write_state(bool state) override;
+  void write_state(bool state) override {
+    this->publish_state(state);
+    this->parent_->set_minimal_output(state);
+  }
 };
 
 }  // namespace ld2410s

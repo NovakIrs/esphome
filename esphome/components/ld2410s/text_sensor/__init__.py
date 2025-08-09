@@ -9,9 +9,8 @@ LD2410STextSensor = ld2410s_ns.class_(
     "LD2410STextSensor", text_sensor.TextSensor, cg.Component
 )
 
-FW_VERSION = "fw_version"
-
 CONF_ENERGY_VALUES = "energy_values"
+CONF_FW_VERSION = "fw_version"
 CONF_THRESHOLD_TRIGGERS = "threshold_triggers"
 CONF_THRESHOLD_HOLDS = "threshold_holds"
 CONF_THRESHOLD_SNRS = "threshold_snrs"
@@ -21,7 +20,7 @@ CONFIG_SCHEMA = cv.All(
         {
             cv.GenerateID(): cv.declare_id(LD2410STextSensor),
             cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
-            cv.Optional(FW_VERSION): text_sensor.text_sensor_schema(
+            cv.Optional(CONF_FW_VERSION): text_sensor.text_sensor_schema(
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC, icon=ICON_CHIP
             ),
             cv.Optional(CONF_THRESHOLD_TRIGGERS): text_sensor.text_sensor_schema(
@@ -49,8 +48,8 @@ async def to_code(config):
     var = cg.new_Pvariable(config[CONF_ID])
     await cg.register_component(var, config)
 
-    if FW_VERSION in config:
-        sens = await text_sensor.new_text_sensor(config[FW_VERSION])
+    if CONF_FW_VERSION in config:
+        sens = await text_sensor.new_text_sensor(config[CONF_FW_VERSION])
         cg.add(var.set_fw_version_text_sensor(sens))
 
     if CONF_THRESHOLD_TRIGGERS in config:

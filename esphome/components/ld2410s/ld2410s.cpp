@@ -774,13 +774,11 @@ void LD2410S::process_data_frame_(uint8_t *data) {
     {
       uint16_t progress = encode_uint16(data[2], data[1]);
 
-      for (auto &listener : this->listeners_) {
-        if (progress == 100) {
-          this->publish_calibration_runing_(false);
-          this->read_all_thresholds_();
-        } else {
-          this->publish_calibration_runing_(true);
-        }
+      if (progress == 100) {
+        this->publish_calibration_runing_(false);
+        this->read_all_thresholds_();
+      } else {
+        this->publish_calibration_runing_(true);
       }
 
       this->publish_calibration_progress_(progress);

@@ -6,7 +6,9 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410SCalibrationUpdateBinarySensor : public LD2410SListener, public Component, binary_sensor::BinarySensor {
+class LD2410SCalibrationUpdateBinarySensor : public LD2410SListener,
+                                             public Component,
+                                             public binary_sensor::BinarySensor {
  public:
   void set_calibration_update_sensor(binary_sensor::BinarySensor *bsensor) {
     this->calibration_update_bsensor_ = bsensor;

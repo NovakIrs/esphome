@@ -785,305 +785,306 @@ void LD2410S::process_data_frame_(uint8_t *data) {
           listener->on_calibration_progress(progress);
           listener->on_calibration_update(true);
         }
+      }
 
-        if (progress == 100) {
+      if (progress == 100) {
+        if (this->calibration_progress_sensor_ != nullptr) {
+          this->calibration_progress_sensor_->publish_state(0);
+        } else {
           if (this->calibration_progress_sensor_ != nullptr) {
-            this->calibration_progress_sensor_->publish_state(0);
-          } else {
-            if (this->calibration_progress_sensor_ != nullptr) {
-              this->calibration_progress_sensor_->publish_state(progress);
-            }
+            this->calibration_progress_sensor_->publish_state(progress);
           }
         }
-
-        break;
       }
 
-      default:
-        break;
+      break;
+    }
+
+    default:
+      break;
+  }
+}
+void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
+  CmdAckT ack = this->parse_cms_frame_(buffer, len);
+  int command_word = ack.command;
+  bool result = ack.result;
+  if (!result) {
+    ESP_LOGW(TAG, "Command %x failed", command_word);
+  }
+
+  uint8_t *data = ack.data;
+
+  switch (command_word) {
+    case PARAMS_READ_REPLY:
+      this->process_ack_config_read_(data);
+      this->init_status_ = this->init_status_ | 0b00001000;
+      break;
+
+    case FW_READ_REPLY:
+      this->process_ack_fw_read_(data);
+      this->init_status_ = this->init_status_ | 0b00000100;
+      break;
+
+    case GATE_THRESHOLD_TRIGGER_READ_REPLY:
+      this->process_ack_threshold_trigger_read_(data);
+      this->init_status_ = this->init_status_ | 0b00010000;
+      break;
+
+    case GATE_THRESHOLD_HOLD_READ_REPLY:
+      this->process_ack_threshold_hold_read_(data);
+      this->init_status_ = this->init_status_ | 0b00100000;
+      break;
+
+    case GATE_THRESHOLD_SNR_READ_REPLY:
+      this->process_ack_threshold_snr_read_(data);
+      this->init_status_ = this->init_status_ | 0b01000000;
+      break;
+
+    case CONFIG_MODE_START_REPLY:
+      this->init_status_ = this->init_status_ | 0b00000001;
+      ESP_LOGD(TAG, "Config mode enabled");
+      break;
+
+    case CONFIG_MODE_END_REPLY:
+      this->init_status_ = this->init_status_ | 0b10000000;
+      ESP_LOGD(TAG, "Config mode disabled");
+      break;
+
+    case PARAMS_WRITE_REPLY:
+      ESP_LOGD(TAG, "Config written");
+      break;
+
+    case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
+      ESP_LOGD(TAG, "Trigger Threshold written");
+      break;
+
+    case GATE_THRESHOLD_HOLD_WRITE_REPLY:
+      ESP_LOGD(TAG, "Trigger Hold written");
+      break;
+
+    case GATE_THRESHOLD_SNR_WRITE_REPLY:
+      ESP_LOGD(TAG, "Trigger SNR written");
+      break;
+
+    case OUTPUT_MODE_SWITCH_REPLY:
+      this->process_ack_minimal_output_(data);
+      this->init_status_ = this->init_status_ | 0b00000010;
+      break;
+
+    default:
+      ESP_LOGW(TAG, "< Unknown: %4x", command_word);
+      break;
+  }
+}
+CmdAckT LD2410S::parse_cms_frame_(uint8_t *buffer, size_t length) {
+  CmdAckT result;
+  size_t start = -1;
+  for (size_t i = 0; i < length; i++) {
+    if (memcmp(&buffer[i], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
+      start = i;
+      break;
     }
   }
-  void LD2410S::process_cmd_frame_(uint8_t * buffer, size_t len) {
-    CmdAckT ack = this->parse_cms_frame_(buffer, len);
-    int command_word = ack.command;
-    bool result = ack.result;
-    if (!result) {
-      ESP_LOGW(TAG, "Command %x failed", command_word);
-    }
-
-    uint8_t *data = ack.data;
-
-    switch (command_word) {
-      case PARAMS_READ_REPLY:
-        this->process_ack_config_read_(data);
-        this->init_status_ = this->init_status_ | 0b00001000;
-        break;
-
-      case FW_READ_REPLY:
-        this->process_ack_fw_read_(data);
-        this->init_status_ = this->init_status_ | 0b00000100;
-        break;
-
-      case GATE_THRESHOLD_TRIGGER_READ_REPLY:
-        this->process_ack_threshold_trigger_read_(data);
-        this->init_status_ = this->init_status_ | 0b00010000;
-        break;
-
-      case GATE_THRESHOLD_HOLD_READ_REPLY:
-        this->process_ack_threshold_hold_read_(data);
-        this->init_status_ = this->init_status_ | 0b00100000;
-        break;
-
-      case GATE_THRESHOLD_SNR_READ_REPLY:
-        this->process_ack_threshold_snr_read_(data);
-        this->init_status_ = this->init_status_ | 0b01000000;
-        break;
-
-      case CONFIG_MODE_START_REPLY:
-        this->init_status_ = this->init_status_ | 0b00000001;
-        ESP_LOGD(TAG, "Config mode enabled");
-        break;
-
-      case CONFIG_MODE_END_REPLY:
-        this->init_status_ = this->init_status_ | 0b10000000;
-        ESP_LOGD(TAG, "Config mode disabled");
-        break;
-
-      case PARAMS_WRITE_REPLY:
-        ESP_LOGD(TAG, "Config written");
-        break;
-
-      case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
-        ESP_LOGD(TAG, "Trigger Threshold written");
-        break;
-
-      case GATE_THRESHOLD_HOLD_WRITE_REPLY:
-        ESP_LOGD(TAG, "Trigger Hold written");
-        break;
-
-      case GATE_THRESHOLD_SNR_WRITE_REPLY:
-        ESP_LOGD(TAG, "Trigger SNR written");
-        break;
-
-      case OUTPUT_MODE_SWITCH_REPLY:
-        this->process_ack_minimal_output_(data);
-        this->init_status_ = this->init_status_ | 0b00000010;
-        break;
-
-      default:
-        ESP_LOGW(TAG, "< Unknown: %4x", command_word);
-        break;
-    }
-  }
-  CmdAckT LD2410S::parse_cms_frame_(uint8_t * buffer, size_t length) {
-    CmdAckT result;
-    size_t start = -1;
-    for (size_t i = 0; i < length; i++) {
-      if (memcmp(&buffer[i], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
-        start = i;
-        break;
-      }
-    }
-    if (start == -1) {
-      ESP_LOGE(TAG, "Can't find cmd header");
-      result.result = false;
-      return result;
-    }
-    uint16_t data_length = encode_uint16(buffer[start + 5], buffer[start + 4]);
-    result.length = data_length;
-    uint16_t command_word = encode_uint16(buffer[start + 7], buffer[start + 6]);
-    result.command = command_word;
-    bool ack = buffer[start + 8] == 0x00 && buffer[start + 9] == 0x00;
-    result.result = ack;
-    for (size_t idx = 0; idx < result.length; idx++) {
-      memcpy(&result.data[idx], &buffer[idx + 10], sizeof(buffer[idx + 10]));
-    }
+  if (start == -1) {
+    ESP_LOGE(TAG, "Can't find cmd header");
+    result.result = false;
     return result;
   }
+  uint16_t data_length = encode_uint16(buffer[start + 5], buffer[start + 4]);
+  result.length = data_length;
+  uint16_t command_word = encode_uint16(buffer[start + 7], buffer[start + 6]);
+  result.command = command_word;
+  bool ack = buffer[start + 8] == 0x00 && buffer[start + 9] == 0x00;
+  result.result = ack;
+  for (size_t idx = 0; idx < result.length; idx++) {
+    memcpy(&result.data[idx], &buffer[idx + 10], sizeof(buffer[idx + 10]));
+  }
+  return result;
+}
 
-  void LD2410S::process_ack_config_read_(uint8_t * data) {
-    this->max_dist_ = esphome::ld2410s::LD2410S::read_int(data, 0, 4);
-    this->min_dist_ = esphome::ld2410s::LD2410S::read_int(data, 4, 4);
-    this->delay_ = esphome::ld2410s::LD2410S::read_int(data, 8, 4);
-    this->status_freq_ = esphome::ld2410s::LD2410S::read_int(data, 12, 4);
-    this->dist_freq_ = esphome::ld2410s::LD2410S::read_int(data, 16, 4);
-    this->resp_speed_ = esphome::ld2410s::LD2410S::read_int(data, 20, 4);
+void LD2410S::process_ack_config_read_(uint8_t *data) {
+  this->max_dist_ = esphome::ld2410s::LD2410S::read_int(data, 0, 4);
+  this->min_dist_ = esphome::ld2410s::LD2410S::read_int(data, 4, 4);
+  this->delay_ = esphome::ld2410s::LD2410S::read_int(data, 8, 4);
+  this->status_freq_ = esphome::ld2410s::LD2410S::read_int(data, 12, 4);
+  this->dist_freq_ = esphome::ld2410s::LD2410S::read_int(data, 16, 4);
+  this->resp_speed_ = esphome::ld2410s::LD2410S::read_int(data, 20, 4);
 
 #ifdef USE_NUMBER
-    this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
-    this->min_distance_number_->publish_state(static_cast<float>(this->min_dist_) * 0.7);
-    this->no_delay_number_->publish_state(this->delay_);
-    this->status_reporting_freq_number_->publish_state(static_cast<float>(this->status_freq_) / 10);
-    this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
+  this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
+  this->min_distance_number_->publish_state(static_cast<float>(this->min_dist_) * 0.7);
+  this->no_delay_number_->publish_state(this->delay_);
+  this->status_reporting_freq_number_->publish_state(static_cast<float>(this->status_freq_) / 10);
+  this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
 #endif
 
 #ifdef USE_SELECT
-    this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
+  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
 
-    ESP_LOGV(TAG,
-             "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
-             "dist_resp_freq=%d, resp_speed=%d",
-             this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
-  }
-  void LD2410S::process_ack_fw_read_(const uint8_t *data) {
-    int major_v = esphome::ld2410s::LD2410S::read_int(data, 4, 2);
-    int minor_v = esphome::ld2410s::LD2410S::read_int(data, 6, 2);
-    int patch_v = esphome::ld2410s::LD2410S::read_int(data, 8, 2);
-    std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
+  ESP_LOGV(TAG,
+           "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
+           "dist_resp_freq=%d, resp_speed=%d",
+           this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
+}
+void LD2410S::process_ack_fw_read_(const uint8_t *data) {
+  int major_v = esphome::ld2410s::LD2410S::read_int(data, 4, 2);
+  int minor_v = esphome::ld2410s::LD2410S::read_int(data, 6, 2);
+  int patch_v = esphome::ld2410s::LD2410S::read_int(data, 8, 2);
+  std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
-    for (auto &listener : this->listeners_) {
-      listener->on_fw_version(version);
-    }
-
-    ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
+  for (auto &listener : this->listeners_) {
+    listener->on_fw_version(version);
   }
 
-  void LD2410S::process_ack_threshold_trigger_read_(uint8_t * data) {
-    esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.trigger, 16);
+  ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
+}
+
+void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.trigger, 16);
 #ifdef USE_NUMBER
-    this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
+  this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
 #endif
 
-    this->publish_state_ts_thresholds_();
-  }
+  this->publish_state_ts_thresholds_();
+}
 
-  void LD2410S::process_ack_threshold_hold_read_(uint8_t * data) {
-    esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.hold, 16);
+void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.hold, 16);
 #ifdef USE_NUMBER
-    this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
+  this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
 #endif
 
-    this->publish_state_ts_holds_();
-  }
+  this->publish_state_ts_holds_();
+}
 
-  void LD2410S::process_ack_threshold_snr_read_(uint8_t * data) {
-    esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.snr, 16);
+void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
+  esphome::ld2410s::LD2410S::four_byte_to_int_array(data, this->thresholds_.snr, 16);
 #ifdef USE_NUMBER
-    this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
+  this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
 #endif
 
-    this->publish_state_ts_snrs_();
-  }
+  this->publish_state_ts_snrs_();
+}
 
-  void LD2410S::process_ack_minimal_output_(uint8_t * data) {
+void LD2410S::process_ack_minimal_output_(uint8_t *data) {
 #ifdef USE_SWITCH
-    this->minimal_output_switch_->publish_state(this->minimal_output_);
+  this->minimal_output_switch_->publish_state(this->minimal_output_);
 #endif
 
-    ESP_LOGW(TAG, "Minimal Output Mode switched");
-  }
+  ESP_LOGW(TAG, "Minimal Output Mode switched");
+}
 
-  void LD2410S::process_data_energy_values_read_(uint8_t * data) {
-    for (uint8_t i = 0; i < 16; i++) {
-      uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
-      uint32_t db = 0;
-      if (val > 0) {
-        db = 10 * log10(val);
-      }
-      if (db > this->energy_values_[i]) {
-        this->energy_values_[i] = db;
-      }
+void LD2410S::process_data_energy_values_read_(uint8_t *data) {
+  for (uint8_t i = 0; i < 16; i++) {
+    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+    uint32_t db = 0;
+    if (val > 0) {
+      db = 10 * log10(val);
     }
-    this->publish_state_ts_energy_values_();
+    if (db > this->energy_values_[i]) {
+      this->energy_values_[i] = db;
+    }
+  }
+  this->publish_state_ts_energy_values_();
+}
+
+void LD2410S::publish_state_ts_thresholds_() {
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.trigger, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_threshold_trigger(vals);
+  }
+  ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
+}
+void LD2410S::publish_state_ts_holds_() {
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.hold, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_threshold_hold(vals);
+  }
+  ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
+}
+void LD2410S::publish_state_ts_snrs_() {
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.snr, 16, 2);
+
+  for (auto &listener : this->listeners_) {
+    listener->on_threshold_snr(vals);
   }
 
-  void LD2410S::publish_state_ts_thresholds_() {
-    std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.trigger, 16, 2);
+  ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
+}
+void LD2410S::publish_state_ts_energy_values_() {
+  std::string vals = esphome::ld2410s::LD2410S::format_int(this->energy_values_, 16, 2);
+
+  if (energy_values_str_ != vals) {
+    energy_values_str_ = vals;
 
     for (auto &listener : this->listeners_) {
-      listener->on_threshold_trigger(vals);
+      listener->on_energy_values(vals);
     }
-    ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
+
+    ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());
   }
-  void LD2410S::publish_state_ts_holds_() {
-    std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.hold, 16, 2);
+}
 
-    for (auto &listener : this->listeners_) {
-      listener->on_threshold_hold(vals);
-    }
-    ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
-  }
-  void LD2410S::publish_state_ts_snrs_() {
-    std::string vals = esphome::ld2410s::LD2410S::format_int(this->thresholds_.snr, 16, 2);
+std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
+  if (len == 0)
+    return "";
 
-    for (auto &listener : this->listeners_) {
-      listener->on_threshold_snr(vals);
-    }
+  std::string result;
+  int sum = 0;
+  for (uint8_t i = 0; i < len; ++i) {
+    sum += in[i];
 
-    ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
-  }
-  void LD2410S::publish_state_ts_energy_values_() {
-    std::string vals = esphome::ld2410s::LD2410S::format_int(this->energy_values_, 16, 2);
+    if (i > 0)
+      result += ',';
 
-    if (energy_values_str_ != vals) {
-      energy_values_str_ = vals;
+    std::string num = std::to_string(in[i]);
 
-      for (auto &listener : this->listeners_) {
-        listener->on_energy_values(vals);
-      }
+    if (num.length() < min_w)
+      result += std::string(min_w - num.length(), '0');
 
-      ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());
-    }
+    result += num;
   }
 
-  std::string LD2410S::format_int(uint32_t * in, uint8_t len, uint8_t min_w) {
-    if (len == 0)
-      return "";
-
-    std::string result;
-    int sum = 0;
-    for (uint8_t i = 0; i < len; ++i) {
-      sum += in[i];
-
-      if (i > 0)
-        result += ',';
-
-      std::string num = std::to_string(in[i]);
-
-      if (num.length() < min_w)
-        result += std::string(min_w - num.length(), '0');
-
-      result += num;
-    }
-
-    if (sum == 0) {
-      result = "";
-    }
-
-    return result;
+  if (sum == 0) {
+    result = "";
   }
 
-  void LD2410S::four_byte_to_int_array(uint8_t * in, uint32_t * out, uint8_t out_len) {
-    for (uint8_t i = 0; i < out_len; i++) {
-      out[i] = encode_uint32(in[i * 4 + 3], in[i * 4 + 2], in[i * 4 + 1], in[i * 4 + 0]);
+  return result;
+}
+
+void LD2410S::four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len) {
+  for (uint8_t i = 0; i < out_len; i++) {
+    out[i] = encode_uint32(in[i * 4 + 3], in[i * 4 + 2], in[i * 4 + 1], in[i * 4 + 0]);
+  }
+}
+
+void LD2410S::hex_diag(const char *msg, const uint8_t *data, size_t length) {
+  char output[length * 3 + 1];
+
+  for (size_t i = 0; i < length; i++) {
+    if (i > 0) {  // Add a space before each byte except the first one
+      sprintf(output + (i * 3 - 1), " ");
     }
+    sprintf(output + (i * 3), "%02X", data[i]);
   }
 
-  void LD2410S::hex_diag(const char *msg, const uint8_t *data, size_t length) {
-    char output[length * 3 + 1];
+  output[length * 3 - 1] = '\0';  // Null-terminate the string
 
-    for (size_t i = 0; i < length; i++) {
-      if (i > 0) {  // Add a space before each byte except the first one
-        sprintf(output + (i * 3 - 1), " ");
-      }
-      sprintf(output + (i * 3), "%02X", data[i]);
-    }
+  ESP_LOGD(TAG, "%s %s ", msg, output);
+}
 
-    output[length * 3 - 1] = '\0';  // Null-terminate the string
-
-    ESP_LOGD(TAG, "%s %s ", msg, output);
+int LD2410S::read_int(const uint8_t *buffer, size_t pos, size_t len) {
+  unsigned int ret = 0;
+  int shift = 0;
+  for (size_t i = 0; i < len; i++) {
+    ret |= static_cast<unsigned int>(buffer[pos + i]) << shift;
+    shift += 8;
   }
-
-  int LD2410S::read_int(const uint8_t *buffer, size_t pos, size_t len) {
-    unsigned int ret = 0;
-    int shift = 0;
-    for (size_t i = 0; i < len; i++) {
-      ret |= static_cast<unsigned int>(buffer[pos + i]) << shift;
-      shift += 8;
-    }
-    return ret;
-  };
+  return ret;
+};
 
 }  // namespace ld2410s
 }  // namespace esphome

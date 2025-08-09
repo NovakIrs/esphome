@@ -76,15 +76,6 @@ struct CmdT {
   CmdFrameT *cmd_frame;
 };
 
-// class LD2410SListener {
-//  public:
-//   virtual void on_fw_version(std::string &val){};
-//   virtual void on_threshold_trigger(std::string &val){};
-//   virtual void on_threshold_hold(std::string &val){};
-//   virtual void on_threshold_snr(std::string &val){};
-//   virtual void on_energy_values(std::string &val){};
-// };
-
 class LD2410S : public Component, public uart::UARTDevice {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
@@ -123,8 +114,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   void loop() override;
   void dump_config() override;
   float get_setup_priority() const override;
-
-  // void register_listener(LD2410SListener *listener) { this->listeners_.push_back(listener); };
 
   void calibration();
   void factory_reset();
@@ -191,7 +180,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   bool cmd_active_{false};
 
   std::string energy_values_str_ = "";
-  // std::vector<LD2410SListener *> listeners_{};
   CmdT commands_[CMD_EXEC_BUFFER_SIZE];
   ThresholdsT thresholds_;
 

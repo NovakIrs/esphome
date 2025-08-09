@@ -89,13 +89,13 @@ class LD2410SListener {
 };
 
 class LD2410S : public Component, public uart::UARTDevice {
-#ifdef USE_BINARY_SENSOR
-  SUB_BINARY_SENSOR(presence)
-  SUB_BINARY_SENSOR(calibration_update)
-#endif
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
   SUB_SENSOR(distance)
+#endif
+#ifdef USE_BINARY_SENSOR
+  SUB_BINARY_SENSOR(presence)
+  SUB_BINARY_SENSOR(calibration_update)
 #endif
 #ifdef USE_BUTTON
   SUB_BUTTON(calibration)

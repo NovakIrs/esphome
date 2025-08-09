@@ -649,6 +649,7 @@ void LD2410S::receive_() {
       this->rcv_end_pos_++;
       if (this->rcv_end_pos_ >= RCV_BUFFER_SIZE - 1) {
         this->rcv_end_pos_ = 0;
+        ESP_LOGW(TAG, "Buffer overflow, resetting rcv_end_pos_ to 0");
       }
     }
   }

@@ -137,26 +137,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   void set_threshold_snr(float threshold_snr);
   void set_response_speed_select(const std::string &response_speed_select);
 
-  // #ifdef USE_NUMBER
-
-  //   void set_threshold_trigger_number(number::Number *threshold_trigger_number) {
-  //     this->threshold_trigger_number_ = threshold_trigger_number;
-  //   };
-  //   void set_threshold_hold_number(number::Number *threshold_hold_number) {
-  //     this->threshold_hold_number_ = threshold_hold_number;
-  //   };
-  //   void set_threshold_snr_number(number::Number *threshold_snr_number) {
-  //     this->threshold_snr_number_ = threshold_snr_number;
-  //   };
-  //   void set_threshold_selected_gate_number(number::Number *threshold_selected_gate_number) {
-  //     this->threshold_selected_gate_number_ = threshold_selected_gate_number;
-  //     // this->threshold_selected_gate_number_->publish_state(this->thresholds_.selected_gate);
-  //     // this->threshold_trigger_number_->publish_state(this->thresholds_.trigger[this->thresholds_.selected_gate]);
-  //     // this->threshold_hold_number_->publish_state(this->thresholds_.hold[this->thresholds_.selected_gate]);
-  //     // this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
-  //   };
-  // #endif
-
  protected:
   size_t rcv_end_pos_ = 0;
   uint32_t max_dist_{0};
@@ -183,14 +163,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   void cmd_buffer_insert_(CmdFrameT *cmd_frame);
   void cmd_buffer_finished_();
   void cmd_buffer_inc_(uint8_t &index);
-
-  // #ifdef USE_NUMBER
-
-  //   number::Number *threshold_trigger_number_{nullptr};
-  //   number::Number *threshold_hold_number_{nullptr};
-  //   number::Number *threshold_snr_number_{nullptr};
-  //   number::Number *threshold_selected_gate_number_{nullptr};
-  // #endif
 
   void receive_();
   PackageType get_frame_type_(uint8_t *buffer, size_t pos);

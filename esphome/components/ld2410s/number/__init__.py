@@ -51,8 +51,6 @@ CONF_THRESHOLD_SELECTED_GATE = "threshold_selected_gate"
 
 
 CONFIG_SCHEMA = {
-    # cv.Schema(
-    # {
     cv.GenerateID(CONF_LD2410S_ID): cv.use_id(LD2410S),
     cv.Optional(CONF_MAX_DISTANCE): number.number_schema(
         LD2410SMaxDistanceNumber,
@@ -115,8 +113,6 @@ CONFIG_SCHEMA = {
         icon="mdi:tune-variant",
     ),
 }
-
-# )
 
 
 async def to_code(config):

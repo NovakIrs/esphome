@@ -107,12 +107,10 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
 };
 
 static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
-// static const uint32_t ENERGY_VALUES_PERIOD = 4000;  // period for sending and reseting max energy values
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
 void LD2410S::setup() {
   this->init_();
-  // this->set_interval(ENERGY_VALUES_PERIOD, [this]() { this->publish_state_ts_energy_values_(); });
   for (auto &listener : this->listeners_) {
     listener->on_presence(false);
     listener->on_distance(0);
@@ -217,6 +215,11 @@ void LD2410S::factory_reset() {
 }
 void LD2410S::set_minimal_output(bool state) {
   this->minimal_output_ = state;
+  if (!state) {
+    for (auto &energy_value : this->energy_values_) {
+      energy_value = 0;
+    }
+  }
   this->schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
 }
 void LD2410S::set_delay(float delay) {
@@ -956,9 +959,9 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
     if (val > 0) {
       db = 10 * log10(val);
     }
-    // if (db > this->energy_values_[i]) {
-    this->energy_values_[i] = db;
-    // }
+    if (db > this->energy_values_[i]) {
+      this->energy_values_[i] = db;
+    }
   }
   this->publish_state_ts_energy_values_();
 }
@@ -1000,10 +1003,6 @@ void LD2410S::publish_state_ts_energy_values_() {
 
     ESP_LOGD(TAG, "Energy Values: %s", vals.c_str());
   }
-
-  // for (auto &energy_value : this->energy_values_) {
-  //   energy_value = 0;
-  // }
 }
 
 std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
@@ -1011,7 +1010,10 @@ std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
     return "";
 
   std::string result;
+  int sum = 0;
   for (uint8_t i = 0; i < len; ++i) {
+    sum += in[i];
+
     if (i > 0)
       result += ',';
 
@@ -1021,6 +1023,10 @@ std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
       result += std::string(min_w - num.length(), '0');
 
     result += num;
+  }
+
+  if (sum == 0) {
+    result = "";
   }
 
   return result;

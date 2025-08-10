@@ -20,7 +20,7 @@ enum class EvaluationResult { UNKNOWN, OK, NOK };
 
 static const size_t RCV_BUFFER_SIZE = 128;
 
-class LD2410Srx : uart::UARTDevice, LD2410Shelp {
+class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
  public:
   bool receive();
 

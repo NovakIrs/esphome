@@ -14,7 +14,7 @@ bool LD2410Srx::receive() {
     this->reset_();
   }
 
-  this->rcv_buffer_[this->end_pos_] = this->read();
+  // this->rcv_buffer_[this->end_pos_] = this->read();
   ESP_LOGD(TAG, "Receive one byte");
 
   // while (this->available()) {

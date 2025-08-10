@@ -22,11 +22,11 @@ void LD2410S::setup() {
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
-    // if (this->rx_.receive()) {
-    //   this->process_();
-    // } else
-    if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
-        this->init_status_ != 0b11111111) {
+    if (this->rx_.receive()) {
+      ESP_LOGD(TAG, "received==true");
+      //   this->process_();
+    } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+               this->init_status_ != 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
       this->init_();
     } else {

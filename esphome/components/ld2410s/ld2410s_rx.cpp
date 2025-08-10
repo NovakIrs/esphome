@@ -5,6 +5,8 @@ namespace esphome {
 namespace ld2410s {
 
 bool LD2410Srx::receive() {
+  return false;
+
   if (!this->available()) {
     return false;
   }

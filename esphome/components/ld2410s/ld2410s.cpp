@@ -474,11 +474,11 @@ void LD2410S::process_() {
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:
-      this->process_short_data_frame_(&data[1]);  // ToDo
+      this->process_short_data_frame_(&data[0]);
       break;
 
     case RxFrameType::STD_DATA_FRAME:
-      this->process_data_frame_(&data[6], this->rx_.payload_size() - 2);  // ToDo
+      this->process_data_frame_(&data[0], this->rx_.payload_size() - 2);
       break;
 
     case RxFrameType::CMD_FRAME:
@@ -633,18 +633,18 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
 }
 CmdAckT LD2410S::parse_cms_frame_(uint8_t *buffer, size_t length) {
   CmdAckT result;
-  size_t start = -1;
-  for (size_t i = 0; i < length; i++) {
-    if (memcmp(&buffer[i], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
-      start = i;
-      break;
-    }
-  }
-  if (start == -1) {
-    ESP_LOGE(TAG, "Can't find cmd header");
-    result.result = false;
-    return result;
-  }
+  size_t start = -4;
+  // for (size_t i = 0; i < length; i++) {
+  //   if (memcmp(&buffer[i], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
+  //     start = i;
+  //     break;
+  //   }
+  // }
+  // if (start == -1) {
+  //   ESP_LOGE(TAG, "Can't find cmd header");
+  //   result.result = false;
+  //   return result;
+  // }
   uint16_t data_length = encode_uint16(buffer[start + 5], buffer[start + 4]);
   result.length = data_length;
   uint16_t command_word = encode_uint16(buffer[start + 7], buffer[start + 6]);

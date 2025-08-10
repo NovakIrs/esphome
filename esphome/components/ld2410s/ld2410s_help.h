@@ -20,7 +20,7 @@ class LD2410Shelp : public uart::UARTDevice {
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
   static void hex_diag(const char *msg, const uint8_t *data, size_t length);
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
-}
+};
 
 }  // namespace ld2410s
 }  // namespace esphome

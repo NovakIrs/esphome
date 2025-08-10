@@ -74,8 +74,9 @@ EvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_footer_()) {
     case EvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame type
       this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
-      ESP_LOGD(TAG, "correct header and size, but footer does not match expected: size:%d, expected:%d", this->end_pos_,
-               this->expected_frame_size_);
+      ESP_LOGD(TAG,
+               "correct header and size, but footer does not match expected: size:%d, expected:%d, payload_size: %d",
+               this->end_pos_, this->expected_frame_size_, this->payload_size_);
       return EvaluationResult::NOK;
 
     case EvaluationResult::UNKNOWN:  // size less then expected size for frame type
@@ -107,7 +108,6 @@ EvaluationResult LD2410Srx::evaluate_header_() {
       memcmp(&rcv_buffer_[0], &SHORT_DATA_FRAME_HEADER, sizeof(SHORT_DATA_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::SHORT_DATA_FRAME;
     this->header_footer_size_ = sizeof(SHORT_DATA_FRAME_HEADER);
-    ;
     return EvaluationResult::OK;
   }
 
@@ -115,7 +115,6 @@ EvaluationResult LD2410Srx::evaluate_header_() {
       memcmp(&rcv_buffer_[0], &STD_DATA_FRAME_HEADER, sizeof(STD_DATA_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::SHORT_DATA_FRAME;
     this->header_footer_size_ = sizeof(STD_DATA_FRAME_HEADER);
-    ;
     return EvaluationResult::OK;
   }
 
@@ -123,7 +122,6 @@ EvaluationResult LD2410Srx::evaluate_header_() {
       memcmp(&rcv_buffer_[0], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::CMD_FRAME;
     this->header_footer_size_ = sizeof(CMD_FRAME_HEADER);
-    ;
     return EvaluationResult::OK;
   }
 
@@ -164,13 +162,21 @@ EvaluationResult LD2410Srx::evaluate_size_() {
       break;
 
     case RxFrameType::STD_DATA_FRAME:
+      if (this->expected_frame_size_ == 0) {
+        this->size_field_size_ = 2;  // size field is 2 bytes
+        if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
+          this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
+          this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
+          this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
+        }
+      }
+      break;
+
     case RxFrameType::CMD_FRAME:
       if (this->expected_frame_size_ == 0) {
         this->size_field_size_ = 2;  // size field is 2 bytes
         if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
           this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
-          //          this->payload_size_ = encode_uint16(this->rcv_buffer_[this->header_footer_size_ + 1],
-          //          this->rcv_buffer_[this->header_footer_size_]);;
           this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
           this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
         }

@@ -9,8 +9,6 @@ bool LD2410Srx::receive() {
     return false;
   }
 
-  return false;
-
   if (this->frame_type_ != RxFrameType::UNKNOWN) {
     this->reset_();
   }

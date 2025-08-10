@@ -227,7 +227,7 @@ void LD2410Srx::reset_() {
   this->header_footer_size_ = 0;
   this->size_field_size_ = 0;
   this->frame_type_ = RxFrameType::UNKNOWN;
-  this->payload_ready_ = true;
+  this->payload_ready_ = false;
   this->payload_pos_ = 0;
   this->payload_size_ = 0;
   this->expected_frame_size_ = 0;

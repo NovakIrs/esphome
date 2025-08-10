@@ -3,13 +3,11 @@
 #pragma once
 
 #include "esphome/core/application.h"
-#include "esphome/core/defines.h"
-#include <functional>
+// #include "esphome/core/defines.h"
+// #include <functional>
 
 namespace esphome {
 namespace ld2410s {
-
-static const char *const TAG = "ld2410s";
 
 static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
 static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
@@ -109,9 +107,6 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
     // Not available... and probably need improvement ToDo
     // It would be good to get it from virgin ld2410s, before any calibration.
 };
-
-static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
-static const uint8_t CMD_EXEC_REPEAT = 3;
 
 }  // namespace ld2410s
 }  // namespace esphome

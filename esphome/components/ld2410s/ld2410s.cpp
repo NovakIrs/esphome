@@ -18,12 +18,10 @@ void LD2410S::setup() {
 #ifdef LD2410S_V2
   this->set_threshold_selected_gate(0);
 #endif
-  ESP_LOGD(TAG, "setup done");
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
-    //    App.feed_wdt();
-    if (!this->receive()) {
+    if (!this->receive_()) {
       if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
           this->init_status_ != 0b11111111) {
         ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
@@ -458,7 +456,7 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   this->status_clear_warning();
 }
 
-bool LD2410S::receive() {
+bool LD2410S::receive_() {
   bool received = false;
   int no_block_count = 0;
   while (this->available() && no_block_count < 100) {

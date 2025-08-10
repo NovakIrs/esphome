@@ -9,14 +9,11 @@ EvaluationResult LD2410Srx::receive_one(int one) {
     this->reset_();
   }
 
-  // ESP_LOGD(TAG, "Receive one byte: %d : %x", this->end_pos_, one);
   this->rcv_buffer_[this->end_pos_] = one;
   EvaluationResult result = this->evaluate_();
-  // this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
 
   switch (result) {
     case EvaluationResult::OK:
-      // ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
       this->payload_ready_ = true;
       this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       break;
@@ -27,13 +24,11 @@ EvaluationResult LD2410Srx::receive_one(int one) {
         ESP_LOGD(TAG, "Received data buffer overflow, resetting");
         this->reset_();
       } else {
-        // ESP_LOGD(TAG, "Received correctly one, frame: %d", this->end_pos_);
       }
       break;
 
     case EvaluationResult::NOK:
     default:
-      // ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
       this->reset_();
       result = EvaluationResult::UNKNOWN;
       break;
@@ -264,166 +259,6 @@ void LD2410Srx::reset_() {
   this->payload_size_ = 0;
   this->expected_frame_size_ = 0;
 }
-
-// bool LD2410Srx::receive_x() {
-//   if (!this->available()) {
-//     return false;
-//   }
-
-//   if (this->frame_ok_ == EvaluationResult::OK) {
-//     this->reset_();
-//   }
-
-//   while (this->available()) {
-//     this->rcv_buffer_[this->end_pos_] = this->read();
-
-//     switch (this->evaluate_()) {
-//       case EvaluationResult::OK:
-//         this->received_ok = true;
-//         this->frame_ok_ = EvaluationResult::OK;
-//         return true;
-
-//       case EvaluationResult::NOK:
-//         ESP_LOGD(TAG, "Error evaluating received data %d", this->rcv_end_pos_);
-//         this->reset_();
-
-//       case else:
-//         break;
-//     }
-
-//     FrameType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
-//     // FrameType based on frame footer.
-
-//     size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
-//     // Frame start position based on frame header search, starting from the frame end.
-//     if (start_pos == this->rcv_end_pos_) {
-//       type = FrameType::UNKNOWN;
-//     }
-
-//     size_t payload_size = this->get_payload_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
-//     // Payload size = frame size - header - footer
-//     if (payload_size == 0) {
-//       type = FrameType::UNKNOWN;
-//     }
-
-//     if (type != FrameType::UNKNOWN) {
-//       esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[start_pos], this->rcv_end_pos_ + 1 - start_pos);
-//       if (start_pos > 0) {
-//         ESP_LOGW(TAG, "Frame starting at %x", start_pos);
-//       }
-
-//       // ToDo
-//       return true;
-
-//       this->rcv_end_pos_ = 0;
-
-//     } else {
-//       this->rcv_end_pos_++;
-
-//       if (this->rcv_end_pos_ >= RCV_BUFFER_SIZE - 1) {
-//         this->rcv_end_pos_ = 0;
-//         ESP_LOGW(TAG, "Buffer overflow, resetting rcv_end_pos_ to 0");
-//       }
-//     }
-//   }
-// }
-// FrameType LD2410Srx::get_frame_type_(uint8_t *buffer, size_t end_pos) {
-//   if (end_pos < 4) {
-//     return FrameType::UNKNOWN;
-//   }
-//   if (buffer[end_pos] == SHORT_DATA_FRAME_FOOTER && buffer[end_pos - 4] == SHORT_DATA_FRAME_HEADER) {
-//     return FrameType::SHORT_DATA_FRAME;
-//   }
-//   if (end_pos < 12) {
-//     return FrameType::UNKNOWN;
-//   }
-//   if (memcmp(&buffer[end_pos - 3], &STD_DATA_FRAME_FOOTER, sizeof(STD_DATA_FRAME_FOOTER)) == 0) {
-//     return FrameType::STD_DATA_FRAME;
-//   }
-//   if (memcmp(&buffer[end_pos - 3], &CMD_FRAME_FOOTER, sizeof(CMD_FRAME_FOOTER)) == 0) {
-//     return FrameType::CMD_FRAME;
-//   }
-//   return FrameType::UNKNOWN;
-// }
-// size_t LD2410Srx::get_frame_start_(uint8_t *buffer, size_t end_pos, FrameType type) {
-//   if (type == FrameType::UNKNOWN) {
-//     return end_pos;
-//   }
-
-//   size_t min_length = 0;
-//   uint32_t header_frame = 0;
-//   int header_frame_len = 0;
-
-//   switch (type) {
-//     case FrameType::SHORT_DATA_FRAME:
-//       min_length = 4;
-//       header_frame = SHORT_DATA_FRAME_HEADER;
-//       header_frame_len = sizeof(SHORT_DATA_FRAME_HEADER);
-//       break;
-
-//     case FrameType::STD_DATA_FRAME:
-//       min_length = 12;
-//       header_frame = STD_DATA_FRAME_HEADER;
-//       header_frame_len = sizeof(STD_DATA_FRAME_HEADER);
-//       break;
-
-//     case FrameType::CMD_FRAME:
-//       min_length = 12;
-//       header_frame = CMD_FRAME_HEADER;
-//       header_frame_len = sizeof(CMD_FRAME_HEADER);
-//       break;
-
-//     default:
-//       return end_pos;
-//       break;
-//   }
-
-//   if (end_pos + 1 < min_length) {
-//     return end_pos;
-//   }
-
-//   for (uint8_t i = end_pos - min_length; i >= 0; i--) {
-//     if (header_frame == esphome::ld2410s::LD2410S::read_int(buffer, i, header_frame_len)) {
-//       return i;
-//     }
-//   }
-
-//   return end_pos;
-// }
-// size_t LD2410Srx::get_payload_size_(uint8_t *buffer, size_t end_pos, FrameType type, size_t start_pos) {
-//   if (type == FrameType::UNKNOWN || end_pos == start_pos) {
-//     return 0;
-//   }
-
-//   size_t payload_size = 0;
-//   size_t expected_full_frame_size = 0;
-
-//   switch (type) {
-//     case FrameType::SHORT_DATA_FRAME:
-//       payload_size = 3;
-//       expected_full_frame_size = 1 + payload_size + 1;
-//       break;
-
-//     case FrameType::STD_DATA_FRAME:
-//     case FrameType::CMD_FRAME:
-//       payload_size = esphome::ld2410s::LD2410S::read_int(buffer, start_pos + 4, 2);
-//       expected_full_frame_size = 4 + 2 + payload_size + 4;
-//       break;
-
-//     default:
-//       break;
-//   }
-
-//   if (payload_size == 0) {
-//     return 0;
-//   }
-
-//   if (expected_full_frame_size != end_pos - start_pos + 1) {
-//     return 0;
-//   }
-
-//   return payload_size;
-// }
 
 }  // namespace ld2410s
 }  // namespace esphome

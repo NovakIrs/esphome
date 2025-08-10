@@ -46,10 +46,6 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
   EvaluationResult evaluate_size_();
   EvaluationResult evaluate_footer_();
   void reset_();
-
-  // RxFrameType get_frame_type_(uint8_t *buffer, size_t pos);
-  // size_t get_frame_start_(uint8_t *buffer, size_t end_pos, RxFrameType type);
-  // size_t get_payload_size_(uint8_t *buffer, size_t end_pos, RxFrameType type, size_t start_pos);
 };
 
 }  // namespace ld2410s

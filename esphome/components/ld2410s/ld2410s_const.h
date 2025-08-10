@@ -6,6 +6,8 @@
 namespace esphome {
 namespace ld2410s {
 
+static const char *const TAG = "ld2410s";
+
 static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
 static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
 

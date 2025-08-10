@@ -6,9 +6,9 @@ namespace ld2410s {
 
 bool LD2410Srx::receive() {
   ESP_LOGD(TAG, "Available");
-  // if (!this->available()) {
-  //   return false;
-  // }
+  if (!this->available()) {
+    return false;
+  }
 
   // if (this->frame_type_ != RxFrameType::UNKNOWN) {
   //   this->reset_();

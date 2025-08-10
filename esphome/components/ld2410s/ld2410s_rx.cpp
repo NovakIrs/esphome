@@ -8,6 +8,7 @@ bool LD2410Srx::receive() {
   if (!this->available()) {
     return false;
   }
+  ESP_LOGD(TAG, "Available");
 
   if (this->frame_type_ != RxFrameType::UNKNOWN) {
     this->reset_();
@@ -15,6 +16,7 @@ bool LD2410Srx::receive() {
 
   while (this->available()) {
     this->rcv_buffer_[this->end_pos_] = this->read();
+    ESP_LOGD(TAG, "Receive one byte");
 
     // switch (this->evaluate_()) {
     //   case EvaluationResult::OK:

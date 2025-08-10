@@ -458,6 +458,8 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 }
 
 void LD2410S::process_() {
+  return;
+
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:

@@ -9,9 +9,10 @@ EvaluationResult LD2410Srx::receive_one(int one) {
     this->reset_();
   }
 
-  ESP_LOGD(TAG, "Receive one byte: %d", this->end_pos_);
+  ESP_LOGD(TAG, "Receive one byte: %d : %x", this->end_pos_, one);
   this->rcv_buffer_[this->end_pos_] = one;
   EvaluationResult result = this->evaluate_();
+  this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
 
   switch (result) {
     case EvaluationResult::OK:

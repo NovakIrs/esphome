@@ -474,15 +474,15 @@ void LD2410S::process_() {
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:
-      this->process_short_data_frame_(&data[0]);
+      this->process_short_data_frame_();
       break;
 
     case RxFrameType::STD_DATA_FRAME:
-      this->process_data_frame_(&data[0], this->rx_.payload_size() - 2);
+      this->process_data_frame_();
       break;
 
     case RxFrameType::CMD_FRAME:
-      this->process_cmd_frame_(data, this->rx_.payload_size() + 1);  // ToDo
+      this->process_cmd_frame_();  // ToDo
       this->cmd_buffer_finished_();
       break;
 
@@ -492,22 +492,25 @@ void LD2410S::process_() {
   }
 }
 
-void LD2410S::process_short_data_frame_(uint8_t *data) {
-  const bool presence_state = data[0] > 1;
-  uint16_t distance = encode_uint16(data[2], data[1]);
+void LD2410S::process_short_data_frame_() {
+  const bool presence_state = this->rx_.payload_data()[0] > 1;
+  uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
+
   if (!presence_state)
     distance = 0;
 
   this->publish_distance_(distance);
   this->publish_presence_(presence_state);
 }
-void LD2410S::process_data_frame_(uint8_t *data, size_t data_size) {
-  switch (data[0]) {
+void LD2410S::process_data_frame_() {
+  // uint8_t *data, size_t data_size
+
+  switch (this->rx_.payload_data()[0]) {
     case 0x01:  // standard data
     {
-      const bool presence_state = data[1] > 1;
+      const bool presence_state = this->rx_.payload_data()[1] > 1;
 
-      uint16_t distance = encode_uint16(data[3], data[2]);
+      uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
       if (!presence_state)
         distance = 0;
 
@@ -515,7 +518,7 @@ void LD2410S::process_data_frame_(uint8_t *data, size_t data_size) {
       this->publish_presence_(presence_state);
 
 #ifdef LD2410S_V2
-      this->process_data_energy_values_read_(&data[6]);
+      this->process_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
 
       break;
@@ -523,7 +526,7 @@ void LD2410S::process_data_frame_(uint8_t *data, size_t data_size) {
 
     case 0x03:  // calibration progress
     {
-      uint16_t progress = encode_uint16(data[2], data[1]);
+      uint16_t progress = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
 
       if (progress == 100) {
         this->publish_calibration_runing_(false);
@@ -545,15 +548,14 @@ void LD2410S::process_data_frame_(uint8_t *data, size_t data_size) {
       break;
   }
 }
-void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
-  CmdAckT ack = this->parse_cms_frame_(buffer, len);
-  int command_word = ack.command;
-  bool result = ack.result;
-  if (!result) {
+void LD2410S::process_cmd_frame_() {
+  int command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
+  bool ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
+  if (!ack) {
     ESP_LOGW(TAG, "Command %x failed", command_word);
   }
 
-  uint8_t *data = ack.data;
+  uint8_t *data = &this->rx_.payload_data()[4];
 
   switch (command_word) {
     case PARAMS_READ_REPLY:
@@ -631,31 +633,6 @@ void LD2410S::process_cmd_frame_(uint8_t *buffer, size_t len) {
       ESP_LOGW(TAG, "< Unknown: %4x", command_word);
       break;
   }
-}
-CmdAckT LD2410S::parse_cms_frame_(uint8_t *buffer, size_t length) {
-  CmdAckT result;
-  size_t start = -4;
-  // for (size_t i = 0; i < length; i++) {
-  //   if (memcmp(&buffer[i], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
-  //     start = i;
-  //     break;
-  //   }
-  // }
-  // if (start == -1) {
-  //   ESP_LOGE(TAG, "Can't find cmd header");
-  //   result.result = false;
-  //   return result;
-  // }
-  uint16_t data_length = encode_uint16(buffer[start + 5], buffer[start + 4]);
-  result.length = data_length;
-  uint16_t command_word = encode_uint16(buffer[start + 7], buffer[start + 6]);
-  result.command = command_word;
-  bool ack = buffer[start + 8] == 0x00 && buffer[start + 9] == 0x00;
-  result.result = ack;
-  for (size_t idx = 0; idx < result.length; idx++) {
-    memcpy(&result.data[idx], &buffer[idx + 10], sizeof(buffer[idx + 10]));
-  }
-  return result;
 }
 
 void LD2410S::process_ack_config_read_(uint8_t *data) {

@@ -22,11 +22,11 @@ void LD2410S::setup() {
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
-    if (this->rx_.receive()) {
-      this->process_();
-      ;
-    } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
-               this->init_status_ != 0b11111111) {
+    // if (this->rx_.receive()) {
+    //   this->process_();
+    // } else
+    if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+        this->init_status_ != 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
       this->init_();
     } else {
@@ -458,8 +458,6 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 }
 
 void LD2410S::process_() {
-  return;
-
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:

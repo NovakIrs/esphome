@@ -14,32 +14,35 @@ bool LD2410Srx::receive() {
     this->reset_();
   }
 
-  while (this->available()) {
-    this->rcv_buffer_[this->end_pos_] = this->read();
-    ESP_LOGD(TAG, "Receive one byte");
+  this->rcv_buffer_[this->end_pos_] = this->read();
+  ESP_LOGD(TAG, "Receive one byte");
 
-    // switch (this->evaluate_()) {
-    //   case EvaluationResult::OK:
-    //     ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
-    //     return true;
+  // while (this->available()) {
+  //   this->rcv_buffer_[this->end_pos_] = this->read();
+  //   ESP_LOGD(TAG, "Receive one byte");
 
-    //   case EvaluationResult::NOK:
-    //     ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
-    //     this->reset_();
-    //     this->frame_type_ != RxFrameType::NOK;
-    //     return false;
+  //   switch (this->evaluate_()) {
+  //     case EvaluationResult::OK:
+  //       ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
+  //       return true;
 
-    //   case EvaluationResult::UNKNOWN:
-    //   default:
-    //     break;
-    // }
+  //     case EvaluationResult::NOK:
+  //       ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
+  //       this->reset_();
+  //       this->frame_type_ != RxFrameType::NOK;
+  //       return false;
 
-    this->end_pos_++;
-    if (this->end_pos_ > RCV_BUFFER_SIZE) {
-      ESP_LOGD(TAG, "Received data buffer overflow, resetting");
-      this->reset_();
-    }
-  }
+  //     case EvaluationResult::UNKNOWN:
+  //     default:
+  //       break;
+  //   }
+
+  //   this->end_pos_++;
+  //   if (this->end_pos_ > RCV_BUFFER_SIZE) {
+  //     ESP_LOGD(TAG, "Received data buffer overflow, resetting");
+  //     this->reset_();
+  //   }
+  // }
 
   return false;
 }

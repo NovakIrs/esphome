@@ -38,6 +38,7 @@
 #include <iomanip>
 
 #include "ld2410s_const.h"
+#include "ld2410s_help.h"
 
 namespace esphome {
 namespace ld2410s {
@@ -84,7 +85,7 @@ struct CmdT {
   CmdFrameT *cmd_frame;
 };
 
-class LD2410S : public Component, public uart::UARTDevice {
+class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
   SUB_SENSOR(distance)
@@ -199,10 +200,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
   void publish_presence_(bool presence, bool force_publish = false);
   void publish_calibration_runing_(bool running, bool force_publish = false);
-
-  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
-  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
-  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
 
 #ifdef LD2410S_V2
   void process_ack_fw_read_(const uint8_t *data);

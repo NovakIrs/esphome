@@ -5,24 +5,25 @@ namespace esphome {
 namespace ld2410s {
 
 EvaluationResult LD2410Srx::receive_one(int one) {
-  if (this->frame_type_ != RxFrameType::UNKNOWN) {
+  if (this->payload_ready_) {
     this->reset_();
   }
 
-  ESP_LOGD(TAG, "Receive one byte");
+  ESP_LOGD(TAG, "Receive one byte: %d", this->end_pos_);
   this->rcv_buffer_[this->end_pos_] = one;
   EvaluationResult result = this->evaluate_();
 
   switch (result) {
     case EvaluationResult::OK:
       ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
+      this->payload_ready_ = true;
       break;
 
     case EvaluationResult::UNKNOWN:
       this->end_pos_++;
       if (this->end_pos_ > RCV_BUFFER_SIZE) {
         ESP_LOGD(TAG, "Received data buffer overflow, resetting");
-        this->frame_type_ = RxFrameType::NOK;  // implicit reset in next round
+        this->reset_();
       } else {
         ESP_LOGD(TAG, "Received correctly one, frame: %d", this->end_pos_);
       }
@@ -31,7 +32,7 @@ EvaluationResult LD2410Srx::receive_one(int one) {
     case EvaluationResult::NOK:
     default:
       ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
-      this->frame_type_ = RxFrameType::NOK;  // implicit reset in next round
+      this->reset_();
       result = EvaluationResult::UNKNOWN;
       break;
   }
@@ -225,6 +226,7 @@ void LD2410Srx::reset_() {
   this->header_footer_size_ = 0;
   this->size_field_size_ = 0;
   this->frame_type_ = RxFrameType::UNKNOWN;
+  this->payload_ready_ = true;
   this->payload_pos_ = 0;
   this->payload_size_ = 0;
   this->expected_frame_size_ = 0;

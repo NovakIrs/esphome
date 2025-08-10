@@ -14,7 +14,7 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410Shelp : public uart::UARTDevice {
+class LD2410Shelp {
  public:
  protected:
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);

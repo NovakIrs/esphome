@@ -24,6 +24,7 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
  public:
   EvaluationResult receive_one(int one);
   RxFrameType frame_type() const { return this->frame_type_; }
+  bool payload_ready() const { return payload_ready_; }
   uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
   uint8_t payload_size() const { return this->payload_size_; }
 
@@ -36,6 +37,7 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
   uint16_t size_field_size_{0};
 
   RxFrameType frame_type_{RxFrameType::UNKNOWN};
+  bool payload_ready_{false};
   uint16_t payload_pos_{0};
   uint16_t payload_size_{0};
 

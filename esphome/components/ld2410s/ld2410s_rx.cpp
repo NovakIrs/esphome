@@ -181,7 +181,10 @@ EvaluationResult LD2410Srx::evaluate_size_() {
       return EvaluationResult::NOK;  // unknown header type
   }
 
-  if (this->expected_frame_size_ > this->end_pos_ + 1) {
+  if (this->expected_frame_size_ == 0) {
+    return EvaluationResult::UNKNOWN;  // not enough data yet to determine size
+
+  } else if (this->expected_frame_size_ > this->end_pos_ + 1) {
     return EvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
   } else if (this->expected_frame_size_ < this->end_pos_ + 1) {

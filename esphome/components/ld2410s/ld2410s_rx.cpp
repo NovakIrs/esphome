@@ -75,10 +75,26 @@ EvaluationResult LD2410Srx::evaluate_() {
     case EvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame type
       this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       ESP_LOGD(TAG,
-               "correct header and size, but footer does not match expected: size:%d, expected:%d, payload:%d, "
-               "head/foot:%d, size:%d",
-               this->end_pos_ + 1, this->expected_frame_size_, this->payload_size_, this->header_footer_size_,
-               this->size_field_size_);
+               "correct header and size, but footer does not match expected: real:%d, expected:%d, "
+               "head/foot:%d, size:%d, payload:%d",
+               this->end_pos_ + 1, this->expected_frame_size_, this->header_footer_size_, this->size_field_size_,
+               this->payload_size_);
+      switch (this->frame_type_) {
+        case RxFrameType::SHORT_DATA_FRAME:
+          ESP_LOGD(TAG, "SHORT_DATA_FRAME: %02X", SHORT_DATA_FRAME_HEADER);
+          break;
+
+        case RxFrameType::STD_DATA_FRAME:
+          ESP_LOGD(TAG, "STD_DATA_FRAME: %08X", STD_DATA_FRAME_HEADER);
+          break;
+
+        case RxFrameType::CMD_FRAME:
+          ESP_LOGD(TAG, "CMD_FRAME: %08X", CMD_FRAME_HEADER);
+          break;
+
+        default:
+          break;
+      }
       return EvaluationResult::NOK;
 
     case EvaluationResult::UNKNOWN:  // size less then expected size for frame type

@@ -5,17 +5,14 @@ namespace esphome {
 namespace ld2410s {
 
 bool LD2410Srx::receive() {
-  if (!this->available()) {
-    return false;
-  }
   ESP_LOGD(TAG, "Available");
+  // if (!this->available()) {
+  //   return false;
+  // }
 
-  if (this->frame_type_ != RxFrameType::UNKNOWN) {
-    this->reset_();
-  }
-
-  // this->rcv_buffer_[this->end_pos_] = this->read();
-  ESP_LOGD(TAG, "Receive one byte");
+  // if (this->frame_type_ != RxFrameType::UNKNOWN) {
+  //   this->reset_();
+  // }
 
   // while (this->available()) {
   //   this->rcv_buffer_[this->end_pos_] = this->read();

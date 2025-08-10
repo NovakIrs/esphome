@@ -18,6 +18,7 @@ void LD2410S::setup() {
 #ifdef LD2410S_V2
   this->set_threshold_selected_gate(0);
 #endif
+  ESP_LOGD(TAG, "setup done");
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {

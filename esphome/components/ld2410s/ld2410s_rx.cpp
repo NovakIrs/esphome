@@ -4,44 +4,37 @@
 namespace esphome {
 namespace ld2410s {
 
-bool LD2410Srx::receive() {
-  ESP_LOGD(TAG, "Available");
-  if (!this->available()) {
-    return false;
+EvaluationResult LD2410Srx::receive_one(int one) {
+  if (this->frame_type_ != RxFrameType::UNKNOWN) {
+    this->reset_();
   }
 
-  // if (this->frame_type_ != RxFrameType::UNKNOWN) {
-  //   this->reset_();
-  // }
+  ESP_LOGD(TAG, "Receive one byte");
+  this->rcv_buffer_[this->end_pos_] = one;
+  EvaluationResult result = this->evaluate_();
 
-  // while (this->available()) {
-  //   this->rcv_buffer_[this->end_pos_] = this->read();
-  //   ESP_LOGD(TAG, "Receive one byte");
+  switch (result) {
+    case EvaluationResult::OK:
+      ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
+      break;
 
-  //   switch (this->evaluate_()) {
-  //     case EvaluationResult::OK:
-  //       ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
-  //       return true;
+    case EvaluationResult::UNKNOWN:
+      this->end_pos_++;
+      if (this->end_pos_ > RCV_BUFFER_SIZE) {
+        ESP_LOGD(TAG, "Received data buffer overflow, resetting");
+        this->frame_type_ = RxFrameType::NOK;  // implicit reset in next round
+      }
+      break;
 
-  //     case EvaluationResult::NOK:
-  //       ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
-  //       this->reset_();
-  //       this->frame_type_ != RxFrameType::NOK;
-  //       return false;
+    case EvaluationResult::NOK:
+    default:
+      ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
+      this->frame_type_ = RxFrameType::NOK;  // implicit reset in next round
+      result = EvaluationResult::UNKNOWN;
+      break;
+  }
 
-  //     case EvaluationResult::UNKNOWN:
-  //     default:
-  //       break;
-  //   }
-
-  //   this->end_pos_++;
-  //   if (this->end_pos_ > RCV_BUFFER_SIZE) {
-  //     ESP_LOGD(TAG, "Received data buffer overflow, resetting");
-  //     this->reset_();
-  //   }
-  // }
-
-  return false;
+  return result;
 }
 
 EvaluationResult LD2410Srx::evaluate_() {

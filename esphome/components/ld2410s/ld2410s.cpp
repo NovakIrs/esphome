@@ -22,19 +22,19 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   if (!this->cmd_active_) {
-    App.feed_wdt();
-    if (this->rx_.receive()) {
-      ESP_LOGD(TAG, "received==true");
-      //   this->process_();
-    } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
-               this->init_status_ != 0b11111111) {
-      ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
-      this->init_();
-    } else {
-      this->loop_send_command_();
+    //    App.feed_wdt();
+    if (!this->receive()) {
+      if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+          this->init_status_ != 0b11111111) {
+        ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
+        this->init_();
+      } else {
+        this->loop_send_command_();
+      }
     }
   }
 }
+
 void LD2410S::dump_config() {
 #ifdef USE_BUTTON
   ESP_LOGCONFIG(TAG, "Buttons:");
@@ -458,6 +458,16 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   this->status_clear_warning();
 }
 
+bool LD2410S::receive() {
+  bool received = false;
+  while (this->available()) {
+    if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
+      this->process_();
+      received = true;
+    }
+  }
+  return received;
+}
 void LD2410S::process_() {
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {

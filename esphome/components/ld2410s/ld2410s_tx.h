@@ -15,10 +15,10 @@
 namespace esphome {
 namespace ld2410s {
 
-class LD2410Stx : public uart::UARTDevice, LD2410Shelp {
+class LD2410Stx : uart::UARTDevice, LD2410Shelp {
  public:
  protected:
-}
+};
 
 }  // namespace ld2410s
 }  // namespace esphome

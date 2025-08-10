@@ -45,6 +45,9 @@ namespace ld2410s {
 // using namespace ld24xx;
 
 // Constants
+
+static const char *const TAG = "ld2410s";
+
 static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const size_t RCV_BUFFER_SIZE = 128;

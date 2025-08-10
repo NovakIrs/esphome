@@ -131,7 +131,7 @@ EvaluationResult LD2410Srx::evaluate_header_() {
 
   if (end_pos_ + 1 == sizeof(STD_DATA_FRAME_HEADER) &&
       memcmp(&rcv_buffer_[0], &STD_DATA_FRAME_HEADER, sizeof(STD_DATA_FRAME_HEADER)) == 0) {
-    this->frame_type_ = RxFrameType::SHORT_DATA_FRAME;
+    this->frame_type_ = RxFrameType::STD_DATA_FRAME;
     this->header_footer_size_ = sizeof(STD_DATA_FRAME_HEADER);
     return EvaluationResult::OK;
   }

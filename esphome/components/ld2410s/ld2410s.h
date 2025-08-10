@@ -39,6 +39,8 @@
 
 #include "ld2410s_const.h"
 #include "ld2410s_help.h"
+#include "ld2410s_rx.h"
+#include "ld2410s_tx.h"
 
 namespace esphome {
 namespace ld2410s {
@@ -49,7 +51,6 @@ namespace ld2410s {
 
 static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
-static const size_t RCV_BUFFER_SIZE = 128;
 
 struct ThresholdsT {
   uint32_t trigger[16];
@@ -73,7 +74,6 @@ struct CmdAckT {
   uint16_t length{0};
   bool result{false};
 };
-enum class PackageType { SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, UNKNOWN, BAD_SIZE };
 
 enum class CmdState { EMPTY, SCHEDULED, SENT };
 struct CmdT {
@@ -148,6 +148,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #endif
 
  protected:
+  LD2410Srx rx_;
+  LD2410Stx tx_;
   size_t rcv_end_pos_ = 0;
   uint32_t max_dist_{0};
   uint32_t min_dist_{0};
@@ -156,7 +158,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
   uint32_t energy_values_[16];
-  uint8_t rcv_buffer_[RCV_BUFFER_SIZE];
+
   uint8_t active_ = 0;
   uint8_t last_ = 0;
   uint8_t init_status_ = 0;
@@ -182,11 +184,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void loop_send_command_();
   void send_command_(CmdFrameT *cmd_frame);
 
-  void receive_();
-  PackageType get_frame_type_(uint8_t *buffer, size_t pos);
-  size_t get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType type);
-  size_t get_data_size_(uint8_t *buffer, size_t end_pos, PackageType type, size_t start_pos);
-
+  void process_();
   void process_short_data_frame_(uint8_t *data);
   void process_data_frame_(uint8_t *data);
   void process_cmd_frame_(uint8_t *buffer, size_t len);

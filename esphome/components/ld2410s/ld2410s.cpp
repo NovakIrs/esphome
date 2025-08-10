@@ -22,8 +22,9 @@ void LD2410S::setup() {
 void LD2410S::loop() {
   if (!this->cmd_active_) {
     App.feed_wdt();
-    if (this->available()) {
-      this->receive_();
+    if (this->rx_.receive()) {
+      this->process_();
+      ;
     } else if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
                this->init_status_ != 0b11111111) {
       ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
@@ -456,162 +457,26 @@ void LD2410S::send_command_(CmdFrameT *frame) {
   this->status_clear_warning();
 }
 
-void LD2410S::receive_() {
-  while (this->available()) {
-    this->rcv_buffer_[this->rcv_end_pos_] = this->read();
-
-    PackageType type = this->get_frame_type_(this->rcv_buffer_, this->rcv_end_pos_);
-    // PackageType based on frame footer.
-
-    size_t start_pos = this->get_frame_start_(this->rcv_buffer_, this->rcv_end_pos_, type);
-    // Frame start position based on frame header search, starting from the frame end.
-    if (start_pos == this->rcv_end_pos_) {
-      type = PackageType::UNKNOWN;
-    }
-
-    size_t payload_size = this->get_payload_size_(this->rcv_buffer_, this->rcv_end_pos_, type, start_pos);
-    // Payload size = frame size - header - footer
-    if (payload_size == 0) {
-      type = PackageType::UNKNOWN;
-    }
-
-    if (type != PackageType::UNKNOWN) {
-      esphome::ld2410s::LD2410S::hex_diag("<", &this->rcv_buffer_[start_pos], this->rcv_end_pos_ + 1 - start_pos);
-      if (start_pos > 0) {
-        ESP_LOGW(TAG, "Frame starting at %x", start_pos);
-      }
-
-      switch (type) {
-        case PackageType::SHORT_DATA_FRAME:
-          this->process_short_data_frame_(&this->rcv_buffer_[start_pos + 1]);
-          break;
-
-        case PackageType::STD_DATA_FRAME:
-          this->process_data_frame_(&this->rcv_buffer_[start_pos + 6], payload_size - 2);
-          break;
-
-        case PackageType::CMD_FRAME:
-          this->process_cmd_frame_(this->rcv_buffer_, this->rcv_end_pos_ + 1);
-          this->cmd_buffer_finished_();
-          break;
-
-        case PackageType::BAD_SIZE:
-          ESP_LOGE(TAG, "Received BAD sized package!!!");
-          break;
-
-        default:
-          ESP_LOGE(TAG, "Received Unknown package!!!");
-          break;
-      }
-
-      this->rcv_end_pos_ = 0;
-
-    } else {
-      this->rcv_end_pos_++;
-
-      if (this->rcv_end_pos_ >= RCV_BUFFER_SIZE - 1) {
-        this->rcv_end_pos_ = 0;
-        ESP_LOGW(TAG, "Buffer overflow, resetting rcv_end_pos_ to 0");
-      }
-    }
-  }
-}
-PackageType LD2410S::get_frame_type_(uint8_t *buffer, size_t end_pos) {
-  if (end_pos < 4) {
-    return PackageType::UNKNOWN;
-  }
-  if (buffer[end_pos] == SHORT_DATA_FRAME_FOOTER && buffer[end_pos - 4] == SHORT_DATA_FRAME_HEADER) {
-    return PackageType::SHORT_DATA_FRAME;
-  }
-  if (end_pos < 12) {
-    return PackageType::UNKNOWN;
-  }
-  if (memcmp(&buffer[end_pos - 3], &STD_DATA_FRAME_FOOTER, sizeof(STD_DATA_FRAME_FOOTER)) == 0) {
-    return PackageType::STD_DATA_FRAME;
-  }
-  if (memcmp(&buffer[end_pos - 3], &CMD_FRAME_FOOTER, sizeof(CMD_FRAME_FOOTER)) == 0) {
-    return PackageType::CMD_FRAME;
-  }
-  return PackageType::UNKNOWN;
-}
-size_t LD2410S::get_frame_start_(uint8_t *buffer, size_t end_pos, PackageType type) {
-  if (type == PackageType::UNKNOWN) {
-    return end_pos;
-  }
-
-  size_t min_length = 0;
-  uint32_t header_frame = 0;
-  int header_frame_len = 0;
-
-  switch (type) {
-    case PackageType::SHORT_DATA_FRAME:
-      min_length = 4;
-      header_frame = SHORT_DATA_FRAME_HEADER;
-      header_frame_len = sizeof(SHORT_DATA_FRAME_HEADER);
+void LD2410S::process_() {
+  uint8_t *data = &this->rx_.payload_data()[0];
+  switch (this->rx_.frame_type()) {
+    case RxFrameType::SHORT_DATA_FRAME:
+      this->process_short_data_frame_(&data[1]);  // ToDo
       break;
 
-    case PackageType::STD_DATA_FRAME:
-      min_length = 12;
-      header_frame = STD_DATA_FRAME_HEADER;
-      header_frame_len = sizeof(STD_DATA_FRAME_HEADER);
+    case RxFrameType::STD_DATA_FRAME:
+      this->process_data_frame_(&data[6], this->rx_.payload_size() - 2);  // ToDo
       break;
 
-    case PackageType::CMD_FRAME:
-      min_length = 12;
-      header_frame = CMD_FRAME_HEADER;
-      header_frame_len = sizeof(CMD_FRAME_HEADER);
+    case RxFrameType::CMD_FRAME:
+      this->process_cmd_frame_(data, this->rx_.payload_size() + 1);  // ToDo
+      this->cmd_buffer_finished_();
       break;
 
     default:
-      return end_pos;
+      ESP_LOGE(TAG, "Received Unknown package type!!!");
       break;
   }
-
-  if (end_pos + 1 < min_length) {
-    return end_pos;
-  }
-
-  for (uint8_t i = end_pos - min_length; i >= 0; i--) {
-    if (header_frame == esphome::ld2410s::LD2410S::read_int(buffer, i, header_frame_len)) {
-      return i;
-    }
-  }
-
-  return end_pos;
-}
-size_t LD2410S::get_payload_size_(uint8_t *buffer, size_t end_pos, PackageType type, size_t start_pos) {
-  if (type == PackageType::UNKNOWN || end_pos == start_pos) {
-    return 0;
-  }
-
-  size_t payload_size = 0;
-  size_t expected_full_frame_size = 0;
-
-  switch (type) {
-    case PackageType::SHORT_DATA_FRAME:
-      payload_size = 3;
-      expected_full_frame_size = 1 + payload_size + 1;
-      break;
-
-    case PackageType::STD_DATA_FRAME:
-    case PackageType::CMD_FRAME:
-      payload_size = esphome::ld2410s::LD2410S::read_int(buffer, start_pos + 4, 2);
-      expected_full_frame_size = 4 + 2 + payload_size + 4;
-      break;
-
-    default:
-      break;
-  }
-
-  if (payload_size == 0) {
-    return 0;
-  }
-
-  if (expected_full_frame_size != end_pos - start_pos + 1) {
-    return 0;
-  }
-
-  return payload_size;
 }
 
 void LD2410S::process_short_data_frame_(uint8_t *data) {

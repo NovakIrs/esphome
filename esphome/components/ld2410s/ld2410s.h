@@ -68,13 +68,6 @@ struct CmdFrameT {
   uint16_t data_length;
 };
 
-struct CmdAckT {
-  uint8_t data[128];
-  uint16_t command{0};
-  uint16_t length{0};
-  bool result{false};
-};
-
 enum class CmdState { EMPTY, SCHEDULED, SENT };
 struct CmdT {
   uint32_t time_started;
@@ -186,10 +179,9 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   bool receive();
   void process_();
-  void process_short_data_frame_(uint8_t *data);
-  void process_data_frame_(uint8_t *data);
-  void process_cmd_frame_(uint8_t *buffer, size_t len);
-  CmdAckT parse_cms_frame_(uint8_t *buffer, size_t length);
+  void process_short_data_frame_();
+  void process_data_frame_();
+  void process_cmd_frame_();
 
   void process_ack_config_read_(uint8_t *data);
 

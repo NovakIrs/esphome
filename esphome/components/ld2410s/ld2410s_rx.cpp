@@ -16,21 +16,21 @@ bool LD2410Srx::receive() {
   while (this->available()) {
     this->rcv_buffer_[this->end_pos_] = this->read();
 
-    switch (this->evaluate_()) {
-      case EvaluationResult::OK:
-        ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
-        return true;
+    // switch (this->evaluate_()) {
+    //   case EvaluationResult::OK:
+    //     ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
+    //     return true;
 
-      case EvaluationResult::NOK:
-        ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
-        this->reset_();
-        this->frame_type_ != RxFrameType::NOK;
-        return false;
+    //   case EvaluationResult::NOK:
+    //     ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
+    //     this->reset_();
+    //     this->frame_type_ != RxFrameType::NOK;
+    //     return false;
 
-      case EvaluationResult::UNKNOWN:
-      default:
-        break;
-    }
+    //   case EvaluationResult::UNKNOWN:
+    //   default:
+    //     break;
+    // }
 
     this->end_pos_++;
     if (this->end_pos_ > RCV_BUFFER_SIZE) {

@@ -12,12 +12,13 @@ EvaluationResult LD2410Srx::receive_one(int one) {
   // ESP_LOGD(TAG, "Receive one byte: %d : %x", this->end_pos_, one);
   this->rcv_buffer_[this->end_pos_] = one;
   EvaluationResult result = this->evaluate_();
-  this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
+  // this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
 
   switch (result) {
     case EvaluationResult::OK:
       // ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
       this->payload_ready_ = true;
+      this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       break;
 
     case EvaluationResult::UNKNOWN:

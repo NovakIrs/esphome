@@ -59,7 +59,8 @@ EvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_size_()) {
     case EvaluationResult::NOK:  // known size, but greater then expected size for frame type
       this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
-      ESP_LOGD(TAG, "correct header, but passed expected frame end: %d", this->end_pos_);
+      ESP_LOGD(TAG, "correct header, but passed expected frame end: size:%d, expected:%d", this->end_pos_,
+               this->expected_frame_size_);
       return EvaluationResult::NOK;
 
     case EvaluationResult::UNKNOWN:  // not enough data yet to determine correct size
@@ -73,7 +74,8 @@ EvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_footer_()) {
     case EvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame type
       this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
-      ESP_LOGD(TAG, "correct header and size, but footer does not match expected: %d", this->end_pos_);
+      ESP_LOGD(TAG, "correct header and size, but footer does not match expected: size:%d, expected:%d", this->end_pos_,
+               this->expected_frame_size_);
       return EvaluationResult::NOK;
 
     case EvaluationResult::UNKNOWN:  // size less then expected size for frame type

@@ -23,6 +23,8 @@ EvaluationResult LD2410Srx::receive_one(int one) {
       if (this->end_pos_ > RCV_BUFFER_SIZE) {
         ESP_LOGD(TAG, "Received data buffer overflow, resetting");
         this->frame_type_ = RxFrameType::NOK;  // implicit reset in next round
+      } else {
+        ESP_LOGD(TAG, "Received correctly one, frame: %d", this->end_pos_);
       }
       break;
 

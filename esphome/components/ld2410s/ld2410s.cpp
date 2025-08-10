@@ -460,11 +460,13 @@ void LD2410S::send_command_(CmdFrameT *frame) {
 
 bool LD2410S::receive() {
   bool received = false;
-  while (this->available()) {
+  int no_block_count = 0;
+  while (this->available() && no_block_count < 100) {
     if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
       this->process_();
       received = true;
     }
+    no_block_count++;
   }
   return received;
 }

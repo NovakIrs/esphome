@@ -9,14 +9,14 @@ EvaluationResult LD2410Srx::receive_one(int one) {
     this->reset_();
   }
 
-  ESP_LOGD(TAG, "Receive one byte: %d : %x", this->end_pos_, one);
+  // ESP_LOGD(TAG, "Receive one byte: %d : %x", this->end_pos_, one);
   this->rcv_buffer_[this->end_pos_] = one;
   EvaluationResult result = this->evaluate_();
   this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
 
   switch (result) {
     case EvaluationResult::OK:
-      ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
+      // ESP_LOGD(TAG, "Received correct frame: %d", this->end_pos_);
       this->payload_ready_ = true;
       break;
 
@@ -26,13 +26,13 @@ EvaluationResult LD2410Srx::receive_one(int one) {
         ESP_LOGD(TAG, "Received data buffer overflow, resetting");
         this->reset_();
       } else {
-        ESP_LOGD(TAG, "Received correctly one, frame: %d", this->end_pos_);
+        // ESP_LOGD(TAG, "Received correctly one, frame: %d", this->end_pos_);
       }
       break;
 
     case EvaluationResult::NOK:
     default:
-      ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
+      // ESP_LOGD(TAG, "Error evaluating received frame: %d", this->end_pos_);
       this->reset_();
       result = EvaluationResult::UNKNOWN;
       break;
@@ -44,7 +44,7 @@ EvaluationResult LD2410Srx::receive_one(int one) {
 EvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_header_()) {
     case EvaluationResult::NOK:  // header does not match known frame type ie bad header
-      ESP_LOGD(TAG, "header does not match known frame type ie bad header: %d", this->end_pos_);
+      // ESP_LOGD(TAG, "header does not match known frame type ie bad header: %d", this->end_pos_);
       return EvaluationResult::NOK;
 
     case EvaluationResult::UNKNOWN:  // not enough data yet to determine frame type
@@ -222,7 +222,7 @@ EvaluationResult LD2410Srx::evaluate_footer_() {
 }
 
 void LD2410Srx::reset_() {
-  ESP_LOGD(TAG, "rx reset, frame: %d", this->end_pos_);
+  // ESP_LOGD(TAG, "rx reset, frame: %d", this->end_pos_);
   this->end_pos_ = 0;
   this->header_footer_size_ = 0;
   this->size_field_size_ = 0;

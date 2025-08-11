@@ -47,13 +47,8 @@ namespace ld2410s {
 
 // using namespace ld24xx;
 
+enum class CmdState { EMPTY, SCHEDULED, SENT };
 
-struct ThresholdsT {
-  uint32_t trigger[16];
-  uint32_t hold[16];
-  uint32_t snr[16];
-  uint8_t selected_gate{0};
-};
 
 struct TxFrameT {
   uint8_t data[128];
@@ -71,12 +66,17 @@ struct TxTaskT {
   TxFrameT *cmd_frame;
 };
 
+struct ThresholdsT {
+  uint32_t trigger[16];
+  uint32_t hold[16];
+  uint32_t snr[16];
+  uint8_t selected_gate{0};
+};
 // Constants
 
 static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 
-enum class CmdState { EMPTY, SCHEDULED, SENT };
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)

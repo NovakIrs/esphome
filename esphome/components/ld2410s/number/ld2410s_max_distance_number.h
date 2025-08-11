@@ -12,7 +12,6 @@ class LD2410SMaxDistanceNumber : public number::Number, public Parented<LD2410S>
 
  protected:
   void control(float max_distance) override {
-    this->publish_state(max_distance);
     this->parent_->set_max_distance(max_distance);
   }
 };

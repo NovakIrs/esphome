@@ -12,7 +12,6 @@ class LD2410SDelayNumber : public number::Number, public Parented<LD2410S> {
 
  protected:
   void control(float delay) override {
-    this->publish_state(delay);
     this->parent_->set_delay(delay);
   }
 };

@@ -59,7 +59,7 @@ struct ThresholdsT {
   uint8_t selected_gate{0};
 };
 
-struct CmdFrameT {
+struct TxFrameT {
   uint8_t data[128];
   uint32_t header;
   uint32_t footer;
@@ -68,13 +68,13 @@ struct CmdFrameT {
   uint16_t data_length;
 };
 
-enum class CmdState { EMPTY, SCHEDULED, SENT };
-struct CmdT {
+struct TxTaskT {
   uint32_t time_started;
   uint8_t retry;
   CmdState state = CmdState::EMPTY;
-  CmdFrameT *cmd_frame;
+  TxFrameT *cmd_frame;
 };
+enum class CmdState { EMPTY, SCHEDULED, SENT };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
@@ -156,26 +156,27 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   uint8_t last_ = 0;
   uint8_t init_status_ = 0;
   bool minimal_output_{true};
-  bool cmd_active_{false};
+  bool tx_active_{false};
 
   std::string energy_values_str_ = "";
-  CmdT commands_[CMD_EXEC_BUFFER_SIZE];
+  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
   ThresholdsT thresholds_;
 
   void init_();
 
+  void send_();
   void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
+  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
+  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
+  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
 
-  void cmd_buffer_insert_(CmdFrameT *cmd_frame);
+  void cmd_buffer_insert_(TxFrameT *cmd_frame);
   void cmd_buffer_finished_();
   void cmd_buffer_inc_(uint8_t &index);
 
   void loop_send_command_();
-  void send_command_(CmdFrameT *cmd_frame);
+  void send_command_(TxFrameT *cmd_frame);
 
   bool receive_();
   void process_();

@@ -20,15 +20,9 @@ void LD2410S::setup() {
 #endif
 }
 void LD2410S::loop() {
-  if (!this->cmd_active_) {
+  if (!this->tx_active_) {
     if (!this->receive_()) {
-      if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
-          this->init_status_ != 0b11111111) {
-        ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
-        this->init_();
-      } else {
-        this->loop_send_command_();
-      }
+      this->send_();
     }
   }
 }
@@ -132,6 +126,15 @@ void LD2410S::init_() {
   this->status_clear_warning();
 }
 
+void LD2410S::send_() {
+  if (this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0 &&
+      this->init_status_ != 0b11111111) {
+    ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
+    this->init_();
+  } else {
+    this->loop_send_command_();
+  }
+}
 void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command) {
   this->status_set_warning(msg);
 
@@ -144,7 +147,7 @@ void LD2410S::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_comm
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
 
-  CmdFrameT cmd_frame = {.header = CMD_FRAME_HEADER, .footer = CMD_FRAME_FOOTER, .command = command, .data_length = 0};
+  TxFrameT cmd_frame = {.header = CMD_FRAME_HEADER, .footer = CMD_FRAME_FOOTER, .command = command, .data_length = 0};
 
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
@@ -326,31 +329,31 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_buffer_insert_(&cmd_frame);
 }
-void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size) {
+void LD2410S::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size) {
   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
          append_data_size * sizeof(*append_data));
 
   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
 }
-void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size) {
+void LD2410S::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size) {
   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
          append_data_size * sizeof(*append_data));
 
   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
 }
-void LD2410S::cmd_frame_append_data_(CmdFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size) {
+void LD2410S::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size) {
   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
          append_data_size * sizeof(*append_data));
 
   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
 }
 
-void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
+void LD2410S::cmd_buffer_insert_(TxFrameT *cmd_frame) {
   if (!cmd_frame) {
     return;
   }
 
-  CmdT cmd;
+  TxTaskT cmd;
   cmd.state = CmdState::SCHEDULED;
   cmd.cmd_frame = cmd_frame;
   cmd.time_started = 0;
@@ -368,7 +371,7 @@ void LD2410S::cmd_buffer_insert_(CmdFrameT *cmd_frame) {
   this->commands_[this->last_] = cmd;  // Shallow copy of state, time_started, retry
 
   if (cmd.cmd_frame) {
-    this->commands_[this->last_].cmd_frame = new CmdFrameT(*cmd.cmd_frame);  // Deep copy
+    this->commands_[this->last_].cmd_frame = new TxFrameT(*cmd.cmd_frame);  // Deep copy
   } else {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
@@ -388,7 +391,7 @@ void LD2410S::cmd_buffer_inc_(uint8_t &index) {
 }
 
 void LD2410S::loop_send_command_() {
-  CmdT *cmd = &commands_[this->active_];
+  TxTaskT *cmd = &commands_[this->active_];
   uint32_t now = App.get_loop_component_start_time();
 
   if (cmd->state == CmdState::SCHEDULED) {
@@ -414,44 +417,44 @@ void LD2410S::loop_send_command_() {
     this->last_ = 0;
   }
 }
-void LD2410S::send_command_(CmdFrameT *frame) {
+void LD2410S::send_command_(TxFrameT *frame) {
   char output[64];
   sprintf(output, "SendingCommand: %02X", frame->command);
   this->status_set_warning(output);
 
-  this->cmd_active_ = true;
-  uint8_t cmd_buffer[128];
+  this->tx_active_ = true;
+  uint8_t tx_buffer[128];
 
   frame->length = 0;
   uint16_t frame_data_bytes = frame->data_length + 2;
   // HEADER
-  memcpy(&cmd_buffer[frame->length], &frame->header, sizeof(frame->header));
+  memcpy(&tx_buffer[frame->length], &frame->header, sizeof(frame->header));
   frame->length += sizeof(frame->header);
   // SIZE
-  memcpy(&cmd_buffer[frame->length], &frame_data_bytes, sizeof(frame->data_length));
+  memcpy(&tx_buffer[frame->length], &frame_data_bytes, sizeof(frame->data_length));
   frame->length += sizeof(frame->data_length);
   // COMMAND
-  memcpy(&cmd_buffer[frame->length], &frame->command, sizeof(frame->command));
+  memcpy(&tx_buffer[frame->length], &frame->command, sizeof(frame->command));
   frame->length += sizeof(frame->command);
   // DATA
   for (uint16_t index = 0; index < frame->data_length; index++) {
-    memcpy(&cmd_buffer[frame->length], &frame->data[index], sizeof(frame->data[index]));
+    memcpy(&tx_buffer[frame->length], &frame->data[index], sizeof(frame->data[index]));
     frame->length += sizeof(frame->data[index]);
   }
   // FOOTER
-  memcpy(cmd_buffer + frame->length, &frame->footer, sizeof(frame->footer));
+  memcpy(tx_buffer + frame->length, &frame->footer, sizeof(frame->footer));
   frame->length += sizeof(frame->footer);
 
-  esphome::ld2410s::LD2410S::hex_diag(">", cmd_buffer, frame->length);
+  esphome::ld2410s::LD2410S::hex_diag(">", tx_buffer, frame->length);
 
   // WRITE
   for (uint16_t index = 0; index < frame->length; index++) {
-    this->write_byte(cmd_buffer[index]);
+    this->write_byte(tx_buffer[index]);
   }
 
   this->flush();
 
-  this->cmd_active_ = false;
+  this->tx_active_ = false;
 
   this->status_clear_warning();
 }

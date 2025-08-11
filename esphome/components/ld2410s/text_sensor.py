@@ -3,7 +3,7 @@ from esphome.components import text_sensor
 import esphome.config_validation as cv
 from esphome.const import ENTITY_CATEGORY_DIAGNOSTIC, ICON_CHIP
 
-from .. import CONF_LD2410S_ID, LD2410S
+from . import CONF_LD2410S_ID, LD2410S
 
 # , ld2410s_ns
 

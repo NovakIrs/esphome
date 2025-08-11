@@ -12,7 +12,6 @@ class LD2410SDistReportingFreqNumber : public number::Number, public Parented<LD
 
  protected:
   void control(float distance_reporting_freq) override {
-    this->publish_state(distance_reporting_freq);
     this->parent_->set_distance_reporting_freq(distance_reporting_freq);
   }
 };

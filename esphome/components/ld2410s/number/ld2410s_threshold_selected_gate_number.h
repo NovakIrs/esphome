@@ -12,8 +12,6 @@ class LD2410SThresholdSelectedGateNumber : public number::Number, public Parente
 
  protected:
   void control(float threshold_selected_gate) override {
-    this->publish_state(threshold_selected_gate);
-
 #ifdef LD2410S_V2
     this->parent_->set_threshold_selected_gate(threshold_selected_gate);
 #endif

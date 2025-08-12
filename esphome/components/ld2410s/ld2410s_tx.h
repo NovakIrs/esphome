@@ -45,12 +45,15 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   void set_settings(SettingsT &settings) { this->settings_ = settings; }
   void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void loop_send_command_();
+  bool loop_send_command_();
   bool get_schedule_empty() const {
     return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
   }
 
   void cmd_buffer_finished_();
+
+  uint8_t tx_buffer[128];
+  uint16_t data_length{0};
 
  protected:
   SettingsT &settings_;

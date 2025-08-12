@@ -20,8 +20,8 @@ void LD2410S::setup() {
 void LD2410S::loop() {
   if (this->rx_.receive_()) {
     this->process_();
-  } else {
-    this->send_();
+    // } else {
+    //   this->send_();
   }
 }
 

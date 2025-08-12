@@ -310,14 +310,14 @@ void LD2410Stx::send_command_(TxFrameT *frame) {
   memcpy(tx_buffer + frame->length, &frame->footer, sizeof(frame->footer));
   frame->length += sizeof(frame->footer);
 
-  this->hex_diag(">", tx_buffer, frame->length);
-
   // WRITE
   for (uint16_t index = 0; index < frame->length; index++) {
     this->write_byte(tx_buffer[index]);
   }
 
   this->flush();
+
+  this->hex_diag(">", tx_buffer, frame->length);
 }
 
 }  // namespace ld2410s

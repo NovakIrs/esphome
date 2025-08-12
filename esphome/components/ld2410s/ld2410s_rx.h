@@ -22,6 +22,7 @@ static const size_t RCV_BUFFER_SIZE = 128;
 
 class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
  public:
+  bool receive_();
   EvaluationResult receive_one(int one);
   RxFrameType frame_type() const { return this->frame_type_; }
   bool payload_ready() const { return payload_ready_; }

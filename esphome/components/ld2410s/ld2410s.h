@@ -184,8 +184,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void process_data_frame_();
   void process_cmd_frame_();
 
-  void process_ack_config_read_(uint8_t *data);
-
   void publish_distance_(uint16_t distance, bool force_publish = false);
   void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
   void publish_presence_(bool presence, bool force_publish = false);
@@ -194,20 +192,18 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef LD2410S_V2
   void read_all_thresholds_();
 
+  void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);
   void process_ack_threshold_hold_read_(uint8_t *data);
   void process_ack_threshold_snr_read_(uint8_t *data);
   void process_ack_minimal_output_(uint8_t *data);
-
   void process_data_energy_values_read_(uint8_t *data);
 
   void publish_fw_version_(const std::string &version, bool force_publish = false);
-
   void publish_threshold_trigger_(bool force_publish = false);
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
-
   void publish_energy_values_(bool force_publish = false);
 
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);

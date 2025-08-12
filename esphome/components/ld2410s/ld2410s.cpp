@@ -611,32 +611,6 @@ void LD2410S::process_cmd_frame_() {
   }
 }
 
-void LD2410S::process_ack_config_read_(uint8_t *data) {
-  this->max_dist_ = esphome::ld2410s::LD2410S::read_int(data, 0, 4);
-  this->min_dist_ = esphome::ld2410s::LD2410S::read_int(data, 4, 4);
-  this->delay_ = esphome::ld2410s::LD2410S::read_int(data, 8, 4);
-  this->status_freq_ = esphome::ld2410s::LD2410S::read_int(data, 12, 4);
-  this->dist_freq_ = esphome::ld2410s::LD2410S::read_int(data, 16, 4);
-  this->resp_speed_ = esphome::ld2410s::LD2410S::read_int(data, 20, 4);
-
-#ifdef USE_NUMBER
-  this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
-  this->min_distance_number_->publish_state(static_cast<float>(this->min_dist_) * 0.7);
-  this->no_delay_number_->publish_state(this->delay_);
-  this->status_reporting_freq_number_->publish_state(static_cast<float>(this->status_freq_) / 10);
-  this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
-#endif
-
-#ifdef USE_SELECT
-  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
-#endif
-
-  ESP_LOGV(TAG,
-           "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
-           "dist_resp_freq=%d, resp_speed=%d",
-           this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
-}
-
 void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
 #ifdef USE_SENSOR
   if (this->distance_sensor_ != nullptr) {

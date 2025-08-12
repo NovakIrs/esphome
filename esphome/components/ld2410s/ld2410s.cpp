@@ -23,7 +23,7 @@ void LD2410S::loop() {
   // if (this->rx_.receive_()) {
   //   this->process_();
   //   } else {
-  this->send_()
+  this->send_();
   // }
 }
 

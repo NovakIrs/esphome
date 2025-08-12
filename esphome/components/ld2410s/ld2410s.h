@@ -86,6 +86,8 @@ class LD2410S : public Component, public LD2410Shelp {
 #endif
 
  public:
+  LD2410S() : settings_(), tx_(settings_) {}
+
   void setup() override;
   void loop() override;
   void dump_config() override;

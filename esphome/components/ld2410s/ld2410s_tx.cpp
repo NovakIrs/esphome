@@ -257,7 +257,7 @@ void LD2410Stx::cmd_buffer_inc_(uint8_t &index) {
   }
 }
 
-void LD2410Stx::loop_send_command_() {
+bool LD2410Stx::loop_send_command_() {
   TxTaskT *cmd = &commands_[this->active_];
   uint32_t now = App.get_loop_component_start_time();
 
@@ -265,6 +265,7 @@ void LD2410Stx::loop_send_command_() {
     this->send_command_(cmd->cmd_frame);
     cmd->state = CmdState::SENT;
     cmd->time_started = now;
+    return true;  // Command sent, waiting for response
 
   } else if (cmd->state == CmdState::SENT) {
     if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
@@ -273,51 +274,48 @@ void LD2410Stx::loop_send_command_() {
         cmd->retry++;
         cmd->time_started = now;
         this->send_command_(cmd->cmd_frame);
+        return true;  // Command sent again, waiting for response
+
       } else {
         ESP_LOGD(TAG, "SendCmd GivingUp active:%d, last:%d", this->active_, this->last_);
         cmd->state = CmdState::EMPTY;
         this->cmd_buffer_finished_();
+        return false;  // Command failed, remove from buffer
       }
     }
   } else if (cmd->state == CmdState::EMPTY && this->active_ == this->last_ && this->active_ != 0) {
     this->active_ = 0;
     this->last_ = 0;
+    return false;  // No commands to send, buffer is empty
   }
+
+  return false;
 }
 void LD2410Stx::send_command_(TxFrameT *frame) {
   char output[64];
   sprintf(output, "SendingCommand: %02X", frame->command);
 
-  uint8_t tx_buffer[128];
-
   frame->length = 0;
   uint16_t frame_data_bytes = frame->data_length + 2;
   // HEADER
-  memcpy(&tx_buffer[frame->length], &frame->header, sizeof(frame->header));
+  memcpy(&this->tx_buffer[frame->length], &frame->header, sizeof(frame->header));
   frame->length += sizeof(frame->header);
   // SIZE
-  memcpy(&tx_buffer[frame->length], &frame_data_bytes, sizeof(frame->data_length));
+  memcpy(&this->tx_buffer[frame->length], &frame_data_bytes, sizeof(frame->data_length));
   frame->length += sizeof(frame->data_length);
   // COMMAND
-  memcpy(&tx_buffer[frame->length], &frame->command, sizeof(frame->command));
+  memcpy(&this->tx_buffer[frame->length], &frame->command, sizeof(frame->command));
   frame->length += sizeof(frame->command);
   // DATA
   for (uint16_t index = 0; index < frame->data_length; index++) {
-    memcpy(&tx_buffer[frame->length], &frame->data[index], sizeof(frame->data[index]));
+    memcpy(&this->tx_buffer[frame->length], &frame->data[index], sizeof(frame->data[index]));
     frame->length += sizeof(frame->data[index]);
   }
   // FOOTER
   memcpy(tx_buffer + frame->length, &frame->footer, sizeof(frame->footer));
   frame->length += sizeof(frame->footer);
 
-  this->hex_diag(">", tx_buffer, frame->length);
-
-  // WRITE
-  // for (uint16_t index = 0; index < frame->length; index++) {
-  //   this->write_byte(tx_buffer[index]);
-  // }
-
-  // this->flush();
+  this->data_length = frame->length;
 }
 
 }  // namespace ld2410s

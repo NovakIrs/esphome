@@ -23,7 +23,7 @@ void LD2410S::loop() {
   // if (this->rx_.receive_()) {
   //   this->process_();
   //   } else {
-  this->send_();
+  this->send_()
   // }
 }
 
@@ -104,7 +104,15 @@ void LD2410S::send_() {
     ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
     this->init_();
   } else {
-    this->tx_.loop_send_command_();
+    if (this->tx_.loop_send_command_()) {
+      for (uint16_t index = 0; index < this->tx_.data_length; index++) {
+        this->write_byte(this->tx_.tx_buffer[index]);
+      }
+
+      this->flush();
+
+      this->hex_diag(">", this->tx_.tx_buffer, this->tx_.data_length);
+    }
   }
 }
 

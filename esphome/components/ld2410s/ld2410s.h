@@ -47,7 +47,7 @@ namespace ld2410s {
 
 // using namespace ld24xx;
 
-class LD2410S : public Component, public LD2410Shelp {
+class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
   SUB_SENSOR(distance)

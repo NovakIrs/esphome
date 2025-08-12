@@ -4,7 +4,7 @@ namespace esphome {
 namespace ld2410s {
 
 void LD2410S::setup() {
-  this->tx_.set_settings(this->settings_);
+  // this->tx_.set_settings(this->settings_);
   this->init_();
 
   this->publish_distance_(0, true);

@@ -112,9 +112,10 @@ class LD2410S : public Component, public LD2410Shelp {
 #endif
 
  protected:
-  SettingsT settings_;
   LD2410Stx tx_;
   LD2410Srx rx_;
+
+  SettingsT settings_;
 
   uint8_t init_status_{0};
 

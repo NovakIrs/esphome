@@ -82,7 +82,7 @@ void LD2410S::factory_reset() {
 // PROTECTED
 
 void LD2410S::init_() {
-  ESP_LOGD(TAG, "loop");
+  ESP_LOGD(TAG, "init");
   // App.feed_wdt();
 
   this->settings_.minimal_output = true;

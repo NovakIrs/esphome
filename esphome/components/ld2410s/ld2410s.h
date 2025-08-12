@@ -47,36 +47,7 @@ namespace ld2410s {
 
 // using namespace ld24xx;
 
-enum class CmdState { EMPTY, SCHEDULED, SENT };
-
-struct TxFrameT {
-  uint8_t data[128];
-  uint32_t header;
-  uint32_t footer;
-  uint16_t length;
-  uint16_t command;
-  uint16_t data_length;
-};
-
-struct TxTaskT {
-  uint32_t time_started;
-  uint8_t retry;
-  CmdState state = CmdState::EMPTY;
-  TxFrameT *cmd_frame;
-};
-
-struct ThresholdsT {
-  uint32_t trigger[16];
-  uint32_t hold[16];
-  uint32_t snr[16];
-  uint8_t selected_gate{0};
-};
-// Constants
-
-static const uint16_t NO_SUB_CMD = 0xffff;
-static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
-
-class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
+class LD2410S : public Component, public LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
   SUB_SENSOR(distance)
@@ -141,44 +112,19 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #endif
 
  protected:
-  LD2410Srx rx_;
+  SettingsT settings_;
   LD2410Stx tx_;
-  size_t rcv_end_pos_ = 0;
-  uint32_t max_dist_{0};
-  uint32_t min_dist_{0};
-  uint32_t delay_{0};
-  uint32_t status_freq_{0};
-  uint32_t dist_freq_{0};
-  uint32_t resp_speed_{0};
+  LD2410Srx rx_;
+
+  uint8_t init_status_{0};
+
   uint32_t energy_values_[16];
-
-  uint8_t active_ = 0;
-  uint8_t last_ = 0;
-  uint8_t init_status_ = 0;
-  bool minimal_output_{true};
-  bool tx_active_{false};
-
   std::string energy_values_str_ = "";
-  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
-  ThresholdsT thresholds_;
 
   void init_();
 
   void send_();
-  void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);
-  void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size);
 
-  void cmd_buffer_insert_(TxFrameT *cmd_frame);
-  void cmd_buffer_finished_();
-  void cmd_buffer_inc_(uint8_t &index);
-
-  void loop_send_command_();
-  void send_command_(TxFrameT *cmd_frame);
-
-  bool receive_();
   void process_();
   void process_short_data_frame_();
   void process_data_frame_();

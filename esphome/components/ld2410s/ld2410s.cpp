@@ -4,6 +4,7 @@ namespace esphome {
 namespace ld2410s {
 
 void LD2410S::setup() {
+  ESP_LOGD(TAG, "setup");
   // this->tx_.set_settings(this->settings_);
   this->init_();
 
@@ -18,25 +19,26 @@ void LD2410S::setup() {
 #endif
 }
 void LD2410S::loop() {
-  if (this->rx_.receive_()) {
-    this->process_();
-    // } else {
-    //   this->send_();
-  }
+  ESP_LOGD(TAG, "loop");
+  // if (this->rx_.receive_()) {
+  //   this->process_();
+  //   } else {
+  //     this->send_();
+  // }
 }
 
-void LD2410S::dump_config() {
-#ifdef USE_BUTTON
-  ESP_LOGCONFIG(TAG, "Buttons:");
-  LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
-  LOG_BUTTON("  ", "Start calibration", this->calibration_button_);
-#endif
+// void LD2410S::dump_config() {
+// #ifdef USE_BUTTON
+//   ESP_LOGCONFIG(TAG, "Buttons:");
+//   LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
+//   LOG_BUTTON("  ", "Start calibration", this->calibration_button_);
+// #endif
 
-#ifdef USE_SWITCH
-  ESP_LOGCONFIG(TAG, "Switches:");
-  LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
-#endif
-}
+// #ifdef USE_SWITCH
+//   ESP_LOGCONFIG(TAG, "Switches:");
+//   LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
+// #endif
+// }
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 void LD2410S::calibration() { this->tx_.schedule_cmd_("calibration\0", CALIBRATION_CMD); }

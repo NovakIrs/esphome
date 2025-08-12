@@ -82,8 +82,8 @@ void LD2410S::factory_reset() {
 // PROTECTED
 
 void LD2410S::init_() {
-  App.feed_wdt();
-  this->status_set_warning("setup");
+  ESP_LOGD(TAG, "loop");
+  // App.feed_wdt();
 
   this->settings_.minimal_output = true;
 
@@ -97,8 +97,6 @@ void LD2410S::init_() {
   this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
   this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
   this->tx_.schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-
-  this->status_clear_warning();
 }
 
 void LD2410S::send_() {

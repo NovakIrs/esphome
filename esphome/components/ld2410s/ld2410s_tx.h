@@ -40,6 +40,8 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 
 class LD2410Stx : uart::UARTDevice, LD2410Shelp {
  public:
+  LD2410Stx(SettingsT &settings) : settings_(settings) {}
+
   void set_settings(SettingsT &settings) { this->settings_ = settings; }
   void schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);

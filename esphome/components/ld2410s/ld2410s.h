@@ -49,7 +49,6 @@ namespace ld2410s {
 
 enum class CmdState { EMPTY, SCHEDULED, SENT };
 
-
 struct TxFrameT {
   uint8_t data[128];
   uint32_t header;
@@ -121,24 +120,24 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void dump_config() override;
   float get_setup_priority() const override;
 
+  void calibration();
+  void factory_reset();
+
+#ifdef LD2410S_V2
+  // number
   void set_delay(float delay);
   void set_distance_reporting_freq(float distance_reporting_freq);
   void set_max_distance(float max_distance);
   void set_min_distance(float min_distance);
   void set_status_reporting_freq(float status_reporting_freq);
-  void set_response_speed_select(const std::string &response_speed_select);
-
-  void calibration();
-  void factory_reset();
-
-#ifdef LD2410S_V2
-  void read_all_thresholds_();
-
-  void set_minimal_output(bool state);
-  void set_threshold_selected_gate(float threshold_selected_gate);
-  void set_threshold_trigger(float threshold_trigger);
   void set_threshold_hold(float threshold_hold);
+  void set_threshold_selected_gate(float threshold_selected_gate);
   void set_threshold_snr(float threshold_snr);
+  void set_threshold_trigger(float threshold_trigger);
+  // select
+  void set_response_speed_select(const std::string &response_speed_select);
+  // switch
+  void set_minimal_output(bool state);
 #endif
 
  protected:
@@ -193,6 +192,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void publish_calibration_runing_(bool running, bool force_publish = false);
 
 #ifdef LD2410S_V2
+  void read_all_thresholds_();
+
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);
   void process_ack_threshold_hold_read_(uint8_t *data);

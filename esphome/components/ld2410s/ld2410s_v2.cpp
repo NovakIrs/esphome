@@ -5,26 +5,32 @@ namespace ld2410s {
 
 #ifdef LD2410S_V2
 
-void LD2410S::read_all_thresholds_() {
-  this->status_set_warning("read_all_thresholds");
-
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-
-  this->status_clear_warning();
+// PUBLIC
+// number
+void LD2410S::set_delay(float delay) {
+  this->delay_ = delay;
+  this->schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
 }
-
-void LD2410S::set_minimal_output(bool state) {
-  this->minimal_output_ = state;
-  if (!state) {
-    for (auto &energy_value : this->energy_values_) {
-      energy_value = 0;
-    }
-  }
-  this->schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
+void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
+  this->dist_freq_ = distance_reporting_freq * 10;
+  this->schedule_cmd_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
+}
+void LD2410S::set_max_distance(float max_distance) {
+  this->max_dist_ = static_cast<float>(max_distance) / 0.7f;
+  this->schedule_cmd_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
+}
+void LD2410S::set_min_distance(float min_distance) {
+  this->min_dist_ = static_cast<float>(min_distance) / 0.7f;
+  this->schedule_cmd_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
+}
+void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
+  this->status_freq_ = status_reporting_freq * 10;
+  this->schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
+}
+void LD2410S::set_threshold_hold(float threshold_hold) {
+  this->thresholds_.hold[this->thresholds_.selected_gate] = threshold_hold;
+  this->schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_.selected_gate);
+  this->publish_threshold_hold_();
 }
 void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
   this->thresholds_.selected_gate = threshold_selected_gate;
@@ -35,20 +41,43 @@ void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
   this->threshold_snr_number_->publish_state(this->thresholds_.snr[this->thresholds_.selected_gate]);
 #endif
 }
+void LD2410S::set_threshold_snr(float threshold_snr) {
+  this->thresholds_.snr[this->thresholds_.selected_gate] = threshold_snr;
+  this->schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_.selected_gate);
+  this->publish_threshold_snr_();
+}
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->thresholds_.trigger[this->thresholds_.selected_gate] = threshold_trigger;
   this->schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_.selected_gate);
   this->publish_threshold_trigger_();
 }
-void LD2410S::set_threshold_hold(float threshold_hold) {
-  this->thresholds_.hold[this->thresholds_.selected_gate] = threshold_hold;
-  this->schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_.selected_gate);
-  this->publish_threshold_hold_();
+// select
+void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
+  this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
+  this->schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 }
-void LD2410S::set_threshold_snr(float threshold_snr) {
-  this->thresholds_.snr[this->thresholds_.selected_gate] = threshold_snr;
-  this->schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_.selected_gate);
-  this->publish_threshold_snr_();
+// switch
+void LD2410S::set_minimal_output(bool state) {
+  this->minimal_output_ = state;
+  if (!state) {
+    for (auto &energy_value : this->energy_values_) {
+      energy_value = 0;
+    }
+  }
+  this->schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
+}
+
+// PROTECTED
+void LD2410S::read_all_thresholds_() {
+  this->status_set_warning("read_all_thresholds");
+
+  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+
+  this->status_clear_warning();
 }
 
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {

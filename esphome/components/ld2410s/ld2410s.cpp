@@ -20,11 +20,11 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   ESP_LOGD(TAG, "loop");
-  // if (this->rx_.receive_()) {
-  //   this->process_();
-  //   } else {
-  //     this->send_();
-  // }
+  if (this->rx_.receive_()) {
+    this->process_();
+    //   } else {
+    //     this->send_();
+  }
 }
 
 void LD2410S::dump_config() {

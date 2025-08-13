@@ -4,18 +4,6 @@
 namespace esphome {
 namespace ld2410s {
 
-bool LD2410Srx::receive_() {
-  bool received = false;
-  int no_block_count = 0;
-  while (this->available() && no_block_count < 100) {
-    if (this->receive_one(this->read()) == EvaluationResult::OK) {
-      received = true;
-    }
-    no_block_count++;
-  }
-  return received;
-}
-
 EvaluationResult LD2410Srx::receive_one(int one) {
   if (this->payload_ready_) {
     this->reset_();

@@ -20,11 +20,11 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   // ESP_LOGD(TAG, "loop");
-  // if (this->rx_.receive_()) {
-  //   this->process_();
-  //   } else {
-  this->send_();
-  // }
+  if (this->rx_.receive_()) {
+    this->process_();
+  } else {
+    this->send_();
+  }
 }
 
 void LD2410S::dump_config() {
@@ -114,6 +114,17 @@ void LD2410S::send_() {
       this->hex_diag(">", this->tx_.tx_buffer, this->tx_.data_length);
     }
   }
+}
+
+bool LD2410S::receive_() {
+  int no_block_count = 0;
+  while (this->available() && no_block_count < 100) {
+    if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
+      return true;
+    }
+    no_block_count++;
+  }
+  return false;
 }
 
 void LD2410S::process_() {

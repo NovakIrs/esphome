@@ -127,6 +127,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void init_();
 
   void send_();
+  bool receive_();
 
   void process_();
   void process_short_data_frame_();

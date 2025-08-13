@@ -10,22 +10,27 @@ namespace ld2410s {
 void LD2410S::set_delay(float delay) {
   this->settings_.delay = delay;
   this->tx_.schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
+  this->tx_.schedule_cmd_("params read\0", PARAMS_READ_CMD);
 }
 void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
   this->settings_.dist_freq = distance_reporting_freq * 10;
   this->tx_.schedule_cmd_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
+  this->tx_.schedule_cmd_("params read\0", PARAMS_READ_CMD);
 }
 void LD2410S::set_max_distance(float max_distance) {
   this->settings_.max_dist = static_cast<float>(max_distance) / 0.7f;
   this->tx_.schedule_cmd_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
+  this->tx_.schedule_cmd_("params read\0", PARAMS_READ_CMD);
 }
 void LD2410S::set_min_distance(float min_distance) {
   this->settings_.min_dist = static_cast<float>(min_distance) / 0.7f;
   this->tx_.schedule_cmd_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
+  this->tx_.schedule_cmd_("params read\0", PARAMS_READ_CMD);
 }
 void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
   this->settings_.status_freq = status_reporting_freq * 10;
   this->tx_.schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
+  this->tx_.schedule_cmd_("params read\0", PARAMS_READ_CMD);
 }
 void LD2410S::set_threshold_hold(float threshold_hold) {
   this->settings_.thresholds.hold[this->settings_.thresholds.selected_gate] = threshold_hold;

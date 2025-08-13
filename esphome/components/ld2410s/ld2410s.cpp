@@ -207,9 +207,9 @@ void LD2410S::process_data_frame_() {
 }
 void LD2410S::process_cmd_frame_() {
   int command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
-  bool ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
-  if (!ack) {
-    ESP_LOGW(TAG, "Command %x failed", command_word);
+  uint16_t ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
+  if (ack != 0x0000) {
+    ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
   }
 
   uint8_t *data = &this->rx_.payload_data()[4];

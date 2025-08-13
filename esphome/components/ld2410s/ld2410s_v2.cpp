@@ -70,6 +70,10 @@ void LD2410S::set_threshold_trigger(float threshold_trigger) {
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->settings_.resp_speed = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
   this->tx_.schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
+#ifdef USE_SELECT
+  this->response_speed_select_->publish_state(this->settings_.resp_speed == 5 ? RESPONSE_SPEED_NORMAL
+                                                                              : RESPONSE_SPEED_FAST);
+#endif
 }
 // switch
 void LD2410S::set_minimal_output(bool state) {

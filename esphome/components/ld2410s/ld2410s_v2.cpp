@@ -86,6 +86,8 @@ void LD2410S::read_all_thresholds_() {
 }
 
 void LD2410S::process_ack_config_read_(uint8_t *data) {
+  ESP_LOGD(TAG, "process_ack_config_read_");
+
   this->settings_.max_dist = esphome::ld2410s::LD2410S::read_int(data, 0, 4);
   this->settings_.min_dist = esphome::ld2410s::LD2410S::read_int(data, 4, 4);
   this->settings_.delay = esphome::ld2410s::LD2410S::read_int(data, 8, 4);

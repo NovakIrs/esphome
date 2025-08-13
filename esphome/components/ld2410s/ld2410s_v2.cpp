@@ -36,6 +36,8 @@ void LD2410S::set_threshold_hold(float threshold_hold) {
   this->settings_.thresholds.hold[this->settings_.thresholds.selected_gate] = threshold_hold;
   this->tx_.schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD,
                           this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_("get_threshold_hold\0", GATE_THRESHOLD_HOLD_READ_CMD,
+                          this->settings_.thresholds.selected_gate);
   this->publish_threshold_hold_();
 }
 void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
@@ -53,11 +55,14 @@ void LD2410S::set_threshold_snr(float threshold_snr) {
   this->settings_.thresholds.snr[this->settings_.thresholds.selected_gate] = threshold_snr;
   this->tx_.schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD,
                           this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_("get_threshold_snr\0", GATE_THRESHOLD_SNR_READ_CMD, this->settings_.thresholds.selected_gate);
   this->publish_threshold_snr_();
 }
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->settings_.thresholds.trigger[this->settings_.thresholds.selected_gate] = threshold_trigger;
   this->tx_.schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD,
+                          this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_("get_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_READ_CMD,
                           this->settings_.thresholds.selected_gate);
   this->publish_threshold_trigger_();
 }

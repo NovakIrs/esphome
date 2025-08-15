@@ -7,6 +7,20 @@ namespace ld2410s {
 
 // PUBLIC
 // number
+
+void LD2410S::dump_config() {
+#ifdef USE_BUTTON
+  ESP_LOGCONFIG(TAG, "Buttons:");
+  LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
+  LOG_BUTTON("  ", "Start calibration", this->calibration_button_);
+#endif
+
+#ifdef USE_SWITCH
+  ESP_LOGCONFIG(TAG, "Switches:");
+  LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
+#endif
+}
+
 void LD2410S::set_delay(float delay) {
   this->settings_.delay = delay;
   this->tx_.schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);

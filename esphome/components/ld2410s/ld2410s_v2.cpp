@@ -23,33 +23,33 @@ void LD2410S::dump_config() {
 
 void LD2410S::set_delay(float delay) {
   this->settings_.delay = delay;
-  this->tx_.schedule_cmd_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
   this->no_delay_number_->publish_state(this->settings_.delay);
 }
 void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
   this->settings_.dist_freq = distance_reporting_freq * 10;
-  this->tx_.schedule_cmd_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
   this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->settings_.dist_freq) / 10);
 }
 void LD2410S::set_max_distance(float max_distance) {
   this->settings_.max_dist = static_cast<float>(max_distance) / 0.7f;
-  this->tx_.schedule_cmd_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
   this->max_distance_number_->publish_state(static_cast<float>(this->settings_.max_dist) * 0.7);
 }
 void LD2410S::set_min_distance(float min_distance) {
   this->settings_.min_dist = static_cast<float>(min_distance) / 0.7f;
-  this->tx_.schedule_cmd_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
   this->min_distance_number_->publish_state(static_cast<float>(this->settings_.min_dist) * 0.7);
 }
 void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
   this->settings_.status_freq = status_reporting_freq * 10;
-  this->tx_.schedule_cmd_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
   this->status_reporting_freq_number_->publish_state(static_cast<float>(this->settings_.status_freq) / 10);
 }
 void LD2410S::set_threshold_hold(float threshold_hold) {
   this->settings_.thresholds.hold[this->settings_.thresholds.selected_gate] = threshold_hold;
-  this->tx_.schedule_cmd_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD,
-                          this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_sequence_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD,
+                                   this->settings_.thresholds.selected_gate);
   this->threshold_hold_number_->publish_state(
       this->settings_.thresholds.hold[this->settings_.thresholds.selected_gate]);
   this->publish_threshold_hold_();
@@ -67,15 +67,15 @@ void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
 }
 void LD2410S::set_threshold_snr(float threshold_snr) {
   this->settings_.thresholds.snr[this->settings_.thresholds.selected_gate] = threshold_snr;
-  this->tx_.schedule_cmd_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD,
-                          this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_sequence_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD,
+                                   this->settings_.thresholds.selected_gate);
   this->threshold_snr_number_->publish_state(this->settings_.thresholds.snr[this->settings_.thresholds.selected_gate]);
   this->publish_threshold_snr_();
 }
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->settings_.thresholds.trigger[this->settings_.thresholds.selected_gate] = threshold_trigger;
-  this->tx_.schedule_cmd_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD,
-                          this->settings_.thresholds.selected_gate);
+  this->tx_.schedule_cmd_sequence_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD,
+                                   this->settings_.thresholds.selected_gate);
   this->threshold_trigger_number_->publish_state(
       this->settings_.thresholds.trigger[this->settings_.thresholds.selected_gate]);
   this->publish_threshold_trigger_();
@@ -83,7 +83,7 @@ void LD2410S::set_threshold_trigger(float threshold_trigger) {
 // select
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->settings_.resp_speed = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
-  this->tx_.schedule_cmd_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
+  this->tx_.schedule_cmd_sequence_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 #ifdef USE_SELECT
   this->response_speed_select_->publish_state(this->settings_.resp_speed == 5 ? RESPONSE_SPEED_NORMAL
                                                                               : RESPONSE_SPEED_FAST);
@@ -97,7 +97,7 @@ void LD2410S::set_minimal_output(bool state) {
       energy_value = 0;
     }
   }
-  this->tx_.schedule_cmd_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
+  this->tx_.schedule_cmd_sequence_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
 }
 
 // PROTECTED

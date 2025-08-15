@@ -27,7 +27,7 @@ void LD2410S::loop() {
 
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-void LD2410S::calibration() { this->tx_.schedule_cmd_("calibration\0", CALIBRATION_CMD); }
+void LD2410S::calibration() { this->tx_.schedule_cmd_sequence_("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   ESP_LOGI(TAG, "factory_reset");
 

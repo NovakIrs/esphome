@@ -4,8 +4,8 @@
 namespace esphome {
 namespace ld2410s {
 
-void LD2410Stx::schedule_cmd_(const char *msg, uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_cmd_: %s : %x : %x", msg, command, sub_command);
+void LD2410Stx::schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command) {
+  ESP_LOGD(TAG, "schedule_cmd_sequence_: %s : %x : %x", msg, command, sub_command);
 
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(command, sub_command);

@@ -50,17 +50,18 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
     return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
   }
 
-  void cmd_buffer_finished_();
+  void cmd_buffer_finished_(uint16_t command_word);
 
-  uint8_t tx_buffer[128];
+  uint8_t tx_buffer[RX_TX_BUFFER_SIZE];
   uint16_t data_length{0};
 
  protected:
   SettingsT &settings_;
 
   TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
-  uint8_t active_ = 0;
-  uint8_t last_ = 0;
+  uint16_t expected_response_{0x0000};
+  uint8_t active_{0};
+  uint8_t last_{0};
 
   void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size);
   void cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size);

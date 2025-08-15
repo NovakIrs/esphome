@@ -243,7 +243,12 @@ void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
 }
-void LD2410Stx::cmd_buffer_finished_() {
+void LD2410Stx::cmd_buffer_finished_(uint16_t command_word = 0xFFFF) {
+  if (command_word != this->expected_response_ && command_word != 0xFFFF) {
+    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word, this->expected_response_);
+    return;
+  }
+
   this->commands_[this->active_].state = CmdState::EMPTY;
 
   if (this->commands_[this->active_ + 1].state != CmdState::EMPTY) {
@@ -265,23 +270,22 @@ bool LD2410Stx::loop_send_command_() {
     this->send_command_(cmd->cmd_frame);
     cmd->state = CmdState::SENT;
     cmd->time_started = now;
-    return true;  // Command sent, waiting for response
+    expected_response_ = cmd->cmd_frame->command + 0x0100;  // Expected response is command + 0x0100
+    return true;                                            // Command sent, waiting for response
 
-  } else if (cmd->state == CmdState::SENT) {
-    if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
-      if (cmd->retry < CMD_EXEC_REPEAT) {
-        ESP_LOGD(TAG, "SendCmd Retry active:%d, last:%d", this->active_, this->last_);
-        cmd->retry++;
-        cmd->time_started = now;
-        this->send_command_(cmd->cmd_frame);
-        return true;  // Command sent again, waiting for response
+  } else if (cmd->state == CmdState::SENT && now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
+    if (cmd->retry < CMD_EXEC_REPEAT) {
+      ESP_LOGD(TAG, "SendCmd Retry active:%d, last:%d", this->active_, this->last_);
+      cmd->retry++;
+      cmd->time_started = now;
+      this->send_command_(cmd->cmd_frame);
+      return true;  // Command sent again, waiting for response
 
-      } else {
-        ESP_LOGD(TAG, "SendCmd GivingUp active:%d, last:%d", this->active_, this->last_);
-        cmd->state = CmdState::EMPTY;
-        this->cmd_buffer_finished_();
-        return false;  // Command failed, remove from buffer
-      }
+    } else {
+      ESP_LOGD(TAG, "SendCmd GivingUp active:%d, last:%d", this->active_, this->last_);
+      cmd->state = CmdState::EMPTY;
+      this->cmd_buffer_finished_();
+      return false;  // Command send failed, remove from buffer
     }
   } else if (cmd->state == CmdState::EMPTY && this->active_ == this->last_ && this->active_ != 0) {
     this->active_ = 0;

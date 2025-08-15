@@ -199,7 +199,7 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 }
 
 template<typename T>
-void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1) {
+void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size) {
   auto bytes_to_copy = append_data_size * sizeof(T);
   auto write_ptr = &cmd_frame->data[0] + cmd_frame->data_length;
 

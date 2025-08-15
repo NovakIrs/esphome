@@ -67,7 +67,8 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   uint8_t active_{0};
   uint8_t last_{0};
 
-  template<typename T> void cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size);
+  template<typename T>
+  void cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1);
 
   void cmd_buffer_insert_(TxFrameT *cmd_frame);
   void cmd_buffer_inc_(uint8_t &index);

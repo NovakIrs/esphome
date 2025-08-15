@@ -6,8 +6,6 @@ namespace ld2410s {
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
   // this->tx_.set_settings(this->settings_);
-  this->init_();
-
   this->publish_distance_(0, true);
   this->publish_presence_(false, true);
 
@@ -17,12 +15,12 @@ void LD2410S::setup() {
 #ifdef LD2410S_V2
   this->set_threshold_selected_gate(0);
 #endif
+
+  this->init_();
 }
 void LD2410S::loop() {
   // ESP_LOGD(TAG, "loop");
-  if (this->receive_()) {
-    this->process_();
-  } else {
+  if (!this->receive_()) {
     this->send_();
   }
 }
@@ -117,14 +115,20 @@ void LD2410S::send_() {
 }
 
 bool LD2410S::receive_() {
-  int no_block_count = 0;
-  while (this->available() && no_block_count < 100) {
-    if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
-      return true;
-    }
-    no_block_count++;
+  bool received = false;
+  if (this->available()) {
+    received = true;
   }
-  return false;
+
+  int rx_bytes_count = 0;
+  while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
+    if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
+      this->process_();
+    }
+    rx_bytes_count++;
+  }
+
+  return received;
 }
 
 void LD2410S::process_() {
@@ -148,7 +152,6 @@ void LD2410S::process_() {
       break;
   }
 }
-
 void LD2410S::process_short_data_frame_() {
   const bool presence_state = this->rx_.payload_data()[0] > 1;
   uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);

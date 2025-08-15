@@ -47,6 +47,9 @@ namespace ld2410s {
 
 // using namespace ld24xx;
 
+// Constants
+static const uint16_t RX_MAX_BYTES_PER_LOOP = 500;
+
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)

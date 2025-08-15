@@ -19,14 +19,14 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
       if (this->settings_.minimal_output) {
-        this->cmd_frame_append_data_(&cmd_frame, &OUTPUT_MODE_VALUE_MIN[0], 4);
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_MIN, 4);
       } else {
-        this->cmd_frame_append_data_(&cmd_frame, &OUTPUT_MODE_VALUE_STD[0], 4);
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_STD, 4);
       }
     } break;
 
     case CONFIG_MODE_START_CMD:
-      this->cmd_frame_append_data_(&cmd_frame, &CONFIG_MODE_START_VALUE[0], 2);
+      this->cmd_frame_append_data_(&cmd_frame, CONFIG_MODE_START_VALUE, 2);
       break;
 
     case CONFIG_MODE_END_CMD:
@@ -36,7 +36,7 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
-          this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, CFG_MAX_DETECTION_VALUE, 1);
           break;
 
         case CFG_MIN_DETECTION_VALUE:

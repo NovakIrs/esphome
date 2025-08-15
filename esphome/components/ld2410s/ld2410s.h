@@ -122,7 +122,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   SettingsT settings_;
 
-  uint8_t init_status_{0};
+  bool init_done_{false};
 
   uint32_t energy_values_[16];
   std::string energy_values_str_ = "";

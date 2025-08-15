@@ -240,6 +240,8 @@ void LD2410Stx::cmd_buffer_finished_(uint16_t command_word = 0xFFFF) {
     ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word, this->expected_response_);
     return;
   }
+  ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word,
+           this->commands_[this->active_].cmd_frame->command);
 
   this->commands_[this->active_].state = CmdState::EMPTY;
 

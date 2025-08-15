@@ -20,7 +20,7 @@ EvaluationResult LD2410Srx::receive_one(int one) {
 
     case EvaluationResult::UNKNOWN:
       this->end_pos_++;
-      if (this->end_pos_ > RCV_BUFFER_SIZE) {
+      if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
         ESP_LOGD(TAG, "Received data buffer overflow, resetting");
         this->reset_();
       } else {

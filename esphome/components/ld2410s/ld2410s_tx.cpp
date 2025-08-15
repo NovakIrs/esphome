@@ -36,7 +36,7 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
-          this->cmd_frame_append_data_(&cmd_frame, CFG_MAX_DETECTION_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
           break;
 
         case CFG_MIN_DETECTION_VALUE:

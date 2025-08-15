@@ -72,7 +72,7 @@ void LD2410S::init_() {
 
   this->settings_.minimal_output = true;
 
-  this->init_status_ = 0;
+  this->init_done_ = false;
 
   this->tx_.schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->tx_.schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
@@ -85,9 +85,11 @@ void LD2410S::init_() {
 }
 
 void LD2410S::send_() {
-  if (this->tx_.get_schedule_empty() && this->init_status_ != 0b11111111) {
-    ESP_LOGE(TAG, "Setup failed! Retry...  %x", this->init_status_);
-    this->init_();
+  if (this->tx_.get_schedule_empty()) {
+    if (!this->init_done_) {
+      ESP_LOGI(TAG, "Setup failed, no commands in queue, re-initializing...");
+      this->init_();
+    }
   } else {
     if (this->tx_.loop_send_command_()) {
       for (uint16_t index = 0; index < this->tx_.data_length; index++) {
@@ -202,60 +204,39 @@ void LD2410S::process_cmd_frame_() {
   if (ack != 0x0000) {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
   }
+
   this->tx_.cmd_buffer_finished_(command_word);
+  if (this->tx_.get_schedule_empty() && !this->init_done_) {
+    ESP_LOGI(TAG, "Setup done");
+    this->init_done_ = true;
+  }
 
   switch (command_word) {
-    case PARAMS_READ_REPLY:
-      this->process_ack_config_read_(data);
-      this->init_status_ = this->init_status_ | 0b00001000;
-      break;
-
-    case FW_READ_REPLY:
-
-#ifdef LD2410S_V2
-      this->process_ack_fw_read_(data);
-#endif
-      this->init_status_ = this->init_status_ | 0b00000100;
-      break;
-
-    case GATE_THRESHOLD_TRIGGER_READ_REPLY:
-
-#ifdef LD2410S_V2
-      this->process_ack_threshold_trigger_read_(data);
-#endif
-      this->init_status_ = this->init_status_ | 0b00010000;
-      break;
-
-    case GATE_THRESHOLD_HOLD_READ_REPLY:
-
-#ifdef LD2410S_V2
-      this->process_ack_threshold_hold_read_(data);
-#endif
-      this->init_status_ = this->init_status_ | 0b00100000;
-      break;
-
-    case GATE_THRESHOLD_SNR_READ_REPLY:
-
-#ifdef LD2410S_V2
-      this->process_ack_threshold_snr_read_(data);
-#endif
-      this->init_status_ = this->init_status_ | 0b01000000;
-      break;
+      // Process acknowledgements
 
     case CONFIG_MODE_START_REPLY:
-      this->init_status_ = this->init_status_ | 0b00000001;
       ESP_LOGD(TAG, "Config mode enabled");
       break;
 
     case CONFIG_MODE_END_REPLY:
-      this->init_status_ = this->init_status_ | 0b10000000;
       ESP_LOGD(TAG, "Config mode disabled");
       break;
+
+    case CALIBRATION_REPLY:
+      ESP_LOGD(TAG, "Calibration started");
+      break;
+
+      // Write command acknowledgements
 
     case PARAMS_WRITE_REPLY:
       ESP_LOGD(TAG, "Config written");
       break;
 
+    case OUTPUT_MODE_SWITCH_REPLY:
+      this->process_ack_minimal_output_(data);
+      break;
+
+#ifdef LD2410S_V2
     case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
       ESP_LOGD(TAG, "Trigger Threshold written");
       break;
@@ -267,14 +248,31 @@ void LD2410S::process_cmd_frame_() {
     case GATE_THRESHOLD_SNR_WRITE_REPLY:
       ESP_LOGD(TAG, "Trigger SNR written");
       break;
+#endif
 
-    case OUTPUT_MODE_SWITCH_REPLY:
+      // Read command acknowledgements
+
+    case PARAMS_READ_REPLY:
+      this->process_ack_config_read_(data);
+      break;
+
+    case FW_READ_CMD || CMD_CONFIRMATION:  // FW_READ_REPLY:
+      this->process_ack_fw_read_(data);
+      break;
 
 #ifdef LD2410S_V2
-      this->process_ack_minimal_output_(data);
-#endif
-      this->init_status_ = this->init_status_ | 0b00000010;
+    case GATE_THRESHOLD_TRIGGER_READ_REPLY:
+      this->process_ack_threshold_trigger_read_(data);
       break;
+
+    case GATE_THRESHOLD_HOLD_READ_REPLY:
+      this->process_ack_threshold_hold_read_(data);
+      break;
+
+    case GATE_THRESHOLD_SNR_READ_REPLY:
+      this->process_ack_threshold_snr_read_(data);
+      break;
+#endif
 
     default:
       ESP_LOGW(TAG, "< Unknown: %4x", command_word);

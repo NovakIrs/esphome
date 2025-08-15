@@ -8,6 +8,8 @@ namespace ld2410s {
 
 static const char *const TAG = "ld2410s";
 
+static const uint16_t CMD_CONFIRMATION = 0x0100;  // Command confirmation response code
+
 static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
 static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
 
@@ -30,7 +32,7 @@ static const uint8_t OUTPUT_MODE_VALUE_STD[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x
 static const uint8_t OUTPUT_MODE_VALUE_MIN[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 static const uint16_t FW_READ_CMD = 0x0000;
-static const uint16_t FW_READ_REPLY = 0x0100;
+// static const uint16_t FW_READ_REPLY = 0x0100;
 
 static const uint16_t SN_READ_CMD = 0x0011;
 static const uint16_t SN_READ_REPLY = 0x0111;
@@ -51,6 +53,7 @@ static const std::string RESPONSE_SPEED_NORMAL = "Normal";
 static const std::string RESPONSE_SPEED_FAST = "Fast";
 
 static const uint16_t CALIBRATION_CMD = 0x0009;
+static const uint16_t CALIBRATION_REPLY = 0x0109;
 static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
 static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;

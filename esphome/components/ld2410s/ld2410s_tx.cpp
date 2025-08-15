@@ -11,6 +11,7 @@ void LD2410Stx::schedule_cmd_sequence_(const char *msg, uint16_t command, uint16
   this->schedule_cmd_frame_(command, sub_command);
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 }
+// builds CMD_FRAME as TxFrameT and appends it to the command buffer
 void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
 
@@ -196,24 +197,36 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_buffer_insert_(&cmd_frame);
 }
-void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size) {
-  memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
-         append_data_size * sizeof(*append_data));
 
-  cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
-}
-void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size) {
-  memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
-         append_data_size * sizeof(*append_data));
+template<typename T>
+void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1) {
+  auto bytes_to_copy = append_data_size * sizeof(T);
+  auto write_ptr = &cmd_frame->data[0] + cmd_frame->data_length;
 
-  cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
+  memcpy(write_ptr, append_data, bytes_to_copy);
+  cmd_frame->data_length += bytes_to_copy;
 }
-void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size) {
-  memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
-         append_data_size * sizeof(*append_data));
+// void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint8_t *append_data, size_t append_data_size = 1)
+// {
+//   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
+//          append_data_size * sizeof(*append_data));
 
-  cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
-}
+//   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
+// }
+// void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint16_t *append_data, size_t append_data_size = 1)
+// {
+//   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
+//          append_data_size * sizeof(*append_data));
+
+//   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
+// }
+// void LD2410Stx::cmd_frame_append_data_(TxFrameT *cmd_frame, const uint32_t *append_data, size_t append_data_size = 1)
+// {
+//   memcpy(&cmd_frame->data[0] + cmd_frame->data_length * sizeof(cmd_frame->data[0]), append_data,
+//          append_data_size * sizeof(*append_data));
+
+//   cmd_frame->data_length = cmd_frame->data_length + append_data_size * sizeof(*append_data);
+// }
 
 void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
   if (!cmd_frame) {

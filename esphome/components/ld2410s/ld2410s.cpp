@@ -25,23 +25,11 @@ void LD2410S::loop() {
   }
 }
 
-void LD2410S::dump_config() {
-  // #ifdef USE_BUTTON
-  //   ESP_LOGCONFIG(TAG, "Buttons:");
-  //   LOG_BUTTON("  ", "Factory reset", this->factory_reset_button_);
-  //   LOG_BUTTON("  ", "Start calibration", this->calibration_button_);
-  // #endif
-
-  // #ifdef USE_SWITCH
-  //   ESP_LOGCONFIG(TAG, "Switches:");
-  //   LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
-  // #endif
-}
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 void LD2410S::calibration() { this->tx_.schedule_cmd_("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
-  this->status_set_warning("factory_reset");
+  ESP_LOGI(TAG, "factory_reset");
 
   this->settings_.max_dist = 16;
   this->settings_.min_dist = 0;
@@ -74,13 +62,12 @@ void LD2410S::factory_reset() {
   this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
 
   this->tx_.schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-  this->status_clear_warning();
 }
 
 // PROTECTED
 
 void LD2410S::init_() {
-  ESP_LOGD(TAG, "init");
+  ESP_LOGI(TAG, "init");
   // App.feed_wdt();
 
   this->settings_.minimal_output = true;
@@ -144,7 +131,6 @@ void LD2410S::process_() {
 
     case RxFrameType::CMD_FRAME:
       this->process_cmd_frame_();
-      this->tx_.cmd_buffer_finished_();
       break;
 
     default:
@@ -209,13 +195,14 @@ void LD2410S::process_data_frame_() {
   }
 }
 void LD2410S::process_cmd_frame_() {
-  int command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
+  uint16_t command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
   uint16_t ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
+  uint8_t *data = &this->rx_.payload_data()[4];
+
   if (ack != 0x0000) {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
   }
-
-  uint8_t *data = &this->rx_.payload_data()[4];
+  this->tx_.cmd_buffer_finished_(command_word);
 
   switch (command_word) {
     case PARAMS_READ_REPLY:

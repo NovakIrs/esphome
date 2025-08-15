@@ -107,5 +107,7 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
     // It would be good to get it from virgin ld2410s, before any calibration.
 };
 
+static const size_t RX_TX_BUFFER_SIZE = 128;
+
 }  // namespace ld2410s
 }  // namespace esphome

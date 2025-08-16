@@ -240,13 +240,12 @@ void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
   }
 }
 void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word = 0xFFFF) {
-  if (command_word != this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION && command_word != 0xFFFF) {
-    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word,
-             this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION);
+  int16_t expected_command = this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION;
+  if (command_word != expected_command && command_word != 0xFFFF) {
+    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word, expected_command);
     return;
   }
-  ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word,
-           this->commands_[this->active_].cmd_frame->command);
+  ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word, expected_command);
 
   this->commands_[this->active_].state = CmdState::EMPTY;
 

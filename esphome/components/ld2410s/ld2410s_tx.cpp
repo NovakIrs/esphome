@@ -212,6 +212,10 @@ void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
     return;
   }
 
+  if (this->error_) {
+    this->error_ = false;
+  }
+
   TxTaskT cmd;
   cmd.state = CmdState::SCHEDULED;
   cmd.cmd_frame = cmd_frame;

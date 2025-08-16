@@ -271,9 +271,11 @@ bool LD2410Stx::loop_send_command_() {
   switch (cmd->state) {
     case CmdState::SCHEDULED:
       // sending scheduled command, waiting for response
+      ESP_LOGD(TAG, "Send scheduled command:%x4, active:%d, last:%d", cmd->cmd_frame->command, this->active_,
+               this->last_);
+      cmd->time_started = now;
       this->send_command_(cmd->cmd_frame);
       cmd->state = CmdState::SENT;
-      cmd->time_started = now;
       return true;
       break;
 
@@ -282,8 +284,9 @@ bool LD2410Stx::loop_send_command_() {
         // send timeout expired
 
         if (cmd->retry < CMD_EXEC_REPEAT) {
+          ESP_LOGD(TAG, "SendCmd timeout expired, active:%d, last:%d", this->active_, this->last_);
           // retry sending command
-          ESP_LOGD(TAG, "SendCmd Retry active:%d, last:%d", this->active_, this->last_);
+          ESP_LOGD(TAG, "SendCmd Retry, active:%d, last:%d", this->active_, this->last_);
           cmd->retry++;
           cmd->time_started = now;
           this->send_command_(cmd->cmd_frame);

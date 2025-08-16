@@ -266,51 +266,55 @@ void LD2410Stx::cmd_buffer_reset_() {
 }
 bool LD2410Stx::loop_send_command_() {
   ESP_LOGD(TAG, "loop_send_command_");
-  TxTaskT *cmd = &commands_[this->active_];
-  uint32_t now = App.get_loop_component_start_time();
+           this->commands_[this->active_].time_started, CMD_EXEC_TIMEOUT);
+           TxTaskT *cmd = &commands_[this->active_];
+           uint32_t now = App.get_loop_component_start_time();
+           ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started,
+                    CMD_EXEC_TIMEOUT);
+           ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
 
-  switch (cmd->state) {
-    case CmdState::SCHEDULED:
-      // sending scheduled command, waiting for response
-      ESP_LOGD(TAG, "Send scheduled command:%4x, active:%d, last:%d", cmd->cmd_frame->command, this->active_,
-               this->last_);
-      cmd->time_started = now;
-      this->send_command_(cmd->cmd_frame);
-      cmd->state = CmdState::SENT;
-      return true;
-      break;
+           switch (cmd->state) {
+             case CmdState::SCHEDULED:
+               // sending scheduled command, waiting for response
+               ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d", cmd->cmd_frame->command,
+                        this->active_, this->last_);
+               cmd->time_started = now;
+               this->send_command_(cmd->cmd_frame);
+               cmd->state = CmdState::SENT;
+               return true;
+               break;
 
-    case CmdState::SENT:
-      if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
-        // send timeout expired
+             case CmdState::SENT:
+               if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
+                 // send timeout expired
 
-        if (cmd->retry < CMD_EXEC_REPEAT) {
-          ESP_LOGD(TAG, "SendCmd timeout expired, active:%d, last:%d", this->active_, this->last_);
-          // retry sending command
-          ESP_LOGD(TAG, "SendCmd Retry, active:%d, last:%d", this->active_, this->last_);
-          cmd->retry++;
-          cmd->time_started = now;
-          this->send_command_(cmd->cmd_frame);
-          return true;
-        }
-      } else {
-        // retry limit reached, giving up, reset buffer, do init
-        ESP_LOGD(TAG, "SendCmd GivingUp  active:%d, last:%d", this->active_, this->last_);
-        this->cmd_buffer_reset_();
-        this->error_ = true;
-        return false;  // Command send failed, reset buffer, do init
-      }
-      break;
+                 if (cmd->retry < CMD_EXEC_REPEAT) {
+                   ESP_LOGD(TAG, "SENT: timeout expired, active:%d, last:%d", this->active_, this->last_);
+                   // retry sending command
+                   ESP_LOGD(TAG, "SENT: Retry, active:%d, last:%d", this->active_, this->last_);
+                   cmd->retry++;
+                   cmd->time_started = now;
+                   this->send_command_(cmd->cmd_frame);
+                   return true;
+                 }
+               } else {
+                 // retry limit reached, giving up, reset buffer, do init
+                 ESP_LOGD(TAG, "SendCmd GivingUp  active:%d, last:%d", this->active_, this->last_);
+                 this->cmd_buffer_reset_();
+                 this->error_ = true;
+                 return false;  // Command send failed, reset buffer, do init
+               }
+               break;
 
-    case CmdState::EMPTY:
-      if (this->active_ == this->last_ && this->active_ != 0) {
-        this->cmd_buffer_reset_();
-        return false;  // No commands to send, buffer is empty
-      }
-      break;
-  }
+             case CmdState::EMPTY:
+               if (this->active_ == this->last_ && this->active_ != 0) {
+                 this->cmd_buffer_reset_();
+                 return false;  // No commands to send, buffer is empty
+               }
+               break;
+           }
 
-  return false;
+           return false;
 }
 void LD2410Stx::send_command_(TxFrameT *frame) {
   char output[64];

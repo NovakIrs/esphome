@@ -20,14 +20,14 @@ void LD2410Stx::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
       if (this->settings_.minimal_output) {
-        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_MIN, 4);
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_MIN, 6);
       } else {
-        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_STD, 4);
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_STD, 6);
       }
     } break;
 
     case CONFIG_MODE_START_CMD:
-      this->cmd_frame_append_data_(&cmd_frame, CONFIG_MODE_START_VALUE, 2);
+      this->cmd_frame_append_data_(&cmd_frame, &CONFIG_MODE_START_VALUE, 1);
       break;
 
     case CONFIG_MODE_END_CMD:
@@ -235,9 +235,10 @@ void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
 }
-void LD2410Stx::cmd_buffer_finished_(uint16_t command_word = 0xFFFF) {
-  if (command_word != this->expected_response_ && command_word != 0xFFFF) {
-    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word, this->expected_response_);
+void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word = 0xFFFF) {
+  if (command_word != this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION && command_word != 0xFFFF) {
+    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word,
+             this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION);
     return;
   }
   ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word,
@@ -255,36 +256,51 @@ void LD2410Stx::cmd_buffer_inc_(uint8_t &index) {
     index = 0;
   }
 }
-
+void LD2410Stx::cmd_buffer_reset_() {
+  this->active_ = 0;
+  this->last_ = 0;
+  this->commands_[this->active_].state = CmdState::EMPTY;
+}
 bool LD2410Stx::loop_send_command_() {
   TxTaskT *cmd = &commands_[this->active_];
   uint32_t now = App.get_loop_component_start_time();
 
-  if (cmd->state == CmdState::SCHEDULED) {
-    this->send_command_(cmd->cmd_frame);
-    cmd->state = CmdState::SENT;
-    cmd->time_started = now;
-    expected_response_ = cmd->cmd_frame->command + 0x0100;  // Expected response is command + 0x0100
-    return true;                                            // Command sent, waiting for response
-
-  } else if (cmd->state == CmdState::SENT && now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
-    if (cmd->retry < CMD_EXEC_REPEAT) {
-      ESP_LOGD(TAG, "SendCmd Retry active:%d, last:%d", this->active_, this->last_);
-      cmd->retry++;
-      cmd->time_started = now;
+  switch (cmd->state) {
+    case CmdState::SCHEDULED:
+      // sending scheduled command, waiting for response
       this->send_command_(cmd->cmd_frame);
-      return true;  // Command sent again, waiting for response
+      cmd->state = CmdState::SENT;
+      cmd->time_started = now;
+      return true;
+      break;
 
-    } else {
-      ESP_LOGD(TAG, "SendCmd GivingUp active:%d, last:%d", this->active_, this->last_);
-      cmd->state = CmdState::EMPTY;
-      this->cmd_buffer_finished_();
-      return false;  // Command send failed, remove from buffer
-    }
-  } else if (cmd->state == CmdState::EMPTY && this->active_ == this->last_ && this->active_ != 0) {
-    this->active_ = 0;
-    this->last_ = 0;
-    return false;  // No commands to send, buffer is empty
+    case CmdState::SENT:
+      if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
+        // send timeout expired
+
+        if (cmd->retry < CMD_EXEC_REPEAT) {
+          // retry sending command
+          ESP_LOGD(TAG, "SendCmd Retry active:%d, last:%d", this->active_, this->last_);
+          cmd->retry++;
+          cmd->time_started = now;
+          this->send_command_(cmd->cmd_frame);
+          return true;
+        }
+      } else {
+        // retry limit reached, giving up, reset buffer, do init
+        ESP_LOGD(TAG, "SendCmd GivingUp  active:%d, last:%d", this->active_, this->last_);
+        this->cmd_buffer_reset_();
+        this->error_ = true;
+        return false;  // Command send failed, reset buffer, do init
+      }
+      break;
+
+    case CmdState::EMPTY:
+      if (this->active_ == this->last_ && this->active_ != 0) {
+        this->cmd_buffer_reset_();
+        return false;  // No commands to send, buffer is empty
+      }
+      break;
   }
 
   return false;

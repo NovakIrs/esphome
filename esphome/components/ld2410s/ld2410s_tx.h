@@ -50,11 +50,12 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   void schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   bool loop_send_command_();
+  void cmd_buffer_verify_response(uint16_t command_word);
+
   bool get_schedule_empty() const {
     return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
   }
-
-  void cmd_buffer_finished_(uint16_t command_word);
+  bool get_error() const { return this->error_; }
 
   uint8_t tx_buffer[RX_TX_BUFFER_SIZE];
   uint16_t data_length{0};
@@ -63,15 +64,17 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   SettingsT &settings_;
 
   TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
-  uint16_t expected_response_{0x0000};
   uint8_t active_{0};
   uint8_t last_{0};
+
+  bool error_{false};
 
   template<typename T>
   void cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1);
 
   void cmd_buffer_insert_(TxFrameT *cmd_frame);
   void cmd_buffer_inc_(uint8_t &index);
+  void cmd_buffer_reset_();
 
   void send_command_(TxFrameT *cmd_frame);
 };

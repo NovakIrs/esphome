@@ -85,11 +85,9 @@ void LD2410S::init_() {
 }
 
 void LD2410S::send_() {
-  if (this->tx_.get_schedule_empty()) {
-    if (!this->init_done_) {
-      ESP_LOGI(TAG, "Setup failed, no commands in queue, re-initializing...");
-      this->init_();
-    }
+  if (this->tx_.get_error() && !this->init_done_) {
+    ESP_LOGI(TAG, "Setup failed, no commands in queue, re-initializing...");
+    this->init_();
   } else {
     if (this->tx_.loop_send_command_()) {
       for (uint16_t index = 0; index < this->tx_.data_length; index++) {
@@ -205,7 +203,7 @@ void LD2410S::process_cmd_frame_() {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
   }
 
-  this->tx_.cmd_buffer_finished_(command_word);
+  this->tx_.cmd_buffer_verify_response(command_word);
   if (this->tx_.get_schedule_empty() && !this->init_done_) {
     ESP_LOGI(TAG, "Setup done");
     this->init_done_ = true;
@@ -214,68 +212,68 @@ void LD2410S::process_cmd_frame_() {
   switch (command_word) {
       // Process acknowledgements
 
-    case CONFIG_MODE_START_REPLY:
+    case CONFIG_MODE_START_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Config mode enabled");
       break;
 
-    case CONFIG_MODE_END_REPLY:
+    case CONFIG_MODE_END_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Config mode disabled");
       break;
 
-    case CALIBRATION_REPLY:
+    case CALIBRATION_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Calibration started");
       break;
 
       // Write command acknowledgements
 
-    case PARAMS_WRITE_REPLY:
+    case PARAMS_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Config written");
       break;
 
-    case OUTPUT_MODE_SWITCH_REPLY:
+    case OUTPUT_MODE_SWITCH_CMD | CMD_CONFIRMATION:
       this->process_ack_minimal_output_(data);
       break;
 
 #ifdef LD2410S_V2
-    case GATE_THRESHOLD_TRIGGER_WRITE_REPLY:
+    case GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Trigger Threshold written");
       break;
 
-    case GATE_THRESHOLD_HOLD_WRITE_REPLY:
+    case GATE_THRESHOLD_HOLD_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Trigger Hold written");
       break;
 
-    case GATE_THRESHOLD_SNR_WRITE_REPLY:
+    case GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Trigger SNR written");
       break;
 #endif
 
       // Read command acknowledgements
 
-    case PARAMS_READ_REPLY:
+    case PARAMS_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_config_read_(data);
       break;
 
-    case FW_READ_CMD || CMD_CONFIRMATION:  // FW_READ_REPLY:
+    case FW_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_fw_read_(data);
       break;
 
 #ifdef LD2410S_V2
-    case GATE_THRESHOLD_TRIGGER_READ_REPLY:
+    case GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_threshold_trigger_read_(data);
       break;
 
-    case GATE_THRESHOLD_HOLD_READ_REPLY:
+    case GATE_THRESHOLD_HOLD_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_threshold_hold_read_(data);
       break;
 
-    case GATE_THRESHOLD_SNR_READ_REPLY:
+    case GATE_THRESHOLD_SNR_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_threshold_snr_read_(data);
       break;
 #endif
 
     default:
-      ESP_LOGW(TAG, "< Unknown: %4x", command_word);
+      ESP_LOGE(TAG, "< Unknown: %4x", command_word);
       break;
   }
 }

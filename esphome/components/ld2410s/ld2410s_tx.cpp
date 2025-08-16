@@ -265,13 +265,14 @@ void LD2410Stx::cmd_buffer_reset_() {
   this->commands_[this->active_].state = CmdState::EMPTY;
 }
 bool LD2410Stx::loop_send_command_() {
+  ESP_LOGD(TAG, "loop_send_command_");
   TxTaskT *cmd = &commands_[this->active_];
   uint32_t now = App.get_loop_component_start_time();
 
   switch (cmd->state) {
     case CmdState::SCHEDULED:
       // sending scheduled command, waiting for response
-      ESP_LOGD(TAG, "Send scheduled command:%x4, active:%d, last:%d", cmd->cmd_frame->command, this->active_,
+      ESP_LOGD(TAG, "Send scheduled command:%4x, active:%d, last:%d", cmd->cmd_frame->command, this->active_,
                this->last_);
       cmd->time_started = now;
       this->send_command_(cmd->cmd_frame);

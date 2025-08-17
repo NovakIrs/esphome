@@ -49,9 +49,7 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   void cmd_buffer_insert(TxFrameT *cmd_frame);
   void cmd_buffer_verify_response(uint16_t command_word);
 
-  bool get_schedule_empty() const {
-    return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
-  }
+  bool get_schedule_empty() const;
   bool get_error() const { return this->error_; }
 
   uint8_t tx_buffer[RX_TX_BUFFER_SIZE];

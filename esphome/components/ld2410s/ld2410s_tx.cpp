@@ -60,6 +60,11 @@ void LD2410Stx::cmd_buffer_reset_() {
   this->last_ = 0;
   this->commands_[this->active_].state = CmdState::EMPTY;
 }
+bool LD2410Stx::get_schedule_empty() const {
+  ESP_LOGI(TAG, "get_schedule_empty: active:%d, last:%d, empty:%d", this->active_, this->last_,
+           this->commands_[this->active_].state == CmdState::EMPTY);
+  return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
+}
 
 // Returns true if there are commands to send
 bool LD2410Stx::send() {

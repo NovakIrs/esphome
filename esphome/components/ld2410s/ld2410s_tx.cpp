@@ -39,14 +39,14 @@ void LD2410Stx::schedule_insert(uint16_t command, uint8_t *frame, uint16_t frame
     this->last_ = 0;
   }
 }
-void LD2410Stx::schedule_verify_response(uint16_t command_word) {
-  int16_t expected_command = this->commands_[this->active_].command;
-  if (command_word != expected_command | CMD_CONFIRMATION) {
-    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word,
-             expected_command | CMD_CONFIRMATION);
+void LD2410Stx::schedule_verify_response(uint16_t response) {
+  int16_t sent = this->commands_[this->active_].command;
+  int16_t expected = sent | CMD_CONFIRMATION;
+  if (response != expected) {
+    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", response, expected);
 
   } else {
-    ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word, expected_command);
+    ESP_LOGD(TAG, "Command response %x received, confirmed command %x", response, sent);
 
     this->commands_[this->active_].state = CmdState::EMPTY;
 

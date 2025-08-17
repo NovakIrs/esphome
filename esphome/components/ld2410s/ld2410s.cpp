@@ -141,6 +141,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   uint8_t data[RX_TX_BUFFER_SIZE];
   uint16_t data_length = 0;
 
+  this->cmd_frame_append_data_(data, data_length, &command, 1);
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
       if (this->minimal_output_) {
@@ -324,6 +325,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_HEADER, 1);
   this->cmd_frame_append_data_(frame, frame_length, &data_length, 1);
+
   this->cmd_frame_append_data_(frame, frame_length, &data, data_length, 1);
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_FOOTER, 1);
 

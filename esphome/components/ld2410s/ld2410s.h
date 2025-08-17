@@ -170,7 +170,7 @@ class LD2410Shelp {
 
 class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
  public:
-  RxEvaluationResult receive_byte(int one);
+  RxEvaluationResult receive_byte(uint8_t byte);
   RxFrameType frame_type() const { return this->frame_type_; }
   bool payload_ready() const { return payload_ready_; }
   uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
@@ -301,6 +301,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   uint32_t energy_values_[16];
   std::string energy_values_str_ = "";
+  uint32_t loop_count_{0};
 
   void schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);

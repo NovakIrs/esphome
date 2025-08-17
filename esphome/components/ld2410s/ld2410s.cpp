@@ -314,7 +314,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       break;
   }
 
-  this->tx_.cmd_buffer_insert(&cmd_frame);
+  this->tx_.schedule_insert(&cmd_frame);
 }
 template<typename T>
 void LD2410S::cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size) {
@@ -410,8 +410,8 @@ void LD2410S::process_cmd_frame_() {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
   }
 
-  this->tx_.cmd_buffer_verify_response(command_word);
-  if (this->tx_.get_schedule_empty() && !this->init_done_) {
+  this->tx_.schedule_verify_response(command_word);
+  if (this->tx_.schedule_check_empty() && !this->init_done_) {
     ESP_LOGI(TAG, "Setup done");
     this->init_done_ = true;
   }

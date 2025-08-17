@@ -44,12 +44,9 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 
 class LD2410Stx : uart::UARTDevice, LD2410Shelp {
  public:
-  LD2410Stx(SettingsT &settings) : settings_(settings) {}
+  bool send();
 
-  // void set_settings(SettingsT &settings) { this->settings_ = settings; }
-  void schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  bool loop_send_command_();
+  void cmd_buffer_insert(TxFrameT *cmd_frame);
   void cmd_buffer_verify_response(uint16_t command_word);
 
   bool get_schedule_empty() const {
@@ -61,22 +58,16 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   uint16_t data_length{0};
 
  protected:
-  SettingsT &settings_;
-
   TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
   uint8_t active_{0};
   uint8_t last_{0};
 
   bool error_{false};
 
-  template<typename T>
-  void cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1);
-
-  void cmd_buffer_insert_(TxFrameT *cmd_frame);
   void cmd_buffer_inc_(uint8_t &index);
   void cmd_buffer_reset_();
 
-  void send_command_(TxFrameT *cmd_frame);
+  void send_frame_(TxFrameT *cmd_frame);
 };
 
 }  // namespace ld2410s

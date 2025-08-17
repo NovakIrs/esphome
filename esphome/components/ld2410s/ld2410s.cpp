@@ -27,41 +27,41 @@ void LD2410S::loop() {
 
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-void LD2410S::calibration() { this->tx_.schedule_cmd_sequence_("calibration\0", CALIBRATION_CMD); }
+void LD2410S::calibration() { this->schedule_cmd_sequence_("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   ESP_LOGI(TAG, "factory_reset");
 
-  this->settings_.max_dist = 16;
-  this->settings_.min_dist = 0;
-  this->settings_.delay = 10;
-  this->settings_.status_freq = 80;
-  this->settings_.dist_freq = 80;
+  this->max_dist_ = 16;
+  this->min_dist_ = 0;
+  this->delay_ = 10;
+  this->status_freq_ = 80;
+  this->dist_freq_ = 80;
 
-  this->settings_.minimal_output = true;
+  this->minimal_output_ = true;
 
-  this->settings_.resp_speed = 5;
+  this->resp_speed_ = 5;
 
   for (uint8_t i = 0; i < 16; i++) {
-    this->settings_.thresholds.trigger[i] = GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
-    this->settings_.thresholds.hold[i] = GATE_THRESHOLD_HOLD_WRITE_DATA[i];
-    this->settings_.thresholds.snr[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
+    this->thresholds_trigger_[i] = GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
+    this->thresholds_hold_[i] = GATE_THRESHOLD_HOLD_WRITE_DATA[i];
+    this->thresholds_snr_[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
   }
 
-  this->tx_.schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
 
-  this->tx_.schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
+  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
 
-  this->tx_.schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
+  this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
 
-  this->tx_.schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+  this->schedule_cmd_frame_(PARAMS_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
 
-  this->tx_.schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 }
 
 // PROTECTED
@@ -70,18 +70,23 @@ void LD2410S::init_() {
   ESP_LOGI(TAG, "init");
   // App.feed_wdt();
 
-  this->settings_.minimal_output = true;
-
   this->init_done_ = false;
 
-  this->tx_.schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-  this->tx_.schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-  this->tx_.schedule_cmd_frame_(FW_READ_CMD);
-  this->tx_.schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->tx_.schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-  this->tx_.schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->minimal_output_ = true;
+
+  this->read_all_();
+}
+void LD2410S::read_all_() {
+  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+
+  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
+  this->schedule_cmd_frame_(FW_READ_CMD);
+  this->schedule_cmd_frame_(PARAMS_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+
+  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 }
 
 void LD2410S::send_() {
@@ -89,7 +94,7 @@ void LD2410S::send_() {
     ESP_LOGI(TAG, "Setup failed, no commands in queue, re-initializing...");
     this->init_();
   } else {
-    if (this->tx_.loop_send_command_()) {
+    if (this->tx_.send()) {
       for (uint16_t index = 0; index < this->tx_.data_length; index++) {
         this->write_byte(this->tx_.tx_buffer[index]);
       }
@@ -116,6 +121,208 @@ bool LD2410S::receive_() {
   }
 
   return received;
+}
+
+void LD2410S::schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command) {
+  ESP_LOGD(TAG, "schedule_cmd_sequence_: %s : %x : %x", msg, command, sub_command);
+
+  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->schedule_cmd_frame_(command, sub_command);
+  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+}
+// builds CMD_FRAME as TxFrameT and appends it to the command buffer
+void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
+  ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
+
+  TxFrameT cmd_frame = {.header = CMD_FRAME_HEADER, .footer = CMD_FRAME_FOOTER, .command = command, .data_length = 0};
+
+  switch (command) {
+    case OUTPUT_MODE_SWITCH_CMD: {
+      if (this->minimal_output_) {
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_MIN, 6);
+      } else {
+        this->cmd_frame_append_data_(&cmd_frame, OUTPUT_MODE_VALUE_STD, 6);
+      }
+    } break;
+
+    case CONFIG_MODE_START_CMD:
+      this->cmd_frame_append_data_(&cmd_frame, &CONFIG_MODE_START_VALUE, 1);
+      break;
+
+    case CONFIG_MODE_END_CMD:
+      break;
+
+    case PARAMS_READ_CMD:
+
+      switch (sub_command) {
+        case CFG_MAX_DETECTION_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
+          break;
+
+        case CFG_MIN_DETECTION_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_MIN_DETECTION_VALUE, 1);
+          break;
+
+        case CFG_NO_DELAY_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_NO_DELAY_VALUE, 1);
+          break;
+
+        case CFG_STATUS_FREQ_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_STATUS_FREQ_VALUE, 1);
+          break;
+
+        case CFG_DISTANCE_FREQ_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_DISTANCE_FREQ_VALUE, 1);
+          break;
+
+        case CFG_RESPONSE_SPEED_VALUE:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_RESPONSE_SPEED_VALUE, 1);
+          break;
+
+        default:
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_MIN_DETECTION_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_NO_DELAY_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_STATUS_FREQ_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_DISTANCE_FREQ_VALUE, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &CFG_RESPONSE_SPEED_VALUE, 1);
+          break;
+      }
+
+      break;
+
+    case FW_READ_CMD:
+      break;
+
+    case PARAMS_WRITE_CMD:
+      if (this->resp_speed_ == 0) {
+        ESP_LOGD(TAG, "PARAMS_WRITE_CMD Error, bad new_config");
+        return;
+      } else {
+        switch (sub_command) {
+          case CFG_MAX_DETECTION_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->max_dist_, 1);
+            break;
+
+          case CFG_MIN_DETECTION_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_MIN_DETECTION_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->min_dist_, 1);
+            break;
+
+          case CFG_NO_DELAY_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_NO_DELAY_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->delay_, 1);
+            break;
+
+          case CFG_STATUS_FREQ_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_STATUS_FREQ_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->status_freq_, 1);
+            break;
+
+          case CFG_DISTANCE_FREQ_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_DISTANCE_FREQ_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->dist_freq_, 1);
+            break;
+
+          case CFG_RESPONSE_SPEED_VALUE:
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_RESPONSE_SPEED_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->resp_speed_, 1);
+            break;
+
+          default:
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_MAX_DETECTION_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->max_dist_, 1);
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_MIN_DETECTION_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->min_dist_, 1);
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_NO_DELAY_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->delay_, 1);
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_STATUS_FREQ_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->status_freq_, 1);
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_DISTANCE_FREQ_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->dist_freq_, 1);
+
+            this->cmd_frame_append_data_(&cmd_frame, &CFG_RESPONSE_SPEED_VALUE, 1);
+            this->cmd_frame_append_data_(&cmd_frame, &this->resp_speed_, 1);
+
+            break;
+        }
+        break;
+      }
+
+    case CALIBRATION_CMD:
+      this->cmd_frame_append_data_(&cmd_frame, &CALIBRATION_TRIGGER_VALUE, 1);
+      this->cmd_frame_append_data_(&cmd_frame, &CALIBRATION_RETENTION_VALUE, 1);
+      this->cmd_frame_append_data_(&cmd_frame, &CALIBRATION_TIME_VALUE, 1);
+      break;
+
+    case GATE_THRESHOLD_TRIGGER_READ_CMD:
+    case GATE_THRESHOLD_HOLD_READ_CMD:
+    case GATE_THRESHOLD_SNR_READ_CMD:
+      if (sub_command != NO_SUB_CMD) {
+        this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
+      } else {
+        for (uint16_t i = 0; i < 16; i++) {
+          this->cmd_frame_append_data_(&cmd_frame, &i, 1);
+        }
+      }
+      break;
+
+    case GATE_THRESHOLD_TRIGGER_WRITE_CMD:
+      if (sub_command != NO_SUB_CMD) {
+        this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_trigger_[sub_command], 1);
+      } else {
+        for (uint16_t i = 0; i < 16; i++) {
+          this->cmd_frame_append_data_(&cmd_frame, &i, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_trigger_[i], 1);
+        }
+      }
+      break;
+
+    case GATE_THRESHOLD_HOLD_WRITE_CMD:
+      if (sub_command != NO_SUB_CMD) {
+        this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_hold_[sub_command], 1);
+      } else {
+        for (uint16_t i = 0; i < 16; i++) {
+          this->cmd_frame_append_data_(&cmd_frame, &i, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_hold_[i], 1);
+        }
+      }
+      break;
+
+    case GATE_THRESHOLD_SNR_WRITE_CMD:
+      if (sub_command != NO_SUB_CMD) {
+        this->cmd_frame_append_data_(&cmd_frame, &sub_command, 1);
+        this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_snr_[sub_command], 1);
+      } else {
+        for (uint16_t i = 0; i < 16; i++) {
+          this->cmd_frame_append_data_(&cmd_frame, &i, 1);
+          this->cmd_frame_append_data_(&cmd_frame, &this->thresholds_snr_[i], 1);
+        }
+      }
+      break;
+
+    default:
+
+      break;
+  }
+
+  this->tx_.cmd_buffer_insert(&cmd_frame);
+}
+template<typename T>
+void LD2410S::cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size) {
+  auto bytes_to_copy = append_data_size * sizeof(T);
+  auto write_ptr = &cmd_frame->data[0] + cmd_frame->data_length;
+
+  memcpy(write_ptr, append_data, bytes_to_copy);
+  cmd_frame->data_length += bytes_to_copy;
 }
 
 void LD2410S::process_() {

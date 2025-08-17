@@ -148,7 +148,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   template<typename T>
-  bool cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data, size_t append_data_size = 1);
+  bool cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data, uint16_t append_data_size,
+                              uint16_t actual_size = 0);
 
   void process_();
   void process_short_data_frame_();

@@ -322,7 +322,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_HEADER, 1);
   this->cmd_frame_append_data_(frame, frame_length, &data_length, 1);
-  this->cmd_frame_append_data_(frame, frame_length, &data, 1);  // data_length);
+  this->cmd_frame_append_data_(frame, frame_length, &data, data_length, 1);
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_FOOTER, 1);
 
   this->tx_.schedule_insert(command, frame, frame_length);
@@ -330,19 +330,23 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
 // append append_data to data, returns true if not overflow
 template<typename T>
-bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data,
-                                     size_t append_data_size) {
-  auto bytes_to_copy = append_data_size * sizeof(T);
-  if (data_length + bytes_to_copy > RX_TX_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: data_length:%d + append_data_size:%d + T_size:%d > %d", data_length,
-             append_data_size, sizeof(T), RX_TX_BUFFER_SIZE);
+bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
+                                     uint16_t append_data_size, uint16_t actual_size) {
+  size_t data_object_size = actual_size;
+  if (data_object_size == 0) {
+    data_object_size = sizeof(T);
+  }
+  auto bytes_to_copy = append_data_size * data_object;
+  if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
+    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: insert_position:%d + append_data_size:%d + T_size:%d > %d",
+             insert_position, append_data_size, sizeof(T), RX_TX_BUFFER_SIZE);
     return false;
   }
 
-  auto write_ptr = &data[0] + data_length;
+  auto write_ptr = &data[0] + insert_position;
   memcpy(write_ptr, append_data, bytes_to_copy);
 
-  data_length += bytes_to_copy;
+  insert_position += bytes_to_copy;
 
   return true;
 }

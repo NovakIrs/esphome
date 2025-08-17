@@ -16,9 +16,9 @@ void LD2410S::setup() {
   this->publish_calibration_runing_(false, true);
 
   this->set_threshold_selected_gate(0);
-#endif
 
   this->init_();
+#endif
 }
 void LD2410S::loop() {
   // ESP_LOGD(TAG, "loop");

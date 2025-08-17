@@ -31,6 +31,7 @@ int LD2410Shelp::read_int(const uint8_t *buffer, size_t pos, size_t len) {
   }
   return ret;
 };
+#ifdef LD2410S_V2
 std::string LD2410Shelp::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
   if (len == 0)
     return "";
@@ -57,6 +58,6 @@ std::string LD2410Shelp::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
 
   return result;
 }
-
+#endif
 }  // namespace ld2410s
 }  // namespace esphome

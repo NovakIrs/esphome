@@ -18,6 +18,7 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
     this->error_ = false;
   }
 
+  ESP_LOGE(TAG, "Inserting command %x into command buffer at position %d", cmd_frame->command, this->last_);
   this->commands_[this->last_].state = CmdState::SCHEDULED;
   this->commands_[this->last_].time_started = 0;
   this->commands_[this->last_].retry = 0;

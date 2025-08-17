@@ -157,6 +157,62 @@ struct TxTaskT {
   uint8_t retry;
 };
 
+class LD2410Shelp {
+ public:
+ protected:
+  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
+  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
+  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
+};
+
+class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
+ public:
+  RxEvaluationResult receive_byte(int one);
+  RxFrameType frame_type() const { return this->frame_type_; }
+  bool payload_ready() const { return payload_ready_; }
+  uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
+  uint8_t payload_size() const { return this->payload_size_; }
+
+ protected:
+  uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE];
+  uint16_t end_pos_{0};
+
+  uint16_t header_footer_size_{0};
+  uint16_t expected_frame_size_{0};
+  uint16_t size_field_size_{0};
+
+  RxFrameType frame_type_{RxFrameType::UNKNOWN};
+  bool payload_ready_{false};
+  uint16_t payload_pos_{0};
+  uint16_t payload_size_{0};
+
+  RxEvaluationResult evaluate_();
+  RxEvaluationResult evaluate_header_();
+  RxEvaluationResult evaluate_size_();
+  RxEvaluationResult evaluate_footer_();
+  void reset_();
+};
+
+class LD2410Stx : uart::UARTDevice, LD2410Shelp {
+ public:
+  bool get_error() const { return this->error_; }
+  void schedule_append(uint16_t command, uint8_t *frame, uint16_t frame_length);
+  bool schedule_check_empty() const;
+  void schedule_verify_response(uint16_t command_word);
+  bool send_available();
+
+  uint8_t *scheduled_frame() { return this->commands_[this->active_].frame; }
+  uint16_t scheduled_frame_length() { return this->commands_[this->active_].frame_length; }
+
+ protected:
+  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
+  uint8_t active_{0};
+  uint8_t last_{0};
+  bool error_{false};
+
+  void schedule_reset_();
+};
+
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
@@ -289,62 +345,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
-};
-
-class LD2410Shelp {
- public:
- protected:
-  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
-  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
-  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
-};
-
-class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
- public:
-  RxEvaluationResult receive_byte(int one);
-  RxFrameType frame_type() const { return this->frame_type_; }
-  bool payload_ready() const { return payload_ready_; }
-  uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
-  uint8_t payload_size() const { return this->payload_size_; }
-
- protected:
-  uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE];
-  uint16_t end_pos_{0};
-
-  uint16_t header_footer_size_{0};
-  uint16_t expected_frame_size_{0};
-  uint16_t size_field_size_{0};
-
-  RxFrameType frame_type_{RxFrameType::UNKNOWN};
-  bool payload_ready_{false};
-  uint16_t payload_pos_{0};
-  uint16_t payload_size_{0};
-
-  RxEvaluationResult evaluate_();
-  RxEvaluationResult evaluate_header_();
-  RxEvaluationResult evaluate_size_();
-  RxEvaluationResult evaluate_footer_();
-  void reset_();
-};
-
-class LD2410Stx : uart::UARTDevice, LD2410Shelp {
- public:
-  bool get_error() const { return this->error_; }
-  void schedule_append(uint16_t command, uint8_t *frame, uint16_t frame_length);
-  bool schedule_check_empty() const;
-  void schedule_verify_response(uint16_t command_word);
-  bool send_available();
-
-  uint8_t *scheduled_frame() { return this->commands_[this->active_].frame; }
-  uint16_t scheduled_frame_length() { return this->commands_[this->active_].frame_length; }
-
- protected:
-  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
-  uint8_t active_{0};
-  uint8_t last_{0};
-  bool error_{false};
-
-  void schedule_reset_();
 };
 
 }  // namespace ld2410s

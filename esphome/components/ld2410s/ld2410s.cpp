@@ -25,7 +25,7 @@ void LD2410S::loop() {
   if (!this->receive_()) {
     this->send_();
   }
-  this->loop_counter++;
+  this->loop_count_++;
 }
 
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }

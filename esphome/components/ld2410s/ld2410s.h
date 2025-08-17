@@ -144,6 +144,10 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
+enum class TxCmdState { EMPTY, SCHEDULED, SENT };
+enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
+enum class RxEvaluationResult { UNKNOWN, OK, NOK };
+
 struct TxTaskT {
   uint16_t command;
   uint8_t frame[128];
@@ -152,10 +156,6 @@ struct TxTaskT {
   uint32_t time_started;
   uint8_t retry;
 };
-
-enum class TxCmdState { EMPTY, SCHEDULED, SENT };
-enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
-enum class RxEvaluationResult { UNKNOWN, OK, NOK };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR

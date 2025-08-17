@@ -25,15 +25,14 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
   }
 
   this->commands_[this->last_].state = CmdState::SCHEDULED;
-  this->commands_[this->last_].cmd_frame = cmd_frame;
   this->commands_[this->last_].time_started = 0;
   this->commands_[this->last_].retry = 0;
 
-  // if (cmd_frame) {
-  //   this->commands_[this->last_].cmd_frame = new TxFrameT(cmd_frame);  // Deep copy
-  // } else {
-  //   this->commands_[this->last_].cmd_frame = nullptr;
-  // }
+  if (cmd_frame) {
+    this->commands_[this->last_].cmd_frame = new TxFrameT(*cmd_frame);  // Deep copy
+  } else {
+    this->commands_[this->last_].cmd_frame = nullptr;
+  }
 }
 void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word = 0xFFFF) {
   int16_t expected_command = this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION;

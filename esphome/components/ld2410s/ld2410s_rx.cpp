@@ -156,6 +156,7 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
   }
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
+  ESP_LOGE(TAG, "rx received unkonw header");
   return RxEvaluationResult::NOK;
 }
 // checks if current rx buffer has proper size for decoded header
@@ -209,6 +210,8 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
   } else if (this->expected_frame_size_ < this->end_pos_ + 1) {
+    ESP_LOGE(TAG, "rx passed the expected frame end, expected:%d, current:%d", this->expected_frame_size_,
+             this->end_pos_);
     return RxEvaluationResult::NOK;  // passed the end of short data frame
 
   } else {
@@ -243,10 +246,13 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
       return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
     case RxFrameType::NOK:
+      return RxEvaluationResult::NOK;  // already known bad data frame
+
     default:
       return RxEvaluationResult::NOK;  // unknown header type
   }
 
+  ESP_LOGE(TAG, "rx footer does not match expected footer for frame type");
   return RxEvaluationResult::NOK;  // footer does not match expected footer for frame type
 }
 // reset rx buffer

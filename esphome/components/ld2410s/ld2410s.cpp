@@ -265,7 +265,9 @@ bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, c
 void LD2410S::send_() {
   if (this->tx_.get_error() && !this->init_done_) {
     ESP_LOGI(TAG, "Setup failed, no more scheduled commands, re-initializing...");
+#ifdef LD2410S_V2
     this->init_();
+#endif
   } else {
     if (this->tx_.send_available()) {
       uint8_t *scheduled_frame = this->tx_.scheduled_frame();

@@ -82,15 +82,14 @@ bool LD2410Stx::send() {
                  cmd->time_started, CMD_EXEC_TIMEOUT);
 
         if (cmd->retry > CMD_EXEC_REPEAT) {
-          ESP_LOGD(TAG, "  ... Retry limit reached, giving up !!! , active:%d, last:%d, retry:%d < CMD_EXEC_REPEAT:%d",
+          ESP_LOGD(TAG, "  ... Retry limit reached, giving up !!! , active:%d, last:%d, retry:%d > CMD_EXEC_REPEAT:%d",
                    this->active_, this->last_, cmd->retry, CMD_EXEC_REPEAT);
           this->cmd_buffer_reset_();
           this->error_ = true;
           return false;
 
         } else {
-          ESP_LOGD(TAG, "  ... Retry send !!! , active:%d, last:%d, retry:%d < CMD_EXEC_REPEAT:%d", this->active_,
-                   this->last_, cmd->retry, CMD_EXEC_REPEAT);
+          ESP_LOGD(TAG, "  ... Retry send !!! , active:%d, last:%d, retry:%d", this->active_, this->last_, cmd->retry);
           cmd->retry++;
           cmd->time_started = now;
           this->send_frame_(cmd->cmd_frame);

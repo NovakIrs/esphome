@@ -64,7 +64,6 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
 
   bool error_{false};
 
-  void cmd_buffer_inc_(uint8_t &index);
   void cmd_buffer_reset_();
 
   void send_frame_(TxFrameT *cmd_frame);

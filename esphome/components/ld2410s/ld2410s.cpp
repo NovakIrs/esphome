@@ -3,16 +3,18 @@
 namespace esphome {
 namespace ld2410s {
 
+// PUBLIC
+
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
-  // this->tx_.set_settings(this->settings_);
+
   this->publish_distance_(0, true);
   this->publish_presence_(false, true);
 
+#ifdef LD2410S_V2
   this->publish_calibration_progress_(0, true);
   this->publish_calibration_runing_(false, true);
 
-#ifdef LD2410S_V2
   this->set_threshold_selected_gate(0);
 #endif
 
@@ -27,114 +29,17 @@ void LD2410S::loop() {
 
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
-void LD2410S::calibration() { this->schedule_cmd_sequence_("calibration\0", CALIBRATION_CMD); }
-void LD2410S::factory_reset() {
-  ESP_LOGI(TAG, "factory_reset");
-
-  this->max_dist_ = 16;
-  this->min_dist_ = 0;
-  this->delay_ = 10;
-  this->status_freq_ = 80;
-  this->dist_freq_ = 80;
-
-  this->minimal_output_ = true;
-
-  this->resp_speed_ = 5;
-
-  for (uint8_t i = 0; i < 16; i++) {
-    this->thresholds_trigger_[i] = GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
-    this->thresholds_hold_[i] = GATE_THRESHOLD_HOLD_WRITE_DATA[i];
-    this->thresholds_snr_[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
-  }
-
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-
-  this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
-
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-}
-
 // PROTECTED
 
-void LD2410S::init_() {
-  ESP_LOGI(TAG, "init");
-  // App.feed_wdt();
-
-  this->init_done_ = false;
-
-  this->minimal_output_ = true;
-
-  this->read_all_();
-}
-void LD2410S::read_all_() {
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-  this->schedule_cmd_frame_(FW_READ_CMD);
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
-}
-
-void LD2410S::send_() {
-  if (this->tx_.get_error() && !this->init_done_) {
-    ESP_LOGI(TAG, "Setup failed, no commands in queue, re-initializing...");
-    this->init_();
-  } else {
-    if (this->tx_.send_available()) {
-      uint8_t *scheduled_frame = this->tx_.scheduled_frame();
-      uint16_t scheduled_frame_length = this->tx_.scheduled_frame_length();
-
-      ESP_LOGI(TAG, "Sending frame... size:%d", scheduled_frame_length);
-
-      for (uint16_t index = 0; index < scheduled_frame_length; index++) {
-        this->write_byte(scheduled_frame[index]);
-      }
-      this->flush();
-
-      this->hex_diag(">", scheduled_frame, scheduled_frame_length);
-    }
-  }
-}
-
-bool LD2410S::receive_() {
-  bool received = false;
-  if (this->available()) {
-    received = true;
-  }
-
-  int rx_bytes_count = 0;
-  while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
-    if (this->rx_.receive_one(this->read()) == EvaluationResult::OK) {
-      this->process_();
-    }
-    rx_bytes_count++;
-  }
-
-  return received;
-}
-
-void LD2410S::schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_cmd_sequence_: %s : %x : %x", msg, command, sub_command);
+// builds CMD_FRAME with configuration start end and appends it to the schedule
+void LD2410S::schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command) {
+  ESP_LOGD(TAG, "schedule_cmd_frames_sequence_: %s : %x : %x", msg, command, sub_command);
 
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(command, sub_command);
   this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
 }
-// builds CMD_FRAME as TxFrameT and appends it to the command buffer
+// builds CMD_FRAME as TxFrameT and appends it to the schedule
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
 
@@ -329,9 +234,8 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   this->cmd_frame_append_data_(frame, frame_length, &data, data_length, 1);
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_FOOTER, 1);
 
-  this->tx_.schedule_insert(command, frame, frame_length);
+  this->tx_.schedule_append(command, frame, frame_length);
 }
-
 // append append_data to data, returns true if not overflow
 template<typename T>
 bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
@@ -355,6 +259,45 @@ bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, c
   return true;
 }
 
+// prepares scheduled frames for sending
+// executes actual data sending
+void LD2410S::send_() {
+  if (this->tx_.get_error() && !this->init_done_) {
+    ESP_LOGI(TAG, "Setup failed, no more scheduled commands, re-initializing...");
+    this->init_();
+  } else {
+    if (this->tx_.send_available()) {
+      uint8_t *scheduled_frame = this->tx_.scheduled_frame();
+      uint16_t scheduled_frame_length = this->tx_.scheduled_frame_length();
+
+      for (uint16_t index = 0; index < scheduled_frame_length; index++) {
+        this->write_byte(scheduled_frame[index]);
+      }
+      this->flush();
+
+      this->hex_diag(">", scheduled_frame, scheduled_frame_length);
+    }
+  }
+}
+
+// receives frames and starts processing
+bool LD2410S::receive_() {
+  bool received = false;
+  if (this->available()) {
+    received = true;
+  }
+
+  int rx_bytes_count = 0;
+  while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
+    if (this->rx_.receive_byte(this->read()) == RxEvaluationResult::OK) {
+      this->process_();
+    }
+    rx_bytes_count++;
+  }
+
+  return received;
+}
+// starts received frame decoding, and handling received data
 void LD2410S::process_() {
   uint8_t *data = &this->rx_.payload_data()[0];
   switch (this->rx_.frame_type()) {
@@ -386,8 +329,6 @@ void LD2410S::process_short_data_frame_() {
   this->publish_presence_(presence_state);
 }
 void LD2410S::process_data_frame_() {
-  // uint8_t *data, size_t data_size
-
   switch (this->rx_.payload_data()[0]) {
     case 0x01:  // standard data
     {
@@ -409,20 +350,17 @@ void LD2410S::process_data_frame_() {
 
     case 0x03:  // calibration progress
     {
+#ifdef LD2410S_V2
       uint16_t progress = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
 
       if (progress == 100) {
         this->publish_calibration_runing_(false);
-
-#ifdef LD2410S_V2
         this->read_all_thresholds_();
-#endif
-
       } else {
         this->publish_calibration_runing_(true);
       }
-
       this->publish_calibration_progress_(progress);
+#endif
 
       break;
     }
@@ -524,35 +462,11 @@ void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
   }
 #endif
 }
-void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {
-#ifdef USE_SENSOR
-  if (this->calibration_progress_sensor_ != nullptr) {
-    if (calibration_progress == 100) {
-      if (this->calibration_progress_sensor_->state != 0 || force_publish) {
-        this->calibration_progress_sensor_->publish_state(0);
-      }
-    } else {
-      if (this->calibration_progress_sensor_->state != calibration_progress || force_publish) {
-        this->calibration_progress_sensor_->publish_state(calibration_progress);
-      }
-    }
-  }
-#endif
-}
 void LD2410S::publish_presence_(bool presence, bool force_publish) {
 #ifdef USE_BINARY_SENSOR
   if (this->presence_binary_sensor_ != nullptr) {
     if (this->presence_binary_sensor_->state != presence || force_publish) {
       this->presence_binary_sensor_->publish_state(presence);
-    }
-  }
-#endif
-}
-void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
-#ifdef USE_BINARY_SENSOR
-  if (this->calibration_runing_binary_sensor_ != nullptr) {
-    if (this->calibration_runing_binary_sensor_->state != running || force_publish) {
-      this->calibration_runing_binary_sensor_->publish_state(running);
     }
   }
 #endif

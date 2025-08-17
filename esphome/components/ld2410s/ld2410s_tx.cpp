@@ -59,6 +59,9 @@ void LD2410Stx::schedule_reset_() {
   ESP_LOGD(TAG, "Command buffer reset");
   this->active_ = 0;
   this->last_ = 0;
+  for (uint8_t index = 0; index < CMD_EXEC_BUFFER_SIZE; index++) {
+    this->commands_[index].state = CmdState::EMPTY;
+  }
   this->commands_[this->active_].state = CmdState::EMPTY;
 }
 bool LD2410Stx::schedule_check_empty() const {

@@ -8,20 +8,14 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
   if (!cmd_frame) {
     return;
   }
-  if (this->error_) {
-    this->error_ = false;
-  }
-
-  this->last_++;
-  if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
-    this->last_ = 0;
-  }
-
-  if (this->commands_[last_].state != CmdState::EMPTY || this->last_ == this->active_) {
-    ESP_LOGE(TAG, "Error, inserting into non-empty buffer location !!!");
+  if (this->commands_[last_].state != CmdState::EMPTY) {
+    ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
     this->cmd_buffer_reset_();
     this->error_ = true;
     return;
+  }
+  if (this->error_) {
+    this->error_ = false;
   }
 
   this->commands_[this->last_].state = CmdState::SCHEDULED;
@@ -32,6 +26,11 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
     this->commands_[this->last_].cmd_frame = new TxFrameT(*cmd_frame);  // Deep copy
   } else {
     this->commands_[this->last_].cmd_frame = nullptr;
+  }
+
+  this->last_++;
+  if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
+    this->last_ = 0;
   }
 }
 void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word) {

@@ -89,8 +89,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #endif
 
  public:
-  LD2410S() : settings_(), tx_(settings_) {}
-
   void setup() override;
   void loop() override;
   void dump_config() override;
@@ -120,7 +118,20 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   LD2410Stx tx_;
   LD2410Srx rx_;
 
-  SettingsT settings_;
+  // settings_;
+  uint32_t max_dist_{0};
+  uint32_t min_dist_{0};
+  uint32_t delay_{0};
+  uint32_t status_freq_{0};
+  uint32_t dist_freq_{0};
+  uint32_t resp_speed_{0};
+  bool minimal_output_{true};
+
+  // thresholds_;
+  uint32_t thresholds_trigger_[16];
+  uint32_t thresholds_hold_[16];
+  uint32_t thresholds_snr_[16];
+  uint8_t thresholds_selected_gate_{0};
 
   bool init_done_{false};
 
@@ -131,6 +142,13 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   void send_();
   bool receive_();
+
+  void read_all_();
+
+  void schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  template<typename T>
+  void cmd_frame_append_data_(TxFrameT *cmd_frame, const T *append_data, size_t append_data_size = 1);
 
   void process_();
   void process_short_data_frame_();

@@ -4,7 +4,7 @@
 namespace esphome {
 namespace ld2410s {
 
-void LD2410Stx::cmd_buffer_insert_(TxFrameT *cmd_frame) {
+void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
   if (!cmd_frame) {
     return;
   }

@@ -25,6 +25,7 @@ void LD2410S::loop() {
   if (!this->receive_()) {
     this->send_();
   }
+  this->loop_counter++;
 }
 
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
@@ -285,6 +286,7 @@ bool LD2410S::receive_() {
   bool received = false;
   if (this->available()) {
     received = true;
+    ESP_LOGD(TAG, "receiving loop:%d", this->loop_count_);
   }
 
   int rx_bytes_count = 0;

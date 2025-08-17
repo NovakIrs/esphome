@@ -119,36 +119,37 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
       break;  // need to determine frame type
   }
 
-  if (end_pos_ + 1 == sizeof(SHORT_DATA_FRAME_HEADER) &&
-      memcmp(&rcv_buffer_[0], &SHORT_DATA_FRAME_HEADER, sizeof(SHORT_DATA_FRAME_HEADER)) == 0) {
+  if (this->end_pos_ + 1 == sizeof(SHORT_DATA_FRAME_HEADER) &&
+      memcmp(&this->rcv_buffer_[0], &SHORT_DATA_FRAME_HEADER, sizeof(SHORT_DATA_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::SHORT_DATA_FRAME;
     this->header_footer_size_ = sizeof(SHORT_DATA_FRAME_HEADER);
     return RxEvaluationResult::OK;
   }
 
-  if (end_pos_ + 1 == sizeof(STD_DATA_FRAME_HEADER) &&
-      memcmp(&rcv_buffer_[0], &STD_DATA_FRAME_HEADER, sizeof(STD_DATA_FRAME_HEADER)) == 0) {
+  if (this->end_pos_ + 1 == sizeof(STD_DATA_FRAME_HEADER) &&
+      memcmp(&this->rcv_buffer_[0], &STD_DATA_FRAME_HEADER, sizeof(STD_DATA_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::STD_DATA_FRAME;
     this->header_footer_size_ = sizeof(STD_DATA_FRAME_HEADER);
     return RxEvaluationResult::OK;
   }
 
-  if (end_pos_ + 1 == sizeof(CMD_FRAME_HEADER) &&
-      memcmp(&rcv_buffer_[0], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
+  if (this->end_pos_ + 1 == sizeof(CMD_FRAME_HEADER) &&
+      memcmp(&this->rcv_buffer_[0], &CMD_FRAME_HEADER, sizeof(CMD_FRAME_HEADER)) == 0) {
     this->frame_type_ = RxFrameType::CMD_FRAME;
     this->header_footer_size_ = sizeof(CMD_FRAME_HEADER);
     return RxEvaluationResult::OK;
   }
 
-  if (end_pos_ + 1 < sizeof(STD_DATA_FRAME_HEADER) &&
-      memcmp(&rcv_buffer_[0], &STD_DATA_FRAME_HEADER, end_pos_ + 1) == 0) {
+  if (this->end_pos_ + 1 < sizeof(STD_DATA_FRAME_HEADER) &&
+      memcmp(&this->rcv_buffer_[0], &STD_DATA_FRAME_HEADER, this->end_pos_ + 1) == 0) {
     this->frame_type_ =
         RxFrameType::UNKNOWN;  // not enough data yet to determine frame type, but it fits STD frame header
     this->header_footer_size_ = 0;
     return RxEvaluationResult::UNKNOWN;
   }
 
-  if (end_pos_ + 1 < sizeof(CMD_FRAME_HEADER) && memcmp(&rcv_buffer_[0], &CMD_FRAME_HEADER, end_pos_ + 1) == 0) {
+  if (this->end_pos_ + 1 < sizeof(CMD_FRAME_HEADER) &&
+      memcmp(&this->rcv_buffer_[0], &CMD_FRAME_HEADER, this->end_pos_ + 1) == 0) {
     this->frame_type_ =
         RxFrameType::UNKNOWN;  // not enough data yet to determine frame type, but it fits CMD frame header
     this->header_footer_size_ = 0;
@@ -157,6 +158,8 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
   ESP_LOGE(TAG, "rx received unkonw header");
+  char *msg = "rx received unkonw header";
+  hex_diag(msg, &this->rcv_buffer_[0], end_pos_ + 1);
   return RxEvaluationResult::NOK;
 }
 // checks if current rx buffer has proper size for decoded header

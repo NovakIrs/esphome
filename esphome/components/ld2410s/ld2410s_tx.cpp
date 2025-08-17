@@ -9,7 +9,7 @@ void LD2410Stx::schedule_insert(TxFrameT *cmd_frame) {
     return;
   }
   if (this->commands_[last_].state != CmdState::EMPTY) {
-    ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
+    ESP_LOGD(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
     this->schedule_reset_();
     this->error_ = true;
     return;

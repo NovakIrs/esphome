@@ -1,5 +1,4 @@
-
-#include "ld2410s_help.h"
+#include "ld2410s.h"
 
 namespace esphome {
 namespace ld2410s {

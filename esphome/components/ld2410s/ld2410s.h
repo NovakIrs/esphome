@@ -2,6 +2,7 @@
 
 #define LD2410S_V2
 
+// core
 #include "esphome/core/application.h"
 #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
@@ -9,9 +10,9 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 
+// components
 #include "esphome/components/uart/uart.h"
 // #include "esphome/components/ld24xx/ld24xx.h"
-
 #ifdef USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
 #endif
@@ -34,13 +35,12 @@
 #include "esphome/components/number/number.h"
 #endif
 
+// std
 #include <functional>
 #include <iomanip>
-
-#include "ld2410s_const.h"
-#include "ld2410s_help.h"
-#include "ld2410s_rx.h"
-#include "ld2410s_tx.h"
+#include <cstddef>
+#include <cstdint>
+#include <type_traits>
 
 namespace esphome {
 namespace ld2410s {
@@ -48,7 +48,114 @@ namespace ld2410s {
 // using namespace ld24xx;
 
 // Constants
+static const char *const TAG = "ld2410s";
+
+static const uint16_t CMD_CONFIRMATION = 0x0100;  // Command confirmation response code
+
+static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
+static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
+
+static const uint32_t STD_DATA_FRAME_HEADER = 0xF1F2F3F4;
+static const uint32_t STD_DATA_FRAME_FOOTER = 0xF5F6F7F8;
+
+static const uint32_t CMD_FRAME_HEADER = 0xFAFBFCFD;
+static const uint32_t CMD_FRAME_FOOTER = 0x01020304;
+
+static const uint16_t CONFIG_MODE_START_CMD = 0x00FF;
+static const uint16_t CONFIG_MODE_START_VALUE = 0x0001;
+
+static const uint16_t CONFIG_MODE_END_CMD = 0x00FE;
+
+static const uint16_t OUTPUT_MODE_SWITCH_CMD = 0x007A;
+static const uint8_t OUTPUT_MODE_VALUE_STD[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
+static const uint8_t OUTPUT_MODE_VALUE_MIN[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+static const uint16_t FW_READ_CMD = 0x0000;
+
+// static const uint16_t SN_READ_CMD = 0x0011;
+// static const uint16_t SN_WRITE_CMD = 0x0010;
+
+static const uint16_t PARAMS_READ_CMD = 0x0071;
+static const uint16_t PARAMS_WRITE_CMD = 0x0070;
+static const uint16_t CFG_MAX_DETECTION_VALUE = 0x0005;
+static const uint16_t CFG_MIN_DETECTION_VALUE = 0x000A;
+static const uint16_t CFG_NO_DELAY_VALUE = 0x0006;
+static const uint16_t CFG_STATUS_FREQ_VALUE = 0x0002;
+static const uint16_t CFG_DISTANCE_FREQ_VALUE = 0x000C;
+static const uint16_t CFG_RESPONSE_SPEED_VALUE = 0x000B;
+static const std::string RESPONSE_SPEED_NORMAL = "Normal";
+static const std::string RESPONSE_SPEED_FAST = "Fast";
+
+static const uint16_t CALIBRATION_CMD = 0x0009;
+static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
+static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
+static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
+
+static const uint16_t GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
+static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
+static const uint32_t GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
+
+    48, 42, 36, 34, 32, 31, 31, 31, 31,
+    31, 31, 31, 31, 31, 31, 31
+    // 10~95 dB
+
+    // Factory defaults:
+    // tool - reset
+    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
+    //   48,42,36,34,32,31,31,31,31,31,31,31,31,31,31,31
+    // tool default
+    //  https://drive.google.com/drive/folders/1wC8KC-DaNavNbpeVouZ1HdiBzZ9YrAcg
+    //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
+};
+
+static const uint16_t GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
+static const uint16_t GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
+static const uint32_t GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
+
+    45, 42, 33, 32, 28, 28, 28, 28, 28,
+    28, 28, 28, 28, 28, 28, 28
+    // 10~95 dB
+
+    // Factory defaults:
+    // tool - reset
+    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
+    //   45,42,33,32,28,28,28,28,28,28,28,28,28,28,28,28
+    // tool default
+    //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
+};
+
+static const uint16_t GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
+static const uint16_t GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
+static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
+
+    34, 34, 34, 34, 34, 34, 34, 34, 34,
+    34, 34, 34, 34, 34, 34, 34
+    // 5~63 dB
+
+    // Factory defaults:
+    // Not available... and probably need improvement ToDo
+    // It would be good to get it from virgin ld2410s, before any calibration.
+};
+
+static const size_t RX_TX_BUFFER_SIZE = 128;
+static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
 static const uint16_t RX_MAX_BYTES_PER_LOOP = 500;
+static const uint16_t NO_SUB_CMD = 0xffff;
+static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
+static const uint8_t CMD_EXEC_REPEAT = 3;
+
+struct TxTaskT {
+  uint16_t command;
+  uint8_t frame[128];
+  uint16_t frame_length;
+  TxCmdState state = TxCmdState::EMPTY;
+  uint32_t time_started;
+  uint8_t retry;
+};
+
+enum class TxCmdState { EMPTY, SCHEDULED, SENT };
+enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
+enum class RxEvaluationResult { UNKNOWN, OK, NOK };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
@@ -91,13 +198,13 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
  public:
   void setup() override;
   void loop() override;
-  void dump_config() override;
   float get_setup_priority() const override;
 
+#ifdef LD2410S_V2
+  void dump_config() override;
+  // button
   void calibration();
   void factory_reset();
-
-#ifdef LD2410S_V2
   // number
   void set_delay(float delay);
   void set_distance_reporting_freq(float distance_reporting_freq);
@@ -119,70 +226,125 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   LD2410Srx rx_;
 
   // settings_;
+  uint32_t thresholds_trigger_[16];
+  uint32_t thresholds_hold_[16];
+  uint32_t thresholds_snr_[16];
   uint32_t max_dist_{0};
   uint32_t min_dist_{0};
   uint32_t delay_{0};
   uint32_t status_freq_{0};
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
-  bool minimal_output_{true};
-
-  // thresholds_;
-  uint32_t thresholds_trigger_[16];
-  uint32_t thresholds_hold_[16];
-  uint32_t thresholds_snr_[16];
   uint8_t thresholds_selected_gate_{0};
+  bool minimal_output_{true};
 
   bool init_done_{false};
 
   uint32_t energy_values_[16];
   std::string energy_values_str_ = "";
 
-  void init_();
-
-  void send_();
-  bool receive_();
-
-  void read_all_();
-
-  void schedule_cmd_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   template<typename T>
   bool cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data, uint16_t append_data_size,
                               uint16_t actual_size = 0);
 
+  void send_();
+
+  bool receive_();
   void process_();
   void process_short_data_frame_();
   void process_data_frame_();
   void process_cmd_frame_();
 
   void publish_distance_(uint16_t distance, bool force_publish = false);
-  void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
   void publish_presence_(bool presence, bool force_publish = false);
-  void publish_calibration_runing_(bool running, bool force_publish = false);
 
 #ifdef LD2410S_V2
+  void init_();
+  void read_all_();
   void read_all_thresholds_();
 
+  void process_data_energy_values_read_(uint8_t *data);
   void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);
   void process_ack_threshold_hold_read_(uint8_t *data);
   void process_ack_threshold_snr_read_(uint8_t *data);
   void process_ack_minimal_output_(uint8_t *data);
-  void process_data_energy_values_read_(uint8_t *data);
 
+  void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
+  void publish_calibration_runing_(bool running, bool force_publish = false);
+  void publish_energy_values_(bool force_publish = false);
   void publish_fw_version_(const std::string &version, bool force_publish = false);
   void publish_threshold_trigger_(bool force_publish = false);
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
-  void publish_energy_values_(bool force_publish = false);
-
-  static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
+
+  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
+  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
+  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
 
 #ifdef LD2410S_V2
+  static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
+};
+
+class LD2410Shelp {
+ public:
+ protected:
+  static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
+  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
+  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
+};
+
+class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
+ public:
+  RxEvaluationResult receive_byte(int one);
+  RxFrameType frame_type() const { return this->frame_type_; }
+  bool payload_ready() const { return payload_ready_; }
+  uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
+  uint8_t payload_size() const { return this->payload_size_; }
+
+ protected:
+  uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE];
+  uint16_t end_pos_{0};
+
+  uint16_t header_footer_size_{0};
+  uint16_t expected_frame_size_{0};
+  uint16_t size_field_size_{0};
+
+  RxFrameType frame_type_{RxFrameType::UNKNOWN};
+  bool payload_ready_{false};
+  uint16_t payload_pos_{0};
+  uint16_t payload_size_{0};
+
+  RxEvaluationResult evaluate_();
+  RxEvaluationResult evaluate_header_();
+  RxEvaluationResult evaluate_size_();
+  RxEvaluationResult evaluate_footer_();
+  void reset_();
+};
+
+class LD2410Stx : uart::UARTDevice, LD2410Shelp {
+ public:
+  bool get_error() const { return this->error_; }
+  void schedule_append(uint16_t command, uint8_t *frame, uint16_t frame_length);
+  bool schedule_check_empty() const;
+  void schedule_verify_response(uint16_t command_word);
+  bool send_available();
+
+  uint8_t *scheduled_frame() { return this->commands_[this->active_].frame; }
+  uint16_t scheduled_frame_length() { return this->commands_[this->active_].frame_length; }
+
+ protected:
+  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
+  uint8_t active_{0};
+  uint8_t last_{0};
+  bool error_{false};
+
+  void schedule_reset_();
 };
 
 }  // namespace ld2410s

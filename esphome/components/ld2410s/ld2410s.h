@@ -25,14 +25,14 @@
 #ifdef USE_BUTTON
 #include "esphome/components/button/button.h"
 #endif
+#ifdef USE_NUMBER
+#include "esphome/components/number/number.h"
+#endif
 #ifdef USE_SWITCH
 #include "esphome/components/switch/switch.h"
 #endif
 #ifdef USE_SELECT
 #include "esphome/components/select/select.h"
-#endif
-#ifdef USE_NUMBER
-#include "esphome/components/number/number.h"
 #endif
 
 // std

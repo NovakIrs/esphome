@@ -50,7 +50,7 @@ void LD2410Stx::schedule_verify_response(uint16_t response) {
   int16_t sent = this->commands_[this->active_].command;
   int16_t expected = sent | CMD_CONFIRMATION;
   if (response != expected) {
-    ESP_LOGD(TAG, "Command response %x received, but expected response was %x", response, expected);
+    ESP_LOGE(TAG, "Command response %x received, but expected response was %x", response, expected);
 
   } else {
     ESP_LOGD(TAG, "Command response %x received, confirmed command %x", response, sent);

@@ -331,7 +331,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 // append append_data to data, returns true if not overflow
 template<typename T>
 bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data,
-                                     size_t append_data_size = 1) {
+                                     size_t append_data_size) {
   auto bytes_to_copy = append_data_size * sizeof(T);
   if (data_length + bytes_to_copy > RX_TX_BUFFER_SIZE) {
     ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: %d + %d > %d", data_length, bytes_to_copy, RX_TX_BUFFER_SIZE);

@@ -8,33 +8,32 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
   if (!cmd_frame) {
     return;
   }
-
   if (this->error_) {
     this->error_ = false;
   }
 
-  TxTaskT cmd;
-  cmd.state = CmdState::SCHEDULED;
-  cmd.cmd_frame = cmd_frame;
-  cmd.time_started = 0;
-  cmd.retry = 0;
-
-  if (this->commands_[this->last_].state != CmdState::EMPTY) {
-    uint8_t next = this->last_;
-    this->cmd_buffer_inc_(next);
-    if (this->commands_[next].state != CmdState::EMPTY) {
-      return;
-    }
-    this->last_ = next;
+  this->last_++;
+  if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
+    this->last_ = 0;
   }
 
-  this->commands_[this->last_] = cmd;  // Shallow copy of state, time_started, retry
-
-  if (cmd.cmd_frame) {
-    this->commands_[this->last_].cmd_frame = new TxFrameT(*cmd.cmd_frame);  // Deep copy
-  } else {
-    this->commands_[this->last_].cmd_frame = nullptr;
+  if (this->commands_[last_].state != CmdState::EMPTY || this->last_ == this->active_) {
+    ESP_LOGE(TAG, "Error, inserting into non-empty buffer location !!!");
+    this->cmd_buffer_reset_();
+    this->error_ = true;
+    return;
   }
+
+  this->commands_[this->last_].state = CmdState::SCHEDULED;
+  this->commands_[this->last_].cmd_frame = cmd_frame;
+  this->commands_[this->last_].time_started = 0;
+  this->commands_[this->last_].retry = 0;
+
+  // if (cmd_frame) {
+  //   this->commands_[this->last_].cmd_frame = new TxFrameT(cmd_frame);  // Deep copy
+  // } else {
+  //   this->commands_[this->last_].cmd_frame = nullptr;
+  // }
 }
 void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word = 0xFFFF) {
   int16_t expected_command = this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION;

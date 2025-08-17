@@ -31,6 +31,32 @@ int LD2410Shelp::read_int(const uint8_t *buffer, size_t pos, size_t len) {
   }
   return ret;
 };
+std::string LD2410Shelp::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
+  if (len == 0)
+    return "";
+
+  std::string result;
+  int sum = 0;
+  for (uint8_t i = 0; i < len; ++i) {
+    sum += in[i];
+
+    if (i > 0)
+      result += ',';
+
+    std::string num = std::to_string(in[i]);
+
+    if (num.length() < min_w)
+      result += std::string(min_w - num.length(), '0');
+
+    result += num;
+  }
+
+  if (sum == 0) {
+    result = "";
+  }
+
+  return result;
+}
 
 }  // namespace ld2410s
 }  // namespace esphome

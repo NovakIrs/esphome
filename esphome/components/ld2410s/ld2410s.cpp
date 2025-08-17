@@ -275,7 +275,7 @@ void LD2410S::send_() {
       }
       this->flush();
 
-      this->hex_diag(">", scheduled_frame, scheduled_frame_length);
+      hex_diag(">", scheduled_frame, scheduled_frame_length);
     }
   }
 }

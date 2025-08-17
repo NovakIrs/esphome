@@ -16,7 +16,7 @@ RxEvaluationResult LD2410Srx::receive_byte(int one) {
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
-      this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
+      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       break;
 
     case RxEvaluationResult::UNKNOWN:
@@ -54,7 +54,7 @@ RxEvaluationResult LD2410Srx::evaluate_() {
 
   switch (this->evaluate_size_()) {
     case RxEvaluationResult::NOK:  // known size, but greater then expected size for frame type
-      this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
+      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       ESP_LOGD(TAG, "correct header, but passed expected frame end: size:%d, expected:%d", this->end_pos_,
                this->expected_frame_size_);
       return RxEvaluationResult::NOK;
@@ -70,7 +70,7 @@ RxEvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_footer_()) {
     case RxEvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame
                                    // type
-      this->hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
+      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       ESP_LOGD(TAG,
                "correct header and size, but footer does not match expected: real:%d, expected:%d, "
                "head/foot:%d, size:%d, payload:%d",

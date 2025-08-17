@@ -257,7 +257,7 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
 }
 // reset rx buffer
 void LD2410Srx::reset_() {
-  ESP_LOGD(TAG, "rx reset, frame: %d", this->end_pos_);
+  // ESP_LOGD(TAG, "rx reset, frame: %d", this->end_pos_);
   this->end_pos_ = 0;
   this->header_footer_size_ = 0;
   this->size_field_size_ = 0;

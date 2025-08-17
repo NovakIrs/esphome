@@ -336,10 +336,10 @@ bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, c
   if (data_object_size == 0) {
     data_object_size = sizeof(T);
   }
-  auto bytes_to_copy = append_data_size * data_object;
+  auto bytes_to_copy = append_data_size * data_object_size;
   if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: insert_position:%d + append_data_size:%d + T_size:%d > %d",
-             insert_position, append_data_size, sizeof(T), RX_TX_BUFFER_SIZE);
+    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: insert_position:%d + append_data_size:%d + object_size:%d > %d",
+             insert_position, append_data_size, data_object_size, RX_TX_BUFFER_SIZE);
     return false;
   }
 

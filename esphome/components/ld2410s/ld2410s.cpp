@@ -322,7 +322,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_HEADER, 1);
   this->cmd_frame_append_data_(frame, frame_length, &data_length, 1);
-  this->cmd_frame_append_data_(frame, frame_length, &data, data_length);
+  this->cmd_frame_append_data_(frame, frame_length, &data, 1);  // data_length);
   this->cmd_frame_append_data_(frame, frame_length, &CMD_FRAME_FOOTER, 1);
 
   this->tx_.schedule_insert(command, frame, frame_length);
@@ -334,7 +334,8 @@ bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const
                                      size_t append_data_size) {
   auto bytes_to_copy = append_data_size * sizeof(T);
   if (data_length + bytes_to_copy > RX_TX_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: %d + %d > %d", data_length, bytes_to_copy, RX_TX_BUFFER_SIZE);
+    ESP_LOGE(TAG, "cmd_frame_append_data_ overflow: data_length:%d + append_data_size:%d + T_size:%d > %d", data_length,
+             append_data_size, sizeof(T), RX_TX_BUFFER_SIZE);
     return false;
   }
 

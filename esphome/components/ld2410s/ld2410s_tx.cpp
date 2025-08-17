@@ -6,9 +6,11 @@ namespace ld2410s {
 
 void LD2410Stx::schedule_insert(uint16_t command, uint8_t *frame, uint16_t frame_length) {
   if (!frame) {
+    ESP_LOGE(TAG, "schedule_insert: no frame data !!!");
     return;
   }
   if (frame_length = 0 || frame_length > RX_TX_BUFFER_SIZE) {
+    ESP_LOGE(TAG, "schedule_insert: frame_length:%d !!!", frame_length);
     return;
   }
   TxTaskT *task = &this->commands_[last_];

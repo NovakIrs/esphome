@@ -385,7 +385,9 @@ void LD2410S::process_cmd_frame_() {
   }
 
   switch (command_word) {
-      // Process acknowledgements
+    // Process acknowledgements
+
+#ifdef LD2410S_V2
 
     case CONFIG_MODE_START_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Config mode enabled");
@@ -409,7 +411,6 @@ void LD2410S::process_cmd_frame_() {
       this->process_ack_minimal_output_(data);
       break;
 
-#ifdef LD2410S_V2
     case GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Trigger Threshold written");
       break;
@@ -421,7 +422,6 @@ void LD2410S::process_cmd_frame_() {
     case GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGD(TAG, "Trigger SNR written");
       break;
-#endif
 
       // Read command acknowledgements
 
@@ -433,7 +433,6 @@ void LD2410S::process_cmd_frame_() {
       this->process_ack_fw_read_(data);
       break;
 
-#ifdef LD2410S_V2
     case GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
       this->process_ack_threshold_trigger_read_(data);
       break;

@@ -12,7 +12,9 @@ class LD2410SMinDistanceNumber : public number::Number, public Parented<LD2410S>
 
  protected:
   void control(float min_distance) override {
+#ifdef LD2410S_V2
     this->parent_->set_min_distance(min_distance);
+#endif
   }
 };
 

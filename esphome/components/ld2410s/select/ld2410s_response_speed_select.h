@@ -12,7 +12,9 @@ class LD2410sResponseSpeedSelect : public Component, public select::Select, publ
 
  protected:
   void control(const std::string &response_speed_select) override {
+#ifdef LD2410S_V2
     this->parent_->set_response_speed_select(response_speed_select);
+#endif
   }
 };
 

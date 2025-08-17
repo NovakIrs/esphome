@@ -12,7 +12,9 @@ class LD2410SStatusReportingFreqNumber : public number::Number, public Parented<
 
  protected:
   void control(float status_reporting_freq) override {
+#ifdef LD2410S_V2
     this->parent_->set_status_reporting_freq(status_reporting_freq);
+#endif
   }
 };
 

@@ -32,7 +32,8 @@ void LD2410Stx::schedule_insert(uint16_t command, uint8_t *frame, uint16_t frame
   task->time_started = 0;
   task->retry = 0;
 
-  ESP_LOGD(TAG, "Inserted command %x into command buffer at position %d", frame_length, this->last_);
+  ESP_LOGD(TAG, "Inserted command %x into command buffer at position %d, size:%d", frame_length, this->last_,
+           frame_length);
 
   this->last_++;
   if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
@@ -82,8 +83,8 @@ bool LD2410Stx::send_available() {
 
   switch (cmd->state) {
     case CmdState::SCHEDULED:
-      ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d, time_started:%d", cmd->command,
-               this->active_, this->last_, cmd->time_started);
+      ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d, time_started:%d, size:%d", cmd->command,
+               this->active_, this->last_, cmd->time_started, cmd->frame_length);
       cmd->time_started = now;
       cmd->retry = 0;
       cmd->state = CmdState::SENT;

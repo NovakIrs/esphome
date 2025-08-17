@@ -95,9 +95,10 @@ void LD2410S::send_() {
     this->init_();
   } else {
     if (this->tx_.send_available()) {
-      ESP_LOGI(TAG, "Sending frame...");
       uint8_t *scheduled_frame = this->tx_.scheduled_frame();
       uint16_t scheduled_frame_length = this->tx_.scheduled_frame_length();
+
+      ESP_LOGI(TAG, "Sending frame... size:%d", scheduled_frame_length);
 
       for (uint16_t index = 0; index < scheduled_frame_length; index++) {
         this->write_byte(scheduled_frame[index]);

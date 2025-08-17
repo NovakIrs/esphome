@@ -62,17 +62,18 @@ void LD2410Stx::cmd_buffer_reset_() {
   this->commands_[this->active_].state = CmdState::EMPTY;
 }
 bool LD2410Stx::send() {
-  ESP_LOGD(TAG, "send");
   TxTaskT *cmd = &commands_[this->active_];
   uint32_t now = App.get_loop_component_start_time();
-  ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started, CMD_EXEC_TIMEOUT);
-  ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
 
   switch (cmd->state) {
     case CmdState::SCHEDULED:
       // sending scheduled command, waiting for response
-      ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d", cmd->cmd_frame->command, this->active_,
-               this->last_);
+      ESP_LOGD(TAG, "send");
+      ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started,
+               CMD_EXEC_TIMEOUT);
+      ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
+      ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d, time_started:%d",
+               cmd->cmd_frame->command, this->active_, this->last_, now);
       cmd->time_started = now;
       this->send_frame_(cmd->cmd_frame);
       cmd->state = CmdState::SENT;
@@ -80,6 +81,11 @@ bool LD2410Stx::send() {
       break;
 
     case CmdState::SENT:
+      ESP_LOGD(TAG, "send");
+      ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started,
+               CMD_EXEC_TIMEOUT);
+      ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
+
       if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
         // send timeout expired
 

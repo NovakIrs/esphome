@@ -30,6 +30,7 @@ RxEvaluationResult LD2410Srx::receive_byte(int one) {
 
     case RxEvaluationResult::NOK:
     default:
+      hex_diag("<", &this->rcv_buffer_[0], end_pos_ + 1);
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;
@@ -54,7 +55,6 @@ RxEvaluationResult LD2410Srx::evaluate_() {
 
   switch (this->evaluate_size_()) {
     case RxEvaluationResult::NOK:  // known size, but greater then expected size for frame type
-      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       ESP_LOGD(TAG, "correct header, but passed expected frame end: size:%d, expected:%d", this->end_pos_,
                this->expected_frame_size_);
       return RxEvaluationResult::NOK;
@@ -70,7 +70,6 @@ RxEvaluationResult LD2410Srx::evaluate_() {
   switch (this->evaluate_footer_()) {
     case RxEvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame
                                    // type
-      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       ESP_LOGD(TAG,
                "correct header and size, but footer does not match expected: real:%d, expected:%d, "
                "head/foot:%d, size:%d, payload:%d",
@@ -158,7 +157,6 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
   ESP_LOGE(TAG, "rx received unkonw header, length:%d", end_pos_ + 1);
-  hex_diag("<", &this->rcv_buffer_[0], end_pos_ + 1);
   return RxEvaluationResult::NOK;
 }
 // checks if current rx buffer has proper size for decoded header

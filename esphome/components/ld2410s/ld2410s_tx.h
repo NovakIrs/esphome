@@ -19,20 +19,20 @@
 namespace esphome {
 namespace ld2410s {
 
-struct TxFrameT {
-  uint8_t data[128];
-  uint32_t header;
-  uint32_t footer;
-  uint16_t length;
-  uint16_t command;
-  uint16_t data_length;
-};
+// struct TxFrameT {
+//   uint8_t data[128];
+//   uint16_t data_length;
+//   uint16_t frame_length;
+//   uint16_t command;
+// };
 
 struct TxTaskT {
+  uint16_t command;
+  uint8_t frame[128];
+  uint16_t frame_length;
+  CmdState state = CmdState::EMPTY;
   uint32_t time_started;
   uint8_t retry;
-  CmdState state = CmdState::EMPTY;
-  TxFrameT *cmd_frame;
 };
 
 // Constants
@@ -44,16 +44,16 @@ static const uint8_t CMD_EXEC_REPEAT = 3;
 
 class LD2410Stx : uart::UARTDevice, LD2410Shelp {
  public:
-  bool send();
+  bool send_available();
 
-  void schedule_insert(TxFrameT *cmd_frame);
+  void schedule_insert(uint16_t command, uint8_t *frame, uint16_t frame_length);
   void schedule_verify_response(uint16_t command_word);
 
   bool schedule_check_empty() const;
   bool get_error() const { return this->error_; }
 
-  uint8_t tx_buffer[RX_TX_BUFFER_SIZE];
-  uint16_t data_length{0};
+  uint8_t *scheduled_frame() { return this->commands_[this->active_].frame; }
+  uint16_t scheduled_frame_length() { return this->commands_[this->active_].frame_length; }
 
  protected:
   TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
@@ -63,8 +63,6 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
   bool error_{false};
 
   void schedule_reset_();
-
-  void send_frame_(TxFrameT *cmd_frame);
 };
 
 }  // namespace ld2410s

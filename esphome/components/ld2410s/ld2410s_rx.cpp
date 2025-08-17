@@ -5,12 +5,12 @@ namespace esphome {
 namespace ld2410s {
 
 // appends one byte to rx buffer, and checks if that makes complete frame
-RxEvaluationResult LD2410Srx::receive_byte(int one) {
+RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
   if (this->payload_ready_) {
     this->reset_();
   }
 
-  this->rcv_buffer_[this->end_pos_] = one;
+  this->rcv_buffer_[this->end_pos_] = byte;
   RxEvaluationResult result = this->evaluate_();
 
   switch (result) {

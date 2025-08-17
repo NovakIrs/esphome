@@ -67,43 +67,35 @@ bool LD2410Stx::send() {
 
   switch (cmd->state) {
     case CmdState::SCHEDULED:
-      // sending scheduled command, waiting for response
-      ESP_LOGD(TAG, "send");
-      ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started,
-               CMD_EXEC_TIMEOUT);
-      ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
       ESP_LOGD(TAG, "SCHEDULED: Send scheduled command:%4x, active:%d, last:%d, time_started:%d",
-               cmd->cmd_frame->command, this->active_, this->last_, now);
+               cmd->cmd_frame->command, this->active_, this->last_, cmd->time_started);
       cmd->time_started = now;
+      cmd->retry = 0;
       this->send_frame_(cmd->cmd_frame);
       cmd->state = CmdState::SENT;
       return true;
       break;
 
     case CmdState::SENT:
-      ESP_LOGD(TAG, "send");
-      ESP_LOGD(TAG, "... time now:%d >= time_started:%d + CMD_EXEC_TIMEOUT:%d", now, cmd->time_started,
-               CMD_EXEC_TIMEOUT);
-      ESP_LOGD(TAG, "... repeat counter: retry:%d < CMD_EXEC_REPEAT:%d", cmd->retry, CMD_EXEC_REPEAT);
+      if (now > cmd->time_started + CMD_EXEC_TIMEOUT) {
+        ESP_LOGD(TAG, "SENT: Send Timeout Expired !!! , now:%d > time_started:%d + CMD_EXEC_TIMEOUT:%d", now,
+                 cmd->time_started, CMD_EXEC_TIMEOUT);
 
-      if (now >= cmd->time_started + CMD_EXEC_TIMEOUT) {
-        // send timeout expired
+        if (cmd->retry > CMD_EXEC_REPEAT) {
+          ESP_LOGD(TAG, "  ... Retry limit reached, giving up !!! , active:%d, last:%d, retry:%d < CMD_EXEC_REPEAT:%d",
+                   this->active_, this->last_, cmd->retry, CMD_EXEC_REPEAT);
+          this->cmd_buffer_reset_();
+          this->error_ = true;
+          return false;
 
-        if (cmd->retry < CMD_EXEC_REPEAT) {
-          ESP_LOGD(TAG, "SENT: timeout expired, active:%d, last:%d", this->active_, this->last_);
-          // retry sending command
-          ESP_LOGD(TAG, "SENT: Retry, active:%d, last:%d", this->active_, this->last_);
+        } else {
+          ESP_LOGD(TAG, "  ... Retry send !!! , active:%d, last:%d, retry:%d < CMD_EXEC_REPEAT:%d", this->active_,
+                   this->last_, cmd->retry, CMD_EXEC_REPEAT);
           cmd->retry++;
           cmd->time_started = now;
           this->send_frame_(cmd->cmd_frame);
           return true;
         }
-      } else {
-        // retry limit reached, giving up, reset buffer, do init
-        ESP_LOGD(TAG, "SendCmd GivingUp  active:%d, last:%d", this->active_, this->last_);
-        this->cmd_buffer_reset_();
-        this->error_ = true;
-        return false;  // Command send failed, reset buffer, do init
       }
       break;
 

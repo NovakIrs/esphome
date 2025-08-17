@@ -157,9 +157,8 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
   }
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
-  ESP_LOGE(TAG, "rx received unkonw header");
-  char *msg = "rx received unkonw header";
-  hex_diag(msg, &this->rcv_buffer_[0], end_pos_ + 1);
+  ESP_LOGE(TAG, "rx received unkonw header, length:%d", end_pos_ + 1);
+  hex_diag("<", &this->rcv_buffer_[0], end_pos_ + 1);
   return RxEvaluationResult::NOK;
 }
 // checks if current rx buffer has proper size for decoded header

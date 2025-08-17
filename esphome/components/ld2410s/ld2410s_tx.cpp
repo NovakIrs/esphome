@@ -4,13 +4,13 @@
 namespace esphome {
 namespace ld2410s {
 
-void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
+void LD2410Stx::schedule_insert(TxFrameT *cmd_frame) {
   if (!cmd_frame) {
     return;
   }
   if (this->commands_[last_].state != CmdState::EMPTY) {
     ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
-    this->cmd_buffer_reset_();
+    this->schedule_reset_();
     this->error_ = true;
     return;
   }
@@ -28,13 +28,14 @@ void LD2410Stx::cmd_buffer_insert(TxFrameT *cmd_frame) {
   } else {
     this->commands_[this->last_].cmd_frame = nullptr;
   }
+  this->send_frame_(this->commands_[this->last_].cmd_frame);
 
   this->last_++;
   if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
     this->last_ = 0;
   }
 }
-void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word) {
+void LD2410Stx::schedule_verify_response(uint16_t command_word) {
   int16_t expected_command = this->commands_[this->active_].cmd_frame->command | CMD_CONFIRMATION;
   if (command_word != expected_command) {
     ESP_LOGD(TAG, "Command response %x received, but expected response was %x", command_word, expected_command);
@@ -50,18 +51,18 @@ void LD2410Stx::cmd_buffer_verify_response(uint16_t command_word) {
     }
 
     if (this->commands_[this->active_].state == CmdState::EMPTY) {
-      this->cmd_buffer_reset_();
+      this->schedule_reset_();
     }
   }
 }
-void LD2410Stx::cmd_buffer_reset_() {
+void LD2410Stx::schedule_reset_() {
   ESP_LOGD(TAG, "Command buffer reset");
   this->active_ = 0;
   this->last_ = 0;
   this->commands_[this->active_].state = CmdState::EMPTY;
 }
-bool LD2410Stx::get_schedule_empty() const {
-  ESP_LOGI(TAG, "get_schedule_empty: active:%d, last:%d, empty:%d", this->active_, this->last_,
+bool LD2410Stx::schedule_check_empty() const {
+  ESP_LOGI(TAG, "schedule_check_empty: active:%d, last:%d, empty:%d", this->active_, this->last_,
            this->commands_[this->active_].state == CmdState::EMPTY);
   return this->commands_[this->active_].state == CmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
 }
@@ -77,7 +78,7 @@ bool LD2410Stx::send() {
                cmd->cmd_frame->command, this->active_, this->last_, cmd->time_started);
       cmd->time_started = now;
       cmd->retry = 0;
-      this->send_frame_(cmd->cmd_frame);
+      // this->send_frame_(cmd->cmd_frame);
       cmd->state = CmdState::SENT;
       return true;
       break;
@@ -90,7 +91,7 @@ bool LD2410Stx::send() {
         if (cmd->retry > CMD_EXEC_REPEAT) {
           ESP_LOGD(TAG, "  ... Retry limit reached, giving up !!! , active:%d, last:%d, retry:%d > CMD_EXEC_REPEAT:%d",
                    this->active_, this->last_, cmd->retry, CMD_EXEC_REPEAT);
-          this->cmd_buffer_reset_();
+          this->schedule_reset_();
           this->error_ = true;
           return false;
 
@@ -98,7 +99,7 @@ bool LD2410Stx::send() {
           ESP_LOGD(TAG, "  ... Retry send !!! , active:%d, last:%d", this->active_, this->last_);
           cmd->retry++;
           cmd->time_started = now;
-          this->send_frame_(cmd->cmd_frame);
+          // this->send_frame_(cmd->cmd_frame);
           return true;
         }
       }
@@ -108,7 +109,7 @@ bool LD2410Stx::send() {
     default:
       // ESP_LOGD(TAG, "EMPTY: , active:%d, last:%d, retry:%d", this->active_, this->last_, cmd->retry);
       if (this->active_ == this->last_ && this->active_ != 0) {
-        this->cmd_buffer_reset_();
+        this->schedule_reset_();
         return false;  // No commands to send, buffer is empty
       }
       break;

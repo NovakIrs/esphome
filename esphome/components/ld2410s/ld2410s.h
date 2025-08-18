@@ -144,7 +144,7 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-static const uint8_t DC_BUFFER_SIZE = 20;
+static const uint8_t DC_BUFFER_SIZE = 10;
 
 enum class TxCmdState { EMPTY, SCHEDULED, SENT };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };

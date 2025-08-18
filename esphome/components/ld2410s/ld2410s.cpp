@@ -293,7 +293,9 @@ bool LD2410S::receive_() {
 
   int rx_bytes_count = 0;
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
-    if (this->rx_.receive_byte((int8_t) this->read()) == RxEvaluationResult::OK) {
+    uint8_t rx = (int8_t) this->read();
+    this->dc_.receive_byte(rx);
+    if (this->rx_.receive_byte(rx) == RxEvaluationResult::OK) {
       this->process_();
     }
     rx_bytes_count++;

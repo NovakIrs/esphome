@@ -144,6 +144,8 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
+static const uint8_t DC_BUFFER_SIZE = 20;
+
 enum class TxCmdState { EMPTY, SCHEDULED, SENT };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
 enum class RxEvaluationResult { UNKNOWN, OK, NOK };
@@ -166,6 +168,15 @@ class LD2410Shelp {
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
  protected:
+};
+
+class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
+ public:
+  void receive_byte(uint8_t byte);
+
+ protected:
+  uint8_t rcv_buffer_[DC_BUFFER_SIZE];
+  uint16_t end_pos_{0};
 };
 
 class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
@@ -283,6 +294,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
  protected:
   LD2410Stx tx_;
   LD2410Srx rx_;
+  LD2410Sdc dc_;
 
   // settings_;
   uint32_t thresholds_trigger_[16];

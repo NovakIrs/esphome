@@ -144,7 +144,7 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
 static const uint8_t CMD_EXEC_REPEAT = 3;
 
-static const uint8_t DC_BUFFER_SIZE = 10;
+static const uint8_t DC_BUFFER_SIZE = 30;
 
 enum class TxCmdState { EMPTY, SCHEDULED, SENT };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
@@ -173,6 +173,7 @@ class LD2410Shelp {
 class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
  public:
   void receive_byte(uint8_t byte);
+  void flush();
 
  protected:
   uint8_t rcv_buffer_[DC_BUFFER_SIZE];

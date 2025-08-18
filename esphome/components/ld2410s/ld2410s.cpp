@@ -300,6 +300,7 @@ bool LD2410S::receive_() {
     }
     rx_bytes_count++;
   }
+  this->dc_.flush();
 
   return received;
 }

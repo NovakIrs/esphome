@@ -171,7 +171,7 @@ void LD2410S::read_all_thresholds_() {
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   uint16_t read_position = 0;
 
-  for (unsigned int &energy_value : this->energy_values_) {
+  for (uint32_t &energy_value : this->energy_values_) {
     uint32_t val = 0;
     read_seq_data(data, read_position, &val);
 

@@ -221,10 +221,10 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   uint16_t major_v = 0;
   uint16_t minor_v = 0;
   uint16_t patch_v = 0;
-  this->read_seq_data(this->rx_.payload_data(), read_position, &equipment_type);  // does not exist it both documents
-  this->read_seq_data(this->rx_.payload_data(), read_position, &major_v);
-  this->read_seq_data(this->rx_.payload_data(), read_position, &minor_v);
-  this->read_seq_data(this->rx_.payload_data(), read_position, &patch_v);
+  this->read_seq_data(data, read_position, &equipment_type);  // does not exist it both documents
+  this->read_seq_data(data, read_position, &major_v);
+  this->read_seq_data(data, read_position, &minor_v);
+  this->read_seq_data(data, read_position, &patch_v);
 
   ESP_LOGD(TAG, "process_ack_fw_read_, equipment_type:%08x, major_v:%04x, minor_v:%04x, patch_v:%04x ", equipment_type,
            major_v, minor_v, patch_v);

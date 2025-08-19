@@ -171,7 +171,7 @@ void LD2410S::read_all_thresholds_() {
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   uint16_t read_position = 0;
 
-  for (uint8_t i = 0; i < 16; i++) {
+  for (unsigned int &energy_value : this->energy_values_) {
     uint32_t val = 0;
     read_seq_data(data, read_position, &val);
 
@@ -179,8 +179,8 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
     if (val > 0) {
       db = 10 * log10(val);
     }
-    if (db > this->energy_values_[i]) {
-      this->energy_values_[i] = db;
+    if (db > energy_value) {
+      energy_value = db;
     }
   }
   this->publish_energy_values_();

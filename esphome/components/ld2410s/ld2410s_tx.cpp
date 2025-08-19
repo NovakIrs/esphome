@@ -46,7 +46,7 @@ bool LD2410Stx::schedule_check_empty() const {
   return this->commands_[this->active_].state == TxCmdState::EMPTY && this->active_ == 0 && this->last_ == 0;
 }
 // Verifies if received response matches expected, if so procedes to next scheduled command
-void LD2410Stx::schedule_verify_response(uint16_t response) {
+void LD2410Stx::schedule_verify_response(uint16_t command_word) {
   int16_t sent = this->commands_[this->active_].command;
   int16_t expected = sent | CMD_CONFIRMATION;
   if (response != expected) {
@@ -72,8 +72,8 @@ void LD2410Stx::schedule_reset_() {
   ESP_LOGW(TAG, "Command buffer reset");
   this->active_ = 0;
   this->last_ = 0;
-  for (uint8_t index = 0; index < CMD_EXEC_BUFFER_SIZE; index++) {
-    this->commands_[index].state = TxCmdState::EMPTY;
+  for (auto &command : this->commands_) {
+    command.state = TxCmdState::EMPTY;
   }
   this->commands_[this->active_].state = TxCmdState::EMPTY;
 }

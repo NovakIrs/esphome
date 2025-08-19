@@ -178,16 +178,6 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
       break;
 
     case RxFrameType::STD_DATA_FRAME:
-      if (this->expected_frame_size_ == 0) {
-        this->size_field_size_ = 2;  // size field is 2 bytes
-        if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
-          this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
-          this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
-          this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
-        }
-      }
-      break;
-
     case RxFrameType::CMD_FRAME:
       if (this->expected_frame_size_ == 0) {
         this->size_field_size_ = 2;  // size field is 2 bytes
@@ -199,17 +189,26 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
       }
       break;
 
+      // case RxFrameType::CMD_FRAME:
+      //   if (this->expected_frame_size_ == 0) {
+      //     this->size_field_size_ = 2;  // size field is 2 bytes
+      //     if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
+      //       this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
+      //       this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
+      //       this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ +
+      //       this->payload_size_;
+      //     }
+      //   }
+      //   break;
+
     default:
       return RxEvaluationResult::NOK;  // unknown header type
   }
 
-  if (this->expected_frame_size_ == 0) {
+  if (this->expected_frame_size_ == 0 || this->end_pos_ + 1 < this->expected_frame_size_) {
     return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
-  } else if (this->expected_frame_size_ > this->end_pos_ + 1) {
-    return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
-
-  } else if (this->expected_frame_size_ < this->end_pos_ + 1) {
+  } else if (this->end_pos_ + 1 > this->expected_frame_size_) {
     ESP_LOGE(TAG, "rx passed the expected frame end, expected:%d, current:%d", this->expected_frame_size_,
              this->end_pos_);
     return RxEvaluationResult::NOK;  // passed the end of short data frame
@@ -221,35 +220,33 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
 // checks if current rx buffer containts proper footer for decoded header
 RxEvaluationResult LD2410Srx::evaluate_footer_() {
   switch (this->frame_type_) {
-    case RxFrameType::SHORT_DATA_FRAME:
+    case RxFrameType::SHORT_DATA_FRAME:  // footer matches expected for short data frame
       if (memcmp(&rcv_buffer_[this->end_pos_ - this->header_footer_size_ + 1], &SHORT_DATA_FRAME_FOOTER,
                  sizeof(SHORT_DATA_FRAME_FOOTER)) == 0) {
-        return RxEvaluationResult::OK;  // footer matches expected footer for short data frame
+        return RxEvaluationResult::OK;
       }
       break;
 
-    case RxFrameType::STD_DATA_FRAME:
+    case RxFrameType::STD_DATA_FRAME:  // footer matches expected for standard data frame
       if (memcmp(&rcv_buffer_[this->end_pos_ - this->header_footer_size_ + 1], &STD_DATA_FRAME_FOOTER,
                  sizeof(STD_DATA_FRAME_FOOTER)) == 0) {
-        return RxEvaluationResult::OK;  // footer matches expected footer for short data frame
+        return RxEvaluationResult::OK;
       }
       break;
 
-    case RxFrameType::CMD_FRAME:
+    case RxFrameType::CMD_FRAME:  // footer matches expected for command frame
       if (memcmp(&rcv_buffer_[this->end_pos_ - this->header_footer_size_ + 1], &CMD_FRAME_FOOTER,
                  sizeof(CMD_FRAME_FOOTER)) == 0) {
-        return RxEvaluationResult::OK;  // footer matches expected footer for short data frame
+        return RxEvaluationResult::OK;
       }
       break;
 
-    case RxFrameType::UNKNOWN:
-      return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
+    case RxFrameType::UNKNOWN:  // not enough data yet to determine size
+      return RxEvaluationResult::UNKNOWN;
 
-    case RxFrameType::NOK:
-      return RxEvaluationResult::NOK;  // already known bad data frame
-
-    default:
-      return RxEvaluationResult::NOK;  // unknown header type
+    case RxFrameType::NOK:  // already known bad data frame
+    default:                // unknown header type
+      return RxEvaluationResult::NOK;
   }
 
   ESP_LOGE(TAG, "rx footer does not match expected footer for frame type");

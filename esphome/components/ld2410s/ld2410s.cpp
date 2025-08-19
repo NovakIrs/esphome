@@ -266,13 +266,17 @@ bool LD2410S::receive_() {
   bool received = false;
   if (this->available()) {
     received = true;
+#ifdef LD2410S_DEBUG_UART
     ESP_LOGD(TAG, "receiving loop:%d", this->loop_count_);
+#endif
   }
 
   int rx_bytes_count = 0;
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
     uint8_t rx = (int8_t) this->read();
+#ifdef LD2410S_DEBUG_UART
     this->dc_.receive_byte(rx);
+#endif
     if (this->rx_.receive_byte(rx) == RxEvaluationResult::OK) {
       this->process_();
     }

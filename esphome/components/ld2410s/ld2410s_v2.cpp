@@ -174,7 +174,7 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   for (uint8_t i = 0; i < 16; i++) {
     //    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
     uint32_t val = 0;
-    this->read_seq_data(data, read_position, &val);
+    read_seq_data(data, read_position, &val);
 
     uint32_t db = 0;
     if (val > 0) {
@@ -191,8 +191,8 @@ void LD2410S::process_ack_config_start_(const uint8_t *data) {
   uint16_t read_position = 0;
   uint16_t protocol_version = 0;
   uint16_t buffer_size = 0;
-  this->read_seq_data(data, read_position, &protocol_version);  // does not exist it both documents
-  this->read_seq_data(data, read_position, &buffer_size);
+  read_seq_data(data, read_position, &protocol_version);  // does not exist it both documents
+  read_seq_data(data, read_position, &buffer_size);
 
   ESP_LOGD(TAG, "Config mode enabled, protocol_version:%d  buffer_size:%d", protocol_version, buffer_size);
 }
@@ -200,12 +200,12 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   ESP_LOGD(TAG, "process_ack_config_read_");
 
   uint16_t read_position = 0;
-  this->read_seq_data(data, read_position, &this->max_dist_);
-  this->read_seq_data(data, read_position, &this->min_dist_);
-  this->read_seq_data(data, read_position, &this->delay_);
-  this->read_seq_data(data, read_position, &this->status_freq_);
-  this->read_seq_data(data, read_position, &this->dist_freq_);
-  this->read_seq_data(data, read_position, &this->resp_speed_);
+  read_seq_data(data, read_position, &this->max_dist_);
+  read_seq_data(data, read_position, &this->min_dist_);
+  read_seq_data(data, read_position, &this->delay_);
+  read_seq_data(data, read_position, &this->status_freq_);
+  read_seq_data(data, read_position, &this->dist_freq_);
+  read_seq_data(data, read_position, &this->resp_speed_);
 
 #ifdef USE_NUMBER
   this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
@@ -224,17 +224,17 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   uint16_t major_v = 0;
   uint16_t minor_v = 0;
   uint16_t patch_v = 0;
-  this->read_seq_data(data, read_position, &equipment_type);  // does not exist it both documents
-  this->read_seq_data(data, read_position, &major_v);
-  this->read_seq_data(data, read_position, &minor_v);
-  this->read_seq_data(data, read_position, &patch_v);
+  read_seq_data(data, read_position, &equipment_type);  // does not exist it both documents
+  read_seq_data(data, read_position, &major_v);
+  read_seq_data(data, read_position, &minor_v);
+  read_seq_data(data, read_position, &patch_v);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   this->publish_fw_version_(version);
 }
 void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
   uint16_t read_position = 0;
-  this->read_seq_data(data, read_position, &this->thresholds_trigger_, 16, 4);
+  read_seq_data(data, read_position, &this->thresholds_trigger_, 16, 4);
 
 #ifdef USE_NUMBER
   this->threshold_trigger_number_->publish_state(this->thresholds_trigger_[this->thresholds_selected_gate_]);
@@ -244,7 +244,7 @@ void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
 }
 void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
   uint16_t read_position = 0;
-  this->read_seq_data(data, read_position, &this->thresholds_hold_, 16, 4);
+  read_seq_data(data, read_position, &this->thresholds_hold_, 16, 4);
 #ifdef USE_NUMBER
   this->threshold_hold_number_->publish_state(this->thresholds_hold_[this->thresholds_selected_gate_]);
 #endif
@@ -253,7 +253,7 @@ void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
 }
 void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
   uint16_t read_position = 0;
-  this->read_seq_data(data, read_position, &this->thresholds_snr_, 16, 4);
+  read_seq_data(data, read_position, &this->thresholds_snr_, 16, 4);
 #ifdef USE_NUMBER
   this->threshold_snr_number_->publish_state(this->thresholds_snr_[this->thresholds_selected_gate_]);
 #endif

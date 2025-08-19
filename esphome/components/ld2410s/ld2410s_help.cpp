@@ -3,11 +3,6 @@
 namespace esphome {
 namespace ld2410s {
 
-void LD2410Shelp::four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len) {
-  for (uint8_t i = 0; i < out_len; i++) {
-    out[i] = encode_uint32(in[i * 4 + 3], in[i * 4 + 2], in[i * 4 + 1], in[i * 4 + 0]);
-  }
-}
 void LD2410Shelp::hex_diag(const char *msg, const uint8_t *data, size_t length) {
   char output[length * 3 + 1];
 

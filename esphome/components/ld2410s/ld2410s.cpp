@@ -34,7 +34,7 @@ float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 
 // builds CMD_FRAME with configuration start end and appends it to the schedule
 void LD2410S::schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_cmd_frames_sequence_: %s : %x : %x", msg, command, sub_command);
+  ESP_LOGD(TAG, "schedule_cmd_frames_sequence_: %s : %04x : %04x", msg, command, sub_command);
 
   this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
   this->schedule_cmd_frame_(command, sub_command);
@@ -42,7 +42,7 @@ void LD2410S::schedule_cmd_frames_sequence_(const char *msg, uint16_t command, u
 }
 // builds CMD_FRAME as TxFrameT and appends it to the schedule
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_cmd_frame %x : %x", command, sub_command);
+  ESP_LOGD(TAG, "schedule_cmd_frame %04x : %04x", command, sub_command);
 
   uint8_t data[RX_TX_BUFFER_SIZE];
   uint16_t data_length = 0;
@@ -364,7 +364,7 @@ void LD2410S::process_cmd_frame_() {
   this->read_seq_data(data_start, read_position, &ack);
 
   if (ack != 0x0000) {
-    ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
+    ESP_LOGW(TAG, "Command %04x failed, ack: %04x", command_word, ack);
   }
 
   this->tx_.schedule_verify_response(command_word);

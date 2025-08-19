@@ -187,7 +187,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
     case GATE_THRESHOLD_TRIGGER_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
-        this->append_seq_data(data, data_length, &sub_command;
+        this->append_seq_data(data, data_length, &sub_command);
         this->append_seq_data(data, data_length, &this->thresholds_trigger_[sub_command]);
       } else {
         for (uint16_t i = 0; i < 16; i++) {

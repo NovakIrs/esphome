@@ -217,17 +217,16 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   uint16_t read_position = 0;
+  uint32_t equipment_type = 0;
   uint16_t major_v = 0;
   uint16_t minor_v = 0;
   uint16_t patch_v = 0;
+  this->read_seq_data(this->rx_.payload_data(), read_position, &equipment_type);  // does not exist it both documents
   this->read_seq_data(this->rx_.payload_data(), read_position, &major_v);
   this->read_seq_data(this->rx_.payload_data(), read_position, &minor_v);
   this->read_seq_data(this->rx_.payload_data(), read_position, &patch_v);
 
   ESP_LOGD(TAG, "process_ack_fw_read_, major_v:%2x, minor_v:%2x, patch_v:%2x ", major_v, minor_v, patch_v);
-  // int major_v = read_int(data, 4, 2);
-  // int minor_v = read_int(data, 6, 2);
-  // int patch_v = read_int(data, 8, 2);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   this->publish_fw_version_(version);

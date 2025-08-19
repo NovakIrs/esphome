@@ -165,9 +165,16 @@ class LD2410Shelp {
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
   static void hex_diag(const char *msg, const uint8_t *data, size_t length);
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
+  template<typename T>
+  static bool append_seq_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
+                               uint16_t append_data_size, uint16_t actual_size = 0);
+  template<typename T>
+  static bool read_seq_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
+                             uint16_t actual_size = 0);
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
+
  protected:
 };
 
@@ -326,12 +333,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   void schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  template<typename T>
-  bool cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, const T *append_data, uint16_t append_data_size,
-                              uint16_t actual_size = 0);
-  template<typename T>
-  bool cmd_frame_read_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
-                            uint16_t actual_size = 0);
 
   void send_();
 

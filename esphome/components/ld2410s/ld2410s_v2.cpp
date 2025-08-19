@@ -306,7 +306,6 @@ void LD2410S::publish_threshold_trigger_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGD(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
 }
 void LD2410S::publish_threshold_hold_(bool force_publish) {
   std::string vals = format_int(this->thresholds_hold_, 16, 2);
@@ -318,7 +317,6 @@ void LD2410S::publish_threshold_hold_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Gate Trigger Holds: %s", vals.c_str());
 }
 void LD2410S::publish_threshold_snr_(bool force_publish) {
   std::string vals = format_int(this->thresholds_snr_, 16, 2);
@@ -330,7 +328,6 @@ void LD2410S::publish_threshold_snr_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Gate Trigger SNR: %s", vals.c_str());
 }
 void LD2410S::publish_energy_values_(bool force_publish) {
   this->energy_values_str_ = format_int(this->energy_values_, 16, 2);

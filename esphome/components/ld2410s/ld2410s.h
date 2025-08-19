@@ -2,6 +2,7 @@
 
 #define LD2410S_V1
 #define LD2410S_V2
+// #define LD2410S_DEBUG_UART
 
 // core
 #include "esphome/core/application.h"
@@ -302,7 +303,9 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
  protected:
   LD2410Stx tx_;
   LD2410Srx rx_;
+#ifdef LD2410S_DEBUG_UART
   LD2410Sdc dc_;
+#endif
 
   // settings_;
   uint32_t thresholds_trigger_[16];

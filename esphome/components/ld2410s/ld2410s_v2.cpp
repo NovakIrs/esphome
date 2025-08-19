@@ -272,7 +272,7 @@ void LD2410S::process_ack_minimal_output_(uint8_t *data) {
     this->minimal_output_switch_->publish_state(this->minimal_output_);
 #endif
   } else {
-    ESP_LOGW(TAG, "Minimal Output Mode switch failed");
+    ESP_LOGW(TAG, "Minimal Output Mode switch failed, ret:%x", confirmation);
     this->minimal_output_ = !this->minimal_output_;
   }
 }

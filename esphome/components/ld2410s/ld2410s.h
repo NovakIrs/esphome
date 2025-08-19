@@ -167,10 +167,10 @@ class LD2410Shelp {
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
   template<typename T>
   static bool append_seq_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
-                               uint16_t append_data_size, uint16_t actual_size);
+                               uint16_t append_array_size = 1, uint16_t actual_size = 1);
   template<typename T>
-  static bool read_seq_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
-                             uint16_t actual_size);
+  static bool read_seq_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size = 1,
+                             uint16_t actual_size = 0);
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif

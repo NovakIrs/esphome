@@ -49,7 +49,7 @@ bool LD2410Stx::schedule_check_empty() const {
 void LD2410Stx::schedule_verify_response(uint16_t command_word) {
   int16_t sent = this->commands_[this->active_].command;
   int16_t expected = sent | CMD_CONFIRMATION;
-  if (response != expected) {
+  if (command_word != expected) {
     ESP_LOGE(TAG, "Command response %x received, but expected response was %x", response, expected);
 
   } else {

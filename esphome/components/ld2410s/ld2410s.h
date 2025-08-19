@@ -166,51 +166,6 @@ class LD2410Shelp {
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
   static void hex_diag(const char *msg, const uint8_t *data, size_t length);
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
-
-  // append variable sized append_data to data, returns true if not overflow
-  template<typename T>
-  static bool append_seq_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
-                               uint16_t append_array_size = 1, uint16_t actual_size = 1) {
-    size_t data_object_size = actual_size;
-    if (data_object_size == 0) {
-      data_object_size = sizeof(T);
-    }
-    auto bytes_to_copy = append_array_size * data_object_size;
-    if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
-      ESP_LOGE(TAG, "append_seq_data_ overflow: insert_position:%d + append_array_size:%d + object_size:%d > %d",
-               insert_position, append_array_size, data_object_size, RX_TX_BUFFER_SIZE);
-      return false;
-    }
-
-    auto write_ptr = &data[0] + insert_position;
-    memcpy(write_ptr, append_data, bytes_to_copy);
-
-    insert_position += bytes_to_copy;
-
-    return true;
-  }
-
-  // read variable sized uint from data and move read_position
-  template<typename T>
-  static bool read_seq_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size = 1,
-                             uint16_t actual_size = 0) {
-    size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
-    size_t bytes_to_read = out_array_size * data_object_size;
-
-    if (read_position + bytes_to_read > RX_TX_BUFFER_SIZE) {
-      ESP_LOGE(TAG, "read_seq_data_ overflow: read_position:%d + bytes_to_read:%d > %d", read_position, bytes_to_read,
-               RX_TX_BUFFER_SIZE);
-      return false;
-    }
-
-    const uint8_t *read_ptr = &data[0] + read_position;
-
-    memcpy(out_data, read_ptr, bytes_to_read);
-
-    read_position += bytes_to_read;
-    return true;
-  }
-
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
@@ -404,6 +359,50 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
 #endif
+
+  // append variable sized append_data to data, returns true if not overflow
+  template<typename T>
+  static bool append_seq_data(uint8_t *data, uint16_t &insert_position, const T *append_data,
+                              uint16_t append_array_size = 1, uint16_t actual_size = 1) {
+    size_t data_object_size = actual_size;
+    if (data_object_size == 0) {
+      data_object_size = sizeof(T);
+    }
+    auto bytes_to_copy = append_array_size * data_object_size;
+    if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
+      ESP_LOGE(TAG, "append_seq_data overflow: insert_position:%d + append_array_size:%d + object_size:%d > %d",
+               insert_position, append_array_size, data_object_size, RX_TX_BUFFER_SIZE);
+      return false;
+    }
+
+    auto write_ptr = &data[0] + insert_position;
+    memcpy(write_ptr, append_data, bytes_to_copy);
+
+    insert_position += bytes_to_copy;
+
+    return true;
+  }
+
+  // read variable sized uint from data and move read_position
+  template<typename T>
+  static bool read_seq_data(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size = 1,
+                            uint16_t actual_size = 0) {
+    size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
+    size_t bytes_to_read = out_array_size * data_object_size;
+
+    if (read_position + bytes_to_read > RX_TX_BUFFER_SIZE) {
+      ESP_LOGE(TAG, "read_seq_data overflow: read_position:%d + bytes_to_read:%d > %d", read_position, bytes_to_read,
+               RX_TX_BUFFER_SIZE);
+      return false;
+    }
+
+    const uint8_t *read_ptr = &data[0] + read_position;
+
+    memcpy(out_data, read_ptr, bytes_to_read);
+
+    read_position += bytes_to_read;
+    return true;
+  }
 
   // static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
   // static void hex_diag(const char *msg, const uint8_t *data, size_t length);

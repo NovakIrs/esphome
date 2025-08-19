@@ -374,9 +374,6 @@ void LD2410S::process_cmd_frame_() {
   }
 
   uint8_t *data = &data_start[read_position];
-  ESP_LOGD(TAG, "fw data position: %d", read_position);
-  const char msg[] = "fw data: ";
-  hex_diag(msg, data, this->rx_.payload_size() - read_position);
 
   switch (command_word) {
     // Process acknowledgements

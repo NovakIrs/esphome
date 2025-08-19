@@ -205,15 +205,9 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   this->status_reporting_freq_number_->publish_state(static_cast<float>(this->status_freq_) / 10);
   this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
 #endif
-
 #ifdef USE_SELECT
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
-
-  ESP_LOGD(TAG,
-           "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
-           "dist_resp_freq=%d, resp_speed=%d",
-           this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   uint16_t read_position = 0;
@@ -225,9 +219,6 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   this->read_seq_data(data, read_position, &major_v);
   this->read_seq_data(data, read_position, &minor_v);
   this->read_seq_data(data, read_position, &patch_v);
-
-  ESP_LOGD(TAG, "process_ack_fw_read_, equipment_type:%08x, major_v:%04x, minor_v:%04x, patch_v:%04x ", equipment_type,
-           major_v, minor_v, patch_v);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   this->publish_fw_version_(version);
@@ -236,7 +227,6 @@ void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
   uint16_t read_position = 0;
   this->read_seq_data(data, read_position, &this->thresholds_trigger_, 16, 4);
 
-  // four_byte_to_int_array(data, this->thresholds_trigger_, 16);
 #ifdef USE_NUMBER
   this->threshold_trigger_number_->publish_state(this->thresholds_trigger_[this->thresholds_selected_gate_]);
 #endif
@@ -244,7 +234,8 @@ void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
   this->publish_threshold_trigger_();
 }
 void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
-  four_byte_to_int_array(data, this->thresholds_hold_, 16);
+  uint16_t read_position = 0;
+  this->read_seq_data(data, read_position, &this->thresholds_hold_, 16, 4);
 #ifdef USE_NUMBER
   this->threshold_hold_number_->publish_state(this->thresholds_hold_[this->thresholds_selected_gate_]);
 #endif
@@ -252,7 +243,8 @@ void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
   this->publish_threshold_hold_();
 }
 void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
-  four_byte_to_int_array(data, this->thresholds_snr_, 16);
+  uint16_t read_position = 0;
+  this->read_seq_data(data, read_position, &this->thresholds_snr_, 16, 4);
 #ifdef USE_NUMBER
   this->threshold_snr_number_->publish_state(this->thresholds_snr_[this->thresholds_selected_gate_]);
 #endif
@@ -303,7 +295,6 @@ void LD2410S::publish_fw_version_(const std::string &version, bool force_publish
     }
   }
 #endif
-  ESP_LOGI(TAG, "Firmware version: %s", version.c_str());
 }
 void LD2410S::publish_threshold_trigger_(bool force_publish) {
   std::string vals = format_int(this->thresholds_trigger_, 16, 2);
@@ -315,7 +306,7 @@ void LD2410S::publish_threshold_trigger_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
+  ESP_LOGD(TAG, "Gate Trigger Thresholds: %s", vals.c_str());
 }
 void LD2410S::publish_threshold_hold_(bool force_publish) {
   std::string vals = format_int(this->thresholds_hold_, 16, 2);

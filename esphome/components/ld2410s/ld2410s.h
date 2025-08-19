@@ -1,6 +1,7 @@
 #pragma once
 
-// #define LD2410S_V2
+#define LD2410S_V1
+#define LD2410S_V2
 
 // core
 #include "esphome/core/application.h"
@@ -230,11 +231,17 @@ class LD2410Stx : uart::UARTDevice, LD2410Shelp {
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #ifdef USE_SENSOR
-  SUB_SENSOR(calibration_progress)
   SUB_SENSOR(distance)
 #endif
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(presence)
+#endif
+
+#ifdef LD2410S_V2
+#ifdef USE_SENSOR
+  SUB_SENSOR(calibration_progress)
+#endif
+#ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(calibration_runing)
 #endif
 #ifdef USE_TEXT_SENSOR
@@ -264,6 +271,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   SUB_NUMBER(threshold_hold)
   SUB_NUMBER(threshold_snr)
   SUB_NUMBER(threshold_selected_gate)
+#endif
 #endif
 
  public:
@@ -319,8 +327,11 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   template<typename T>
-  bool cmd_frame_append_data_(uint8_t *data, uint16_t &data_length, const T *append_data, uint16_t append_data_size,
+  bool cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, const T *append_data, uint16_t append_data_size,
                               uint16_t actual_size = 0);
+  template<typename T>
+  bool cmd_frame_read_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
+                            uint16_t actual_size = 0);
 
   void send_();
 

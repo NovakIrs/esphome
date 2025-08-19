@@ -237,7 +237,8 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   this->tx_.schedule_append(command, frame, frame_length);
 }
-// append append_data to data, returns true if not overflow
+
+// append variable sized append_data to data, returns true if not overflow
 template<typename T>
 bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
                                      uint16_t append_data_size, uint16_t actual_size) {
@@ -259,7 +260,26 @@ bool LD2410S::cmd_frame_append_data_(uint8_t *data, uint16_t &insert_position, c
 
   return true;
 }
+// read variable sized uint from data and move read_position
+template<typename T>
+bool LD2410S::cmd_frame_read_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
+                                   uint16_t actual_size) {
+  size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
+  size_t bytes_to_read = out_array_size * data_object_size;
 
+  if (read_position + bytes_to_read > RX_TX_BUFFER_SIZE) {
+    ESP_LOGE(TAG, "cmd_frame_read_data_ overflow: read_position:%d + bytes_to_read:%d > %d", read_position,
+             bytes_to_read, RX_TX_BUFFER_SIZE);
+    return false;
+  }
+
+  const uint8_t *read_ptr = &data[0] + read_position;
+
+  memcpy(out_data, read_ptr, bytes_to_read);
+
+  read_position += bytes_to_read;
+  return true;
+}
 // prepares scheduled frames for sending
 // executes actual data sending
 void LD2410S::send_() {
@@ -377,7 +397,13 @@ void LD2410S::process_data_frame_() {
   }
 }
 void LD2410S::process_cmd_frame_() {
+  uint16_t read_position = 0;
+  uint16_t command_word2 = 0;
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &command_word2, 1);
+
   uint16_t command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
+  ESP_LOGW(TAG, "Read test origina:%x, new:%x", command_word, command_word2);
+
   uint16_t ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
   uint8_t *data = &this->rx_.payload_data()[4];
 

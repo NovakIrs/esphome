@@ -224,6 +224,7 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   this->read_seq_data(this->rx_.payload_data(), read_position, &minor_v);
   this->read_seq_data(this->rx_.payload_data(), read_position, &patch_v);
 
+  ESP_LOGV(TAG, "process_ack_fw_read_, major_v:%2x, minor_v:%2x, patch_v:%2x ", major_v, minor_v, patch_v);
   // int major_v = read_int(data, 4, 2);
   // int minor_v = read_int(data, 6, 2);
   // int patch_v = read_int(data, 8, 2);
@@ -260,21 +261,14 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
 }
 void LD2410S::process_ack_minimal_output_(uint8_t *data) {
   uint16_t read_position = 0;
-  uint16_t confirmation = 0;
-  this->read_seq_data(data, read_position, &confirmation);
-  if (confirmation == 0x0000) {
-    if (this->minimal_output_) {
-      ESP_LOGW(TAG, "Minimal Output Mode switched ON");
-    } else {
-      ESP_LOGW(TAG, "Minimal Output Mode switched OFF");
-    }
-#ifdef USE_SWITCH
-    this->minimal_output_switch_->publish_state(this->minimal_output_);
-#endif
+  if (this->minimal_output_) {
+    ESP_LOGW(TAG, "Minimal Output Mode switched ON");
   } else {
-    ESP_LOGW(TAG, "Minimal Output Mode switch failed, ret:%x", confirmation);
-    this->minimal_output_ = !this->minimal_output_;
+    ESP_LOGW(TAG, "Minimal Output Mode switched OFF");
   }
+#ifdef USE_SWITCH
+  this->minimal_output_switch_->publish_state(this->minimal_output_);
+#endif
 }
 
 void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {

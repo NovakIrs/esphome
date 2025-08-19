@@ -169,8 +169,13 @@ void LD2410S::read_all_thresholds_() {
 }
 
 void LD2410S::process_data_energy_values_read_(uint8_t *data) {
+  uint16_t read_position = 0;
+
   for (uint8_t i = 0; i < 16; i++) {
-    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+    //    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
+    uint32_t val = 0;
+    this->cmd_frame_read_data_(data, read_position, &val, 1);
+
     uint32_t db = 0;
     if (val > 0) {
       db = 10 * log10(val);
@@ -185,12 +190,13 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
 void LD2410S::process_ack_config_read_(uint8_t *data) {
   ESP_LOGD(TAG, "process_ack_config_read_");
 
-  this->max_dist_ = read_int(data, 0, 4);
-  this->min_dist_ = read_int(data, 4, 4);
-  this->delay_ = read_int(data, 8, 4);
-  this->status_freq_ = read_int(data, 12, 4);
-  this->dist_freq_ = read_int(data, 16, 4);
-  this->resp_speed_ = read_int(data, 20, 4);
+  uint16_t read_position = 0;
+  this->cmd_frame_read_data_(data, read_position, &this->max_dist_, 1);
+  this->cmd_frame_read_data_(data, read_position, &this->min_dist_, 1);
+  this->cmd_frame_read_data_(data, read_position, &this->delay_, 1);
+  this->cmd_frame_read_data_(data, read_position, &this->status_freq_, 1);
+  this->cmd_frame_read_data_(data, read_position, &this->dist_freq_, 1);
+  this->cmd_frame_read_data_(data, read_position, &this->resp_speed_, 1);
 
 #ifdef USE_NUMBER
   this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
@@ -210,15 +216,26 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::process_ack_fw_read_(const uint8_t *data) {
-  int major_v = read_int(data, 4, 2);
-  int minor_v = read_int(data, 6, 2);
-  int patch_v = read_int(data, 8, 2);
+  uint16_t read_position = 0;
+  uint16_t major_v = 0;
+  uint16_t minor_v = 0;
+  uint16_t patch_v = 0;
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &major_v, 1);
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &minor_v, 1);
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &patch_v, 1);
+
+  // int major_v = read_int(data, 4, 2);
+  // int minor_v = read_int(data, 6, 2);
+  // int patch_v = read_int(data, 8, 2);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   this->publish_fw_version_(version);
 }
 void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
-  four_byte_to_int_array(data, this->thresholds_trigger_, 16);
+  uint16_t read_position = 0;
+  this->cmd_frame_read_data_(data, read_position, &this->thresholds_trigger_, 16, 4);
+
+  // four_byte_to_int_array(data, this->thresholds_trigger_, 16);
 #ifdef USE_NUMBER
   this->threshold_trigger_number_->publish_state(this->thresholds_trigger_[this->thresholds_selected_gate_]);
 #endif
@@ -242,11 +259,22 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
   this->publish_threshold_snr_();
 }
 void LD2410S::process_ack_minimal_output_(uint8_t *data) {
+  uint16_t read_position = 0;
+  uint16_t confirmation = 0;
+  this->cmd_frame_read_data_(data, read_position, &confirmation, 1);
+  if (confirmation == 0x0000) {
+    if (this->minimal_output_) {
+      ESP_LOGW(TAG, "Minimal Output Mode switched ON");
+    } else {
+      ESP_LOGW(TAG, "Minimal Output Mode switched OFF");
+    }
 #ifdef USE_SWITCH
-  this->minimal_output_switch_->publish_state(this->minimal_output_);
+    this->minimal_output_switch_->publish_state(this->minimal_output_);
 #endif
-
-  ESP_LOGW(TAG, "Minimal Output Mode switched");
+  } else {
+    ESP_LOGW(TAG, "Minimal Output Mode switch failed");
+    this->minimal_output_ = !this->minimal_output_;
+  }
 }
 
 void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {

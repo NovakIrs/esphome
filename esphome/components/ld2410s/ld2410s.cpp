@@ -398,14 +398,11 @@ void LD2410S::process_data_frame_() {
 }
 void LD2410S::process_cmd_frame_() {
   uint16_t read_position = 0;
-  uint16_t command_word2 = 0;
-  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &command_word2, 1);
+  uint16_t command_word = 0;
+  uint16_t ack = 0;
 
-  uint16_t command_word = encode_uint16(this->rx_.payload_data()[1], this->rx_.payload_data()[0]);
-  ESP_LOGW(TAG, "Read test origina:%x, new:%x", command_word, command_word2);
-
-  uint16_t ack = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
-  uint8_t *data = &this->rx_.payload_data()[4];
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &command_word, 1);
+  this->cmd_frame_read_data_(this->rx_.payload_data(), read_position, &ack, 1);
 
   if (ack != 0x0000) {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
@@ -416,6 +413,8 @@ void LD2410S::process_cmd_frame_() {
     ESP_LOGI(TAG, "Setup done");
     this->init_done_ = true;
   }
+
+  uint8_t *data = &this->rx_.payload_data()[4];
 
   switch (command_word) {
     // Process acknowledgements

@@ -226,7 +226,8 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   this->read_seq_data(this->rx_.payload_data(), read_position, &minor_v);
   this->read_seq_data(this->rx_.payload_data(), read_position, &patch_v);
 
-  ESP_LOGD(TAG, "process_ack_fw_read_, major_v:%2x, minor_v:%2x, patch_v:%2x ", major_v, minor_v, patch_v);
+  ESP_LOGD(TAG, "process_ack_fw_read_, equipment_type:%08x, major_v:%04x, minor_v:%04x, patch_v:%04x ", equipment_type,
+           major_v, minor_v, patch_v);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
   this->publish_fw_version_(version);

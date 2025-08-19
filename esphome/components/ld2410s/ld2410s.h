@@ -140,11 +140,11 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
 };
 
 static const size_t RX_TX_BUFFER_SIZE = 128;
-static const uint32_t CMD_EXEC_TIMEOUT = 1000;  // timeout for waiting for cmd response
-static const uint16_t RX_MAX_BYTES_PER_LOOP = 500;
+static const uint32_t CMD_EXEC_TIMEOUT = 2000;  // timeout for waiting for cmd response
+static const uint16_t RX_MAX_BYTES_PER_LOOP = 100;
 static const uint16_t NO_SUB_CMD = 0xffff;
-static const uint8_t CMD_EXEC_BUFFER_SIZE = 32;
-static const uint8_t CMD_EXEC_REPEAT = 3;
+static const uint8_t CMD_EXEC_BUFFER_SIZE = 16;
+static const uint8_t CMD_EXEC_REPEAT = 10;
 
 static const uint8_t DC_BUFFER_SIZE = 30;
 
@@ -346,6 +346,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void read_all_thresholds_();
 
   void process_data_energy_values_read_(uint8_t *data);
+  void process_ack_config_start_(const uint8_t *data);
   void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);

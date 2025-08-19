@@ -39,7 +39,7 @@ void LD2410Stx::schedule_append(uint16_t command, uint8_t *frame, uint16_t frame
     this->last_ = 0;
   }
 
-  ESP_LOGD(TAG, "Scheduled command %x at position %d, size:%d", frame_length, this->last_, frame_length);
+  ESP_LOGD(TAG, "Scheduled command %04x at position %d, size:%d", command, this->last_, frame_length);
 }
 // Returns true if schedule is empty
 bool LD2410Stx::schedule_check_empty() const {

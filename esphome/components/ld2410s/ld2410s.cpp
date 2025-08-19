@@ -282,7 +282,9 @@ bool LD2410S::receive_() {
     }
     rx_bytes_count++;
   }
+#ifdef LD2410S_DEBUG_UART
   this->dc_.flush();
+#endif
 
   return received;
 }

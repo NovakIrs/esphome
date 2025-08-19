@@ -34,15 +34,15 @@ int LD2410Shelp::read_int(const uint8_t *buffer, size_t pos, size_t len) {
 // append variable sized append_data to data, returns true if not overflow
 template<typename T>
 bool LD2410Shelp::append_seq_data_(uint8_t *data, uint16_t &insert_position, const T *append_data,
-                                   uint16_t append_data_size, uint16_t actual_size = 0) {
+                                   uint16_t append_array_size, uint16_t actual_size) {
   size_t data_object_size = actual_size;
   if (data_object_size == 0) {
     data_object_size = sizeof(T);
   }
-  auto bytes_to_copy = append_data_size * data_object_size;
+  auto bytes_to_copy = append_array_size * data_object_size;
   if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "append_seq_data_ overflow: insert_position:%d + append_data_size:%d + object_size:%d > %d",
-             insert_position, append_data_size, data_object_size, RX_TX_BUFFER_SIZE);
+    ESP_LOGE(TAG, "append_seq_data_ overflow: insert_position:%d + append_array_size:%d + object_size:%d > %d",
+             insert_position, append_array_size, data_object_size, RX_TX_BUFFER_SIZE);
     return false;
   }
 
@@ -56,7 +56,7 @@ bool LD2410Shelp::append_seq_data_(uint8_t *data, uint16_t &insert_position, con
 // read variable sized uint from data and move read_position
 template<typename T>
 bool LD2410Shelp::read_seq_data_(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size,
-                                 uint16_t actual_size = 0) {
+                                 uint16_t actual_size) {
   size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
   size_t bytes_to_read = out_array_size * data_object_size;
 

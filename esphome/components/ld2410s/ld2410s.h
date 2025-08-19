@@ -373,7 +373,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
       return false;
     }
 
-    auto write_ptr = &data[0] + insert_position;
+    auto *write_ptr = &data[0] + insert_position;
     memcpy(write_ptr, append_data, bytes_to_copy);
 
     insert_position += bytes_to_copy;

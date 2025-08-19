@@ -162,6 +162,7 @@ struct TxTaskT {
 
 class LD2410Shelp {
  public:
+ protected:
   static void four_byte_to_int_array(uint8_t *in, uint32_t *out, uint8_t out_len);
   static void hex_diag(const char *msg, const uint8_t *data, size_t length);
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
@@ -174,8 +175,6 @@ class LD2410Shelp {
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 #endif
-
- protected:
 };
 
 class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {

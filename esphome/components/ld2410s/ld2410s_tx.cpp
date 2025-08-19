@@ -50,10 +50,10 @@ void LD2410Stx::schedule_verify_response(uint16_t command_word) {
   int16_t sent = this->commands_[this->active_].command;
   int16_t expected = sent | CMD_CONFIRMATION;
   if (command_word != expected) {
-    ESP_LOGE(TAG, "Command response %x received, but expected response was %x", response, expected);
+    ESP_LOGE(TAG, "Command response %x received, but expected response was %x", command_word, expected);
 
   } else {
-    ESP_LOGD(TAG, "Command response %x received, confirmed command %x", response, sent);
+    ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word, sent);
 
     this->commands_[this->active_].state = TxCmdState::EMPTY;
 

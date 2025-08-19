@@ -363,11 +363,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   // append variable sized append_data to data, returns true if not overflow
   template<typename T>
   static bool append_seq_data(uint8_t *data, uint16_t &insert_position, const T *append_data,
-                              uint16_t append_array_size = 1, uint16_t actual_size = 1) {
-    size_t data_object_size = actual_size;
-    if (data_object_size == 0) {
-      data_object_size = sizeof(T);
-    }
+                              uint16_t append_array_size = 1, uint16_t actual_size = 0) {
+    size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
     auto bytes_to_copy = append_array_size * data_object_size;
     if (insert_position + bytes_to_copy > RX_TX_BUFFER_SIZE) {
       ESP_LOGE(TAG, "append_seq_data overflow: insert_position:%d + append_array_size:%d + object_size:%d > %d",

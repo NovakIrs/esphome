@@ -260,7 +260,6 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
   this->publish_threshold_snr_();
 }
 void LD2410S::process_ack_minimal_output_(uint8_t *data) {
-  uint16_t read_position = 0;
   if (this->minimal_output_) {
     ESP_LOGW(TAG, "Minimal Output Mode switched ON");
   } else {

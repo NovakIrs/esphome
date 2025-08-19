@@ -232,7 +232,7 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   this->append_seq_data(frame, frame_length, &CMD_FRAME_HEADER);
   this->append_seq_data(frame, frame_length, &data_length);
 
-  this->append_seq_data(frame, frame_length, &data, data_length);
+  this->append_seq_data(frame, frame_length, &data, data_length, 1);
   this->append_seq_data(frame, frame_length, &CMD_FRAME_FOOTER);
 
   this->tx_.schedule_append(command, frame, frame_length);

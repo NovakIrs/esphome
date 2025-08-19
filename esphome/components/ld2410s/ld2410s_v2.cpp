@@ -187,6 +187,15 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   this->publish_energy_values_();
 }
 
+void LD2410S::process_ack_config_start_(const uint8_t *data) {
+  uint16_t read_position = 0;
+  uint16_t protocol_version = 0;
+  uint16_t buffer_size = 0;
+  this->read_seq_data(data, read_position, &protocol_version);  // does not exist it both documents
+  this->read_seq_data(data, read_position, &buffer_size);
+
+  ESP_LOGD(TAG, "Config mode enabled, protocol_version:%d  buffer_size:%d", protocol_version, buffer_size);
+}
 void LD2410S::process_ack_config_read_(uint8_t *data) {
   ESP_LOGD(TAG, "process_ack_config_read_");
 

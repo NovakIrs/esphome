@@ -387,7 +387,7 @@ void LD2410S::process_cmd_frame_() {
 #ifdef LD2410S_V2
 
     case CONFIG_MODE_START_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Config mode enabled");
+      this->process_ack_config_start_(data);
       break;
 
     case CONFIG_MODE_END_CMD | CMD_CONFIRMATION:

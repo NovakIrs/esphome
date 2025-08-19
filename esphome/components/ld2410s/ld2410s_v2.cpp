@@ -210,7 +210,7 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
 
-  ESP_LOGV(TAG,
+  ESP_LOGD(TAG,
            "Config: max_dist=%d, min_dist=%d, delay=%d, status_resp_freq=%d, "
            "dist_resp_freq=%d, resp_speed=%d",
            this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
@@ -224,7 +224,7 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
   this->read_seq_data(this->rx_.payload_data(), read_position, &minor_v);
   this->read_seq_data(this->rx_.payload_data(), read_position, &patch_v);
 
-  ESP_LOGV(TAG, "process_ack_fw_read_, major_v:%2x, minor_v:%2x, patch_v:%2x ", major_v, minor_v, patch_v);
+  ESP_LOGD(TAG, "process_ack_fw_read_, major_v:%2x, minor_v:%2x, patch_v:%2x ", major_v, minor_v, patch_v);
   // int major_v = read_int(data, 4, 2);
   // int minor_v = read_int(data, 6, 2);
   // int patch_v = read_int(data, 8, 2);

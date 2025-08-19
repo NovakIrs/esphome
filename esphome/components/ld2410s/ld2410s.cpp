@@ -355,12 +355,13 @@ void LD2410S::process_data_frame_() {
   }
 }
 void LD2410S::process_cmd_frame_() {
+  uint8_t *data_start = this->rx_.payload_data();
   uint16_t read_position = 0;
   uint16_t command_word = 0;
   uint16_t ack = 0;
 
-  this->read_seq_data(this->rx_.payload_data(), read_position, &command_word);
-  this->read_seq_data(this->rx_.payload_data(), read_position, &ack);
+  this->read_seq_data(data_start, read_position, &command_word);
+  this->read_seq_data(data_start, read_position, &ack);
 
   if (ack != 0x0000) {
     ESP_LOGW(TAG, "Command %x failed, ack: %x", command_word, ack);
@@ -372,7 +373,7 @@ void LD2410S::process_cmd_frame_() {
     this->init_done_ = true;
   }
 
-  uint8_t *data = &this->rx_.payload_data()[4];
+  uint8_t *data = &this->rx_.payload_data()[read_position];
 
   switch (command_word) {
     // Process acknowledgements

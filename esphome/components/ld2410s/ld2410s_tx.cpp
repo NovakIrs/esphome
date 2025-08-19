@@ -115,7 +115,6 @@ bool LD2410Stx::send_available() {
 
     case TxCmdState::EMPTY:
     default:
-      // ESP_LOGD(TAG, "EMPTY: , active:%d, last:%d, retry:%d", this->active_, this->last_, cmd->retry);
       if (this->active_ == this->last_ && this->active_ != 0) {
         this->schedule_reset_();
         return false;  // No commands to send, buffer is empty

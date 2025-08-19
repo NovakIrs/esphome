@@ -172,7 +172,6 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   uint16_t read_position = 0;
 
   for (uint8_t i = 0; i < 16; i++) {
-    //    uint32_t val = encode_uint32(data[i * 4 + 3], data[i * 4 + 2], data[i * 4 + 1], data[i * 4 + 0]);
     uint32_t val = 0;
     read_seq_data(data, read_position, &val);
 

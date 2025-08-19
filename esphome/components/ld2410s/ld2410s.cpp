@@ -21,7 +21,6 @@ void LD2410S::setup() {
 #endif
 }
 void LD2410S::loop() {
-  // ESP_LOGD(TAG, "loop");
   if (!this->receive_()) {
     this->send_();
   }

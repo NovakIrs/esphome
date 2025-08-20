@@ -39,7 +39,7 @@ void LD2410Stx::schedule_append(uint16_t command, uint8_t *frame, uint16_t frame
     this->last_ = 0;
   }
 
-  ESP_LOGD(TAG, "Scheduled command %04x at position %d, size:%d", command, this->last_, frame_length);
+  ESP_LOGI(TAG, "Scheduled command %04x at position %d, size:%d", command, this->last_, frame_length);
 }
 // Returns true if schedule is empty
 bool LD2410Stx::schedule_check_empty() const {
@@ -53,7 +53,7 @@ void LD2410Stx::schedule_verify_response(uint16_t command_word) {
     ESP_LOGE(TAG, "Command response %x received, but expected response was %x", command_word, expected);
 
   } else {
-    ESP_LOGD(TAG, "Command response %x received, confirmed command %x", command_word, sent);
+    ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, sent);
 
     this->commands_[this->active_].state = TxCmdState::EMPTY;
 

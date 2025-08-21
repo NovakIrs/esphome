@@ -144,18 +144,18 @@ static const uint32_t CMD_EXEC_TIMEOUT = 2000;  // timeout for waiting for cmd r
 static const uint16_t RX_MAX_BYTES_PER_LOOP = 100;
 static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint8_t CMD_EXEC_BUFFER_SIZE = 16;
-static const uint8_t CMD_EXEC_REPEAT = 10;
+static const uint8_t TX_MAX_RESEND = 10;
+static const uint8_t TX_MAX_RESTART = 10;
 
 static const uint8_t DC_BUFFER_SIZE = 30;
 
-enum class TxCmdState { EMPTY, SCHEDULED, SENT };
+enum class TxCmdState { EMPTY, SCHEDULED, SEND, SENT, ERROR };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
 enum class RxEvaluationResult { UNKNOWN, OK, NOK };
 
 struct TxTaskT {
   uint16_t command;
-  uint8_t frame[128];
-  uint16_t frame_length;
+  uint16_t sub_command;
   TxCmdState state = TxCmdState::EMPTY;
   uint32_t time_started;
   uint8_t retry;
@@ -209,24 +209,24 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
   void reset_();
 };
 
-class LD2410Stx : uart::UARTDevice, LD2410Shelp {
+class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
  public:
-  bool get_error() const { return this->error_; }
-  void schedule_append(uint16_t command, uint8_t *frame, uint16_t frame_length);
-  bool schedule_check_empty() const;
-  void schedule_verify_response(uint16_t command_word);
-  bool send_available();
+  uint16_t get_scheduled_command() { return this->commands_[this->active_].command; }
+  uint16_t get_scheduled_sub_command() { return this->commands_[this->active_].sub_command; }
 
-  uint8_t *scheduled_frame() { return this->commands_[this->active_].frame; }
-  uint16_t scheduled_frame_length() { return this->commands_[this->active_].frame_length; }
+  void append(uint16_t command, uint16_t sub_command = 0);
+  void append_sequence(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  void reset();
+
+  TxCmdState check_state() { return this->commands_[this->active_].state; }
+  void confirm_sent();
+  void verify_response(uint16_t command_word);
 
  protected:
   TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
   uint8_t active_{0};
   uint8_t last_{0};
-  bool error_{false};
-
-  void schedule_reset_();
+  uint8_t restart_count_{0};
 };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
@@ -301,11 +301,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #endif
 
  protected:
-  LD2410Stx tx_;
-  LD2410Srx rx_;
-#ifdef LD2410S_DEBUG_UART
-  LD2410Sdc dc_;
-#endif
+  uint8_t tx_frame_[RX_TX_BUFFER_SIZE];
+  uint16_t tx_frame_size_ = 0;
 
   // settings_;
   uint32_t thresholds_trigger_[16];
@@ -326,8 +323,13 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   std::string energy_values_str_ = "";
   uint32_t loop_count_{0};
 
-  void schedule_cmd_frames_sequence_(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void schedule_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  LD2410Sschedule tx_schedule_;
+  LD2410Srx rx_;
+#ifdef LD2410S_DEBUG_UART
+  LD2410Sdc dc_;
+#endif
+
+  void build_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
 
   void send_();
 

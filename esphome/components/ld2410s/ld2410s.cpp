@@ -43,21 +43,34 @@ void LD2410S::schedule_cmd_frames_sequence_(const char *msg, uint16_t command, u
 void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, "schedule_cmd_frame %04x : %04x", command, sub_command);
 
-  uint8_t data[RX_TX_BUFFER_SIZE];
-  uint16_t data_length = 0;
+  uint8_t frame[RX_TX_BUFFER_SIZE];
+  uint16_t frame_length = 0;
 
-  append_seq_data(data, data_length, &command, 1);
+  // Header
+  append_seq_data(frame, frame_length, &CMD_FRAME_HEADER);
+
+  // Frame size placeholder
+  uint16_t size_start = frame_length;
+  frame_length += sizeof(size_start);
+
+  // Data start
+  uint16_t data_start = frame_length;
+
+  // Command
+  append_seq_data(frame, frame_length, &command, 1);
+
+  // Parameters
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
       if (this->minimal_output_) {
-        append_seq_data(data, data_length, OUTPUT_MODE_VALUE_MIN, 6);
+        append_seq_data(frame, frame_length, OUTPUT_MODE_VALUE_MIN, 6);
       } else {
-        append_seq_data(data, data_length, OUTPUT_MODE_VALUE_STD, 6);
+        append_seq_data(frame, frame_length, OUTPUT_MODE_VALUE_STD, 6);
       }
     } break;
 
     case CONFIG_MODE_START_CMD:
-      append_seq_data(data, data_length, &CONFIG_MODE_START_VALUE);
+      append_seq_data(frame, frame_length, &CONFIG_MODE_START_VALUE);
       break;
 
     case CONFIG_MODE_END_CMD:
@@ -67,36 +80,36 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
-          append_seq_data(data, data_length, &CFG_MAX_DETECTION_VALUE);
+          append_seq_data(frame, frame_length, &CFG_MAX_DETECTION_VALUE);
           break;
 
         case CFG_MIN_DETECTION_VALUE:
-          append_seq_data(data, data_length, &CFG_MIN_DETECTION_VALUE);
+          append_seq_data(frame, frame_length, &CFG_MIN_DETECTION_VALUE);
           break;
 
         case CFG_NO_DELAY_VALUE:
-          append_seq_data(data, data_length, &CFG_NO_DELAY_VALUE);
+          append_seq_data(frame, frame_length, &CFG_NO_DELAY_VALUE);
           break;
 
         case CFG_STATUS_FREQ_VALUE:
-          append_seq_data(data, data_length, &CFG_STATUS_FREQ_VALUE);
+          append_seq_data(frame, frame_length, &CFG_STATUS_FREQ_VALUE);
           break;
 
         case CFG_DISTANCE_FREQ_VALUE:
-          append_seq_data(data, data_length, &CFG_DISTANCE_FREQ_VALUE);
+          append_seq_data(frame, frame_length, &CFG_DISTANCE_FREQ_VALUE);
           break;
 
         case CFG_RESPONSE_SPEED_VALUE:
-          append_seq_data(data, data_length, &CFG_RESPONSE_SPEED_VALUE);
+          append_seq_data(frame, frame_length, &CFG_RESPONSE_SPEED_VALUE);
           break;
 
         default:
-          append_seq_data(data, data_length, &CFG_MAX_DETECTION_VALUE);
-          append_seq_data(data, data_length, &CFG_MIN_DETECTION_VALUE);
-          append_seq_data(data, data_length, &CFG_NO_DELAY_VALUE);
-          append_seq_data(data, data_length, &CFG_STATUS_FREQ_VALUE);
-          append_seq_data(data, data_length, &CFG_DISTANCE_FREQ_VALUE);
-          append_seq_data(data, data_length, &CFG_RESPONSE_SPEED_VALUE);
+          append_seq_data(frame, frame_length, &CFG_MAX_DETECTION_VALUE);
+          append_seq_data(frame, frame_length, &CFG_MIN_DETECTION_VALUE);
+          append_seq_data(frame, frame_length, &CFG_NO_DELAY_VALUE);
+          append_seq_data(frame, frame_length, &CFG_STATUS_FREQ_VALUE);
+          append_seq_data(frame, frame_length, &CFG_DISTANCE_FREQ_VALUE);
+          append_seq_data(frame, frame_length, &CFG_RESPONSE_SPEED_VALUE);
           break;
       }
 
@@ -112,54 +125,54 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       } else {
         switch (sub_command) {
           case CFG_MAX_DETECTION_VALUE:
-            append_seq_data(data, data_length, &CFG_MAX_DETECTION_VALUE);
-            append_seq_data(data, data_length, &this->max_dist_);
+            append_seq_data(frame, frame_length, &CFG_MAX_DETECTION_VALUE);
+            append_seq_data(frame, frame_length, &this->max_dist_);
             break;
 
           case CFG_MIN_DETECTION_VALUE:
-            append_seq_data(data, data_length, &CFG_MIN_DETECTION_VALUE);
-            append_seq_data(data, data_length, &this->min_dist_);
+            append_seq_data(frame, frame_length, &CFG_MIN_DETECTION_VALUE);
+            append_seq_data(frame, frame_length, &this->min_dist_);
             break;
 
           case CFG_NO_DELAY_VALUE:
-            append_seq_data(data, data_length, &CFG_NO_DELAY_VALUE);
-            append_seq_data(data, data_length, &this->delay_);
+            append_seq_data(frame, frame_length, &CFG_NO_DELAY_VALUE);
+            append_seq_data(frame, frame_length, &this->delay_);
             break;
 
           case CFG_STATUS_FREQ_VALUE:
-            append_seq_data(data, data_length, &CFG_STATUS_FREQ_VALUE);
-            append_seq_data(data, data_length, &this->status_freq_);
+            append_seq_data(frame, frame_length, &CFG_STATUS_FREQ_VALUE);
+            append_seq_data(frame, frame_length, &this->status_freq_);
             break;
 
           case CFG_DISTANCE_FREQ_VALUE:
-            append_seq_data(data, data_length, &CFG_DISTANCE_FREQ_VALUE);
-            append_seq_data(data, data_length, &this->dist_freq_);
+            append_seq_data(frame, frame_length, &CFG_DISTANCE_FREQ_VALUE);
+            append_seq_data(frame, frame_length, &this->dist_freq_);
             break;
 
           case CFG_RESPONSE_SPEED_VALUE:
-            append_seq_data(data, data_length, &CFG_RESPONSE_SPEED_VALUE);
-            append_seq_data(data, data_length, &this->resp_speed_);
+            append_seq_data(frame, frame_length, &CFG_RESPONSE_SPEED_VALUE);
+            append_seq_data(frame, frame_length, &this->resp_speed_);
             break;
 
           default:
 
-            append_seq_data(data, data_length, &CFG_MAX_DETECTION_VALUE);
-            append_seq_data(data, data_length, &this->max_dist_);
+            append_seq_data(frame, frame_length, &CFG_MAX_DETECTION_VALUE);
+            append_seq_data(frame, frame_length, &this->max_dist_);
 
-            append_seq_data(data, data_length, &CFG_MIN_DETECTION_VALUE);
-            append_seq_data(data, data_length, &this->min_dist_);
+            append_seq_data(frame, frame_length, &CFG_MIN_DETECTION_VALUE);
+            append_seq_data(frame, frame_length, &this->min_dist_);
 
-            append_seq_data(data, data_length, &CFG_NO_DELAY_VALUE);
-            append_seq_data(data, data_length, &this->delay_);
+            append_seq_data(frame, frame_length, &CFG_NO_DELAY_VALUE);
+            append_seq_data(frame, frame_length, &this->delay_);
 
-            append_seq_data(data, data_length, &CFG_STATUS_FREQ_VALUE);
-            append_seq_data(data, data_length, &this->status_freq_);
+            append_seq_data(frame, frame_length, &CFG_STATUS_FREQ_VALUE);
+            append_seq_data(frame, frame_length, &this->status_freq_);
 
-            append_seq_data(data, data_length, &CFG_DISTANCE_FREQ_VALUE);
-            append_seq_data(data, data_length, &this->dist_freq_);
+            append_seq_data(frame, frame_length, &CFG_DISTANCE_FREQ_VALUE);
+            append_seq_data(frame, frame_length, &this->dist_freq_);
 
-            append_seq_data(data, data_length, &CFG_RESPONSE_SPEED_VALUE);
-            append_seq_data(data, data_length, &this->resp_speed_);
+            append_seq_data(frame, frame_length, &CFG_RESPONSE_SPEED_VALUE);
+            append_seq_data(frame, frame_length, &this->resp_speed_);
 
             break;
         }
@@ -167,55 +180,55 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       }
 
     case CALIBRATION_CMD:
-      append_seq_data(data, data_length, &CALIBRATION_TRIGGER_VALUE);
-      append_seq_data(data, data_length, &CALIBRATION_RETENTION_VALUE);
-      append_seq_data(data, data_length, &CALIBRATION_TIME_VALUE);
+      append_seq_data(frame, frame_length, &CALIBRATION_TRIGGER_VALUE);
+      append_seq_data(frame, frame_length, &CALIBRATION_RETENTION_VALUE);
+      append_seq_data(frame, frame_length, &CALIBRATION_TIME_VALUE);
       break;
 
     case GATE_THRESHOLD_TRIGGER_READ_CMD:
     case GATE_THRESHOLD_HOLD_READ_CMD:
     case GATE_THRESHOLD_SNR_READ_CMD:
       if (sub_command != NO_SUB_CMD) {
-        append_seq_data(data, data_length, &sub_command);
+        append_seq_data(frame, frame_length, &sub_command);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
-          append_seq_data(data, data_length, &i);
+          append_seq_data(frame, frame_length, &i);
         }
       }
       break;
 
     case GATE_THRESHOLD_TRIGGER_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
-        append_seq_data(data, data_length, &sub_command);
-        append_seq_data(data, data_length, &this->thresholds_trigger_[sub_command]);
+        append_seq_data(frame, frame_length, &sub_command);
+        append_seq_data(frame, frame_length, &this->thresholds_trigger_[sub_command]);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
-          append_seq_data(data, data_length, &i, 1);
-          append_seq_data(data, data_length, &this->thresholds_trigger_[i]);
+          append_seq_data(frame, frame_length, &i, 1);
+          append_seq_data(frame, frame_length, &this->thresholds_trigger_[i]);
         }
       }
       break;
 
     case GATE_THRESHOLD_HOLD_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
-        append_seq_data(data, data_length, &sub_command);
-        append_seq_data(data, data_length, &this->thresholds_hold_[sub_command]);
+        append_seq_data(frame, frame_length, &sub_command);
+        append_seq_data(frame, frame_length, &this->thresholds_hold_[sub_command]);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
-          append_seq_data(data, data_length, &i);
-          append_seq_data(data, data_length, &this->thresholds_hold_[i]);
+          append_seq_data(frame, frame_length, &i);
+          append_seq_data(frame, frame_length, &this->thresholds_hold_[i]);
         }
       }
       break;
 
     case GATE_THRESHOLD_SNR_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
-        append_seq_data(data, data_length, &sub_command);
-        append_seq_data(data, data_length, &this->thresholds_snr_[sub_command]);
+        append_seq_data(frame, frame_length, &sub_command);
+        append_seq_data(frame, frame_length, &this->thresholds_snr_[sub_command]);
       } else {
         for (uint16_t i = 0; i < 16; i++) {
-          append_seq_data(data, data_length, &i);
-          append_seq_data(data, data_length, &this->thresholds_snr_[i]);
+          append_seq_data(frame, frame_length, &i);
+          append_seq_data(frame, frame_length, &this->thresholds_snr_[i]);
         }
       }
       break;
@@ -225,13 +238,11 @@ void LD2410S::schedule_cmd_frame_(uint16_t command, uint16_t sub_command) {
       break;
   }
 
-  uint8_t frame[RX_TX_BUFFER_SIZE];
-  uint16_t frame_length = 0;
+  // Frame size
+  uint16_t data_size = frame_length - data_start;
+  append_seq_data(frame, size_start, &data_size);
 
-  append_seq_data(frame, frame_length, &CMD_FRAME_HEADER);
-  append_seq_data(frame, frame_length, &data_length);
-
-  append_seq_data(frame, frame_length, &data, data_length, 1);
+  // Footer
   append_seq_data(frame, frame_length, &CMD_FRAME_FOOTER);
 
   this->tx_.schedule_append(command, frame, frame_length);

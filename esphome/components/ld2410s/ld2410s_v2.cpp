@@ -31,20 +31,20 @@ void LD2410S::init_() {
   this->read_all_();
 }
 void LD2410S::read_all_() {
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_START_CMD);
 
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
-  this->schedule_cmd_frame_(FW_READ_CMD);
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(OUTPUT_MODE_SWITCH_CMD);
+  this->tx_schedule_.append(FW_READ_CMD);
+  this->tx_schedule_.append(PARAMS_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
 
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_END_CMD);
 }
 
 // button
-void LD2410S::calibration() { this->schedule_cmd_frames_sequence_("calibration\0", CALIBRATION_CMD); }
+void LD2410S::calibration() { this->tx_schedule_.append_sequence("calibration\0", CALIBRATION_CMD); }
 void LD2410S::factory_reset() {
   ESP_LOGI(TAG, "factory_reset");
 
@@ -64,52 +64,52 @@ void LD2410S::factory_reset() {
     this->thresholds_snr_[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
   }
 
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_START_CMD);
 
-  this->schedule_cmd_frame_(OUTPUT_MODE_SWITCH_CMD);
+  this->tx_schedule_.append(OUTPUT_MODE_SWITCH_CMD);
 
-  this->schedule_cmd_frame_(PARAMS_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_WRITE_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_WRITE_CMD);
+  this->tx_schedule_.append(PARAMS_WRITE_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_WRITE_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_SNR_WRITE_CMD);
 
-  this->schedule_cmd_frame_(PARAMS_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(PARAMS_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
 
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_END_CMD);
 }
 // number
 void LD2410S::set_delay(float delay) {
   this->delay_ = delay;
-  this->schedule_cmd_frames_sequence_("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
+  this->tx_schedule_.append_sequence("set_delay\0", PARAMS_WRITE_CMD, CFG_NO_DELAY_VALUE);
   this->no_delay_number_->publish_state(this->delay_);
 }
 void LD2410S::set_distance_reporting_freq(float distance_reporting_freq) {
   this->dist_freq_ = distance_reporting_freq * 10;
-  this->schedule_cmd_frames_sequence_("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
+  this->tx_schedule_.append_sequence("set_distance_reporting_freq\0", PARAMS_WRITE_CMD, CFG_DISTANCE_FREQ_VALUE);
   this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
 }
 void LD2410S::set_max_distance(float max_distance) {
   this->max_dist_ = static_cast<float>(max_distance) / 0.7f;
-  this->schedule_cmd_frames_sequence_("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
+  this->tx_schedule_.append_sequence("set_max_distance\0", PARAMS_WRITE_CMD, CFG_MAX_DETECTION_VALUE);
   this->max_distance_number_->publish_state(static_cast<float>(this->max_dist_) * 0.7);
 }
 void LD2410S::set_min_distance(float min_distance) {
   this->min_dist_ = static_cast<float>(min_distance) / 0.7f;
-  this->schedule_cmd_frames_sequence_("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
+  this->tx_schedule_.append_sequence("set_min_distance\0", PARAMS_WRITE_CMD, CFG_MIN_DETECTION_VALUE);
   this->min_distance_number_->publish_state(static_cast<float>(this->min_dist_) * 0.7);
 }
 void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
   this->status_freq_ = status_reporting_freq * 10;
-  this->schedule_cmd_frames_sequence_("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
+  this->tx_schedule_.append_sequence("set_status_reporting_freq\0", PARAMS_WRITE_CMD, CFG_STATUS_FREQ_VALUE);
   this->status_reporting_freq_number_->publish_state(static_cast<float>(this->status_freq_) / 10);
 }
 void LD2410S::set_threshold_hold(float threshold_hold) {
   this->thresholds_hold_[this->thresholds_selected_gate_] = threshold_hold;
-  this->schedule_cmd_frames_sequence_("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD,
-                                      this->thresholds_selected_gate_);
+  this->tx_schedule_.append_sequence("set_threshold_hold\0", GATE_THRESHOLD_HOLD_WRITE_CMD,
+                                     this->thresholds_selected_gate_);
   this->threshold_hold_number_->publish_state(this->thresholds_hold_[this->thresholds_selected_gate_]);
   this->publish_threshold_hold_();
 }
@@ -124,22 +124,22 @@ void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
 }
 void LD2410S::set_threshold_snr(float threshold_snr) {
   this->thresholds_snr_[this->thresholds_selected_gate_] = threshold_snr;
-  this->schedule_cmd_frames_sequence_("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD,
-                                      this->thresholds_selected_gate_);
+  this->tx_schedule_.append_sequence("set_threshold_snr\0", GATE_THRESHOLD_SNR_WRITE_CMD,
+                                     this->thresholds_selected_gate_);
   this->threshold_snr_number_->publish_state(this->thresholds_snr_[this->thresholds_selected_gate_]);
   this->publish_threshold_snr_();
 }
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->thresholds_trigger_[this->thresholds_selected_gate_] = threshold_trigger;
-  this->schedule_cmd_frames_sequence_("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD,
-                                      this->thresholds_selected_gate_);
+  this->tx_schedule_.append_sequence("set_threshold_trigger\0", GATE_THRESHOLD_TRIGGER_WRITE_CMD,
+                                     this->thresholds_selected_gate_);
   this->threshold_trigger_number_->publish_state(this->thresholds_trigger_[this->thresholds_selected_gate_]);
   this->publish_threshold_trigger_();
 }
 // select
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
   this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
-  this->schedule_cmd_frames_sequence_("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
+  this->tx_schedule_.append_sequence("set_response_speed_select\0", PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 #ifdef USE_SELECT
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
@@ -152,18 +152,18 @@ void LD2410S::set_minimal_output(bool state) {
       energy_value = 0;
     }
   }
-  this->schedule_cmd_frames_sequence_("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
+  this->tx_schedule_.append_sequence("set_minimal_output\0", OUTPUT_MODE_SWITCH_CMD);
 }
 
 // PROTECTED
 void LD2410S::read_all_thresholds_() {
   this->status_set_warning("read_all_thresholds");
 
-  this->schedule_cmd_frame_(CONFIG_MODE_START_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->schedule_cmd_frame_(GATE_THRESHOLD_SNR_READ_CMD);
-  this->schedule_cmd_frame_(CONFIG_MODE_END_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_START_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(CONFIG_MODE_END_CMD);
 
   this->status_clear_warning();
 }

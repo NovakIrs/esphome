@@ -14,18 +14,18 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 }
 // Appends new task to the end of schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
-  if (this->commands_[this->active_].state != TxCmdState::EMPTY) {
+  if (this->commands_[this->last_].state != TxCmdState::EMPTY) {
     this->reset();
-    this->commands_[this->active_].state != TxCmdState::ERROR;
+    this->commands_[this->last_].state != TxCmdState::ERROR;
     ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
     return;
   }
 
-  this->commands_[this->active_].command = command;
-  this->commands_[this->active_].sub_command = sub_command;
-  this->commands_[this->active_].state = TxCmdState::SCHEDULED;
-  this->commands_[this->active_].time_started = 0;
-  this->commands_[this->active_].retry = 0;
+  this->commands_[this->last_].command = command;
+  this->commands_[this->last_].sub_command = sub_command;
+  this->commands_[this->last_].state = TxCmdState::SCHEDULED;
+  this->commands_[this->last_].time_started = 0;
+  this->commands_[this->last_].retry = 0;
 
   this->last_++;
   if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {

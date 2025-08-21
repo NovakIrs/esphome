@@ -218,7 +218,7 @@ class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
   void append_sequence(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void reset();
 
-  TxCmdState check_state() { return this->commands_[this->active_].state; }
+  TxCmdState check_state();
   void confirm_sent();
   void verify_response(uint16_t command_word);
 

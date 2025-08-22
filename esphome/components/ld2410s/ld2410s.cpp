@@ -51,15 +51,11 @@ void LD2410S::send_() {
       break;
 
     case TxCmdState::ERROR:
+      ESP_LOGW(TAG, "Scheduling command send failed!!!, re-initializing...");
       this->tx_schedule_.reset();
-      if (!this->init_done_) {
-        ESP_LOGW(TAG, "Scheduling Initialization failed, re-initializing...");
 #ifdef LD2410S_V2
-        this->init_();
+      this->init_();
 #endif
-      } else {
-        ESP_LOGW(TAG, "Scheduling command send failed!!!");
-      }
       break;
 
     case TxCmdState::EMPTY:

@@ -65,7 +65,7 @@ TxCmdState LD2410Sschedule::check_state() {
         } else {
           if (this->restart_count_ < TX_MAX_RESTART) {
             this->restart_count_++;
-            for (int8_t i = 0; i <= this->active_; i++) {
+            for (uint8_t i = 0; i <= this->active_; i++) {
               this->commands_[i].state = TxCmdState::SCHEDULED;
             }
             this->active_ = 0;

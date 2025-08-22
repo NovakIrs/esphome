@@ -25,7 +25,8 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD &&
         this->commands_[this->last_ - 1].state == TxCmdState::SCHEDULED) {
       this->last_--;
-      this->commands_[this->last_].state == TxCmdState::EMPTY;
+      this->commands_[this->last_].state = TxCmdState::EMPTY;
+
       if (command == CONFIG_MODE_START_CMD) {
         ESP_LOGI(TAG,
                  "Config start is requested just after Confing end. Deleting Config end and skipping Config start. "

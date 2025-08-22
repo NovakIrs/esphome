@@ -76,7 +76,9 @@ void LD2410S::send_() {
 }
 // builds CMD_FRAME
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_cmd_frame %04x : %04x", command, sub_command);
+#ifdef LD2410S_DEBUG_UART
+  ESP_LOGD(TAG, "build_cmd_frame %04x : %04x", command, sub_command);
+#endif
 
   this->tx_frame_size_ = 0;
 

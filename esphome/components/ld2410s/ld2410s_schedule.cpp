@@ -28,7 +28,7 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   this->commands_[this->last_].retry = 0;
 
   this->last_++;
-  if (this->last_ >= CMD_EXEC_BUFFER_SIZE) {
+  if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
     this->last_ = 0;
   }
 
@@ -54,7 +54,7 @@ TxCmdState LD2410Sschedule::check_state() {
       break;
 
     case TxCmdState::SENT:
-      if (App.get_loop_component_start_time() > this->commands_[this->active_].time_started + CMD_EXEC_TIMEOUT) {
+      if (App.get_loop_component_start_time() > this->commands_[this->active_].time_started + TX_CONFIRMATION_TIMEOUT) {
         if (this->commands_[this->active_].retry < TX_MAX_RESEND) {
           this->commands_[this->active_].retry++;
           ESP_LOGD(TAG, "Send Timeout Expired, Resend! command:%4x, retry:%d, active:%d, last:%d",
@@ -103,7 +103,9 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t sent = this->commands_[this->active_].command;
   int16_t expected = sent | CMD_CONFIRMATION;
   if (command_word != expected) {
+#ifdef LD2410S_DEBUG_UART
     ESP_LOGE(TAG, "Command response %x received, but expected response was %x", command_word, expected);
+#endif
 
   } else {
     ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, sent);
@@ -111,7 +113,7 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     this->commands_[this->active_].state = TxCmdState::EMPTY;
 
     this->active_++;
-    if (this->active_ >= CMD_EXEC_BUFFER_SIZE) {
+    if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
       this->active_ = 0;
     }
 

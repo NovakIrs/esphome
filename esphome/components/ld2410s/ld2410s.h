@@ -3,7 +3,6 @@
 #define LD2410S_V1
 #define LD2410S_V2
 // #define LD2410S_DEBUG_UART
-// #define LD2410S_LOG_RX_NOK
 
 // core
 #include "esphome/core/application.h"
@@ -140,15 +139,15 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
     // It would be good to get it from virgin ld2410s, before any calibration.
 };
 
-static const size_t RX_TX_BUFFER_SIZE = 128;
-static const uint32_t CMD_EXEC_TIMEOUT = 2000;  // timeout for waiting for cmd response
-static const uint16_t RX_MAX_BYTES_PER_LOOP = 100;
 static const uint16_t NO_SUB_CMD = 0xffff;
-static const uint8_t CMD_EXEC_BUFFER_SIZE = 16;
-static const uint8_t TX_MAX_RESEND = 10;
-static const uint8_t TX_MAX_RESTART = 10;
 
-static const uint8_t DC_BUFFER_SIZE = 30;
+static const size_t RX_TX_BUFFER_SIZE = 128;
+static const uint8_t RX_DC_BUFFER_SIZE = 30;
+static const uint16_t RX_MAX_BYTES_PER_LOOP = 100;
+static const uint8_t TX_SCHEDULE_BUFFER_SIZE = 32;
+static const uint8_t TX_MAX_RESEND = 5;
+static const uint8_t TX_MAX_RESTART = 5;
+static const uint32_t TX_CONFIRMATION_TIMEOUT = 2000;  // timeout for waiting for cmd response
 
 enum class TxCmdState { EMPTY, SCHEDULED, SEND, SENT, ERROR };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
@@ -178,7 +177,7 @@ class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
   void flush();
 
  protected:
-  uint8_t rcv_buffer_[DC_BUFFER_SIZE];
+  uint8_t rcv_buffer_[RX_DC_BUFFER_SIZE];
   uint16_t end_pos_{0};
 };
 
@@ -224,7 +223,7 @@ class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
   void verify_response(uint16_t command_word);
 
  protected:
-  TxTaskT commands_[CMD_EXEC_BUFFER_SIZE];
+  TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE];
   uint8_t active_{0};
   uint8_t last_{0};
   uint8_t restart_count_{0};

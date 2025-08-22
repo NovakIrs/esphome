@@ -14,6 +14,27 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 }
 // Appends new task to the end of schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
+  if (this->last_ == 0) {
+    if (command != CONFIG_MODE_START_CMD) {
+      this->append_(CONFIG_MODE_START_CMD);
+    }
+
+  } else {
+    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD &&
+        this->commands_[this->last_ - 1].state == TxCmdState::SCHEDULED) {
+      this->last_--;
+      this->commands_[this->last_ - 1].state == TxCmdState::EMPTY;
+
+      if (command == CONFIG_MODE_START_CMD) {
+        return;
+      }
+    }
+  }
+
+  this->append_(command, sub_command);
+}
+// Appends new task to the end of schedule
+void LD2410Sschedule::append_(uint16_t command, uint16_t sub_command) {
   if (this->commands_[this->last_].state != TxCmdState::EMPTY) {
     this->reset();
     this->commands_[this->last_].state = TxCmdState::ERROR;
@@ -86,8 +107,15 @@ TxCmdState LD2410Sschedule::check_state() {
       break;
 
     case TxCmdState::EMPTY:
-      if (this->active_ == this->last_ && this->active_ != 0) {
-        this->reset();
+      if (this->active_ == this->last_ && this->active_ > 0) {
+        // schedule has reached the end
+        if (this->commands_[this->active_ - 1].command != CONFIG_MODE_END_CMD) {
+          // schedule nas reached the end but config was not closed
+          this->append_(CONFIG_MODE_END_CMD);
+
+        } else {
+          this->reset();
+        }
       }
       break;
 

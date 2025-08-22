@@ -6,7 +6,7 @@ namespace ld2410s {
 
 // Apends sequence of tasks: config start, actual command and config end
 void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "schedule_append_sequence: %s : %04x : %04x", msg, command, sub_command);
+  ESP_LOGD(TAG, "append_sequence: %s : %04x : %04x", msg, command, sub_command);
 
   this->append(CONFIG_MODE_START_CMD);
   this->append(command, sub_command);
@@ -14,6 +14,7 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 }
 // Appends new task to the end of schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
+  ESP_LOGD(TAG, "append_sequence: %04x : %04x", command, sub_command);
   if (this->last_ == 0) {
     if (command != CONFIG_MODE_START_CMD) {
       ESP_LOGI(TAG, "Config start is missing. Apending. command:%04x, last:%d", command, this->last_);
@@ -23,14 +24,13 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   } else {
     if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD &&
         this->commands_[this->last_ - 1].state == TxCmdState::SCHEDULED) {
-      this->last_--;
-      this->commands_[this->last_ - 1].state == TxCmdState::EMPTY;
-
       if (command == CONFIG_MODE_START_CMD) {
         ESP_LOGI(TAG,
                  "Config start is requested just after Confing end. Deleting Config end and skipping Config start. "
                  "command:%04x, last:%d",
                  command, this->last_);
+        this->last_--;
+        this->commands_[this->last_].state == TxCmdState::EMPTY;
         return;
       } else {
         ESP_LOGI(TAG,

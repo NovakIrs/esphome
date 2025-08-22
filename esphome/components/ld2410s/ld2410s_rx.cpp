@@ -55,7 +55,7 @@ RxEvaluationResult LD2410Srx::evaluate_() {
 
   switch (this->evaluate_size_()) {
     case RxEvaluationResult::NOK:  // known size, but greater then expected size for frame type
-#ifdef LD2410S_LOG_RX_NOK
+#ifdef LD2410S_DEBUG_UART
       ESP_LOGD(TAG, "correct header, but passed expected frame end: size:%d, expected:%d", this->end_pos_,
                this->expected_frame_size_);
 #endif
@@ -158,7 +158,7 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
   }
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
-#ifdef LD2410S_LOG_RX_NOK
+#ifdef LD2410S_DEBUG_UART
   ESP_LOGE(TAG, "rx received unkonw header, length:%d", end_pos_ + 1);
 #endif
   return RxEvaluationResult::NOK;
@@ -213,7 +213,7 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
   } else if (this->end_pos_ + 1 > this->expected_frame_size_) {
-#ifdef LD2410S_LOG_RX_NOK
+#ifdef LD2410S_DEBUG_UART
     ESP_LOGE(TAG, "rx passed the expected frame end, expected:%d, current:%d", this->expected_frame_size_,
              this->end_pos_);
 #endif
@@ -254,7 +254,7 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
     default:                // unknown header type
       return RxEvaluationResult::NOK;
   }
-#ifdef LD2410S_LOG_RX_NOK
+#ifdef LD2410S_DEBUG_UART
   ESP_LOGE(TAG, "rx footer does not match expected footer for frame type");
 #endif
   return RxEvaluationResult::NOK;  // footer does not match expected footer for frame type

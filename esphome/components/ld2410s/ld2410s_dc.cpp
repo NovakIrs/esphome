@@ -8,7 +8,7 @@ void LD2410Sdc::receive_byte(uint8_t byte) {
   this->rcv_buffer_[this->end_pos_] = byte;
 
   this->end_pos_++;
-  if (this->end_pos_ >= DC_BUFFER_SIZE) {
+  if (this->end_pos_ >= RX_DC_BUFFER_SIZE) {
     this->flush();
   }
 }

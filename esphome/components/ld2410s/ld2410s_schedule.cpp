@@ -16,7 +16,7 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   if (this->commands_[this->last_].state != TxCmdState::EMPTY) {
     this->reset();
-    this->commands_[this->last_].state != TxCmdState::ERROR;
+    this->commands_[this->last_].state = TxCmdState::ERROR;
     ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
     return;
   }
@@ -79,7 +79,7 @@ TxCmdState LD2410Sschedule::check_state() {
                      "Send Timeout Expired, Resend limit reached, Restart limit reached, Giving up, Reseting buffer!!! "
                      "command:%4x, active:%d, last:%d",
                      this->commands_[this->active_].command, this->active_, this->last_);
-            this->commands_[this->active_].state != TxCmdState::ERROR;
+            this->commands_[this->active_].state = TxCmdState::ERROR;
           }
         }
       }

@@ -22,10 +22,11 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     }
 
   } else {
-    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD &&
-        this->commands_[this->last_ - 1].state == TxCmdState::SCHEDULED) {
+    TxTaskT *cmd = &commands_[this->active_ - 1];
+
+    if (cmd->command == CONFIG_MODE_END_CMD && cmd->state == TxCmdState::SCHEDULED) {
       this->last_--;
-      this->commands_[this->last_].state = TxCmdState::EMPTY;
+      cmd->state = TxCmdState::EMPTY;
 
       if (command == CONFIG_MODE_START_CMD) {
         ESP_LOGI(TAG,
@@ -47,21 +48,24 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 }
 // Appends new task to the end of schedule
 void LD2410Sschedule::append_(uint16_t command, uint16_t sub_command) {
-  if (this->commands_[this->last_].state != TxCmdState::EMPTY) {
+  TxTaskT *cmd = &commands_[this->last_];
+
+  if (cmd->state != TxCmdState::EMPTY) {
     ESP_LOGE(TAG,
              "Inserting into non-empty command buffer location, reseting buffer !!! command:%04x, sub_command:%04x, at "
              "position %d",
              command, sub_command, this->last_);
     this->reset();
-    this->commands_[this->last_].state = TxCmdState::ERROR;
+    cmd = &commands_[this->active_];
+    cmd->state = TxCmdState::ERROR;
     return;
   }
 
-  this->commands_[this->last_].command = command;
-  this->commands_[this->last_].sub_command = sub_command;
-  this->commands_[this->last_].state = TxCmdState::SCHEDULED;
-  this->commands_[this->last_].time_started = 0;
-  this->commands_[this->last_].retry = 0;
+  cmd->command = command;
+  cmd->sub_command = sub_command;
+  cmd->state = TxCmdState::SCHEDULED;
+  cmd->time_started = 0;
+  cmd->retry = 0;
 
   ESP_LOGI(TAG, "Scheduled command:%04x, sub_command:%04x, at position %d", command, sub_command, this->last_);
 
@@ -82,21 +86,21 @@ void LD2410Sschedule::reset() {
 
 // Returns active scheduled task status
 TxCmdState LD2410Sschedule::check_state() {
-  switch (this->commands_[this->active_].state) {
+  TxTaskT *cmd = &commands_[this->active_];
+  switch (cmd->state) {
     case TxCmdState::SCHEDULED:
-      this->commands_[this->active_].retry = 0;
-      ESP_LOGD(TAG, "Send scheduled command:%4x, retry:%d, active:%d, last:%d", this->commands_[this->active_].command,
-               this->commands_[this->active_].retry, this->active_, this->last_);
+      cmd->retry = 0;
+      ESP_LOGD(TAG, "Send scheduled command:%4x, retry:%d, active:%d, last:%d", cmd->command, cmd->retry, this->active_,
+               this->last_);
       break;
 
     case TxCmdState::SENT:
-      if (App.get_loop_component_start_time() > this->commands_[this->active_].time_started + TX_CONFIRMATION_TIMEOUT) {
-        if (this->commands_[this->active_].retry < TX_MAX_RESEND) {
-          this->commands_[this->active_].retry++;
-          ESP_LOGD(TAG, "Send Timeout Expired, Resend! command:%4x, retry:%d, active:%d, last:%d",
-                   this->commands_[this->active_].command, this->commands_[this->active_].retry, this->active_,
-                   this->last_);
-          this->commands_[this->active_].state = TxCmdState::SEND;
+      if (App.get_loop_component_start_time() > cmd->time_started + TX_CONFIRMATION_TIMEOUT) {
+        if (cmd->retry < TX_MAX_RESEND) {
+          cmd->retry++;
+          ESP_LOGE(TAG, "Send Timeout Expired, Resend! command:%4x, retry:%d, active:%d, last:%d", cmd->command,
+                   cmd->retry, this->active_, this->last_);
+          cmd->state = TxCmdState::SEND;
 
         } else {
           if (this->restart_count_ < TX_MAX_RESTART) {
@@ -105,17 +109,19 @@ TxCmdState LD2410Sschedule::check_state() {
               this->commands_[i].state = TxCmdState::SCHEDULED;
             }
             this->active_ = 0;
+            cmd = &commands_[this->active_];
             ESP_LOGD(TAG,
                      "Send Timeout Expired, Resend limit reached, Restart sequence!! command:%4x, active:%d, last:%d",
-                     this->commands_[this->active_].command, this->active_, this->last_);
+                     cmd->command, this->active_, this->last_);
 
           } else {
             this->reset();
+            cmd = &commands_[this->active_];
             ESP_LOGD(TAG,
                      "Send Timeout Expired, Resend limit reached, Restart limit reached, Giving up, Reseting buffer!!! "
                      "command:%4x, active:%d, last:%d",
-                     this->commands_[this->active_].command, this->active_, this->last_);
-            this->commands_[this->active_].state = TxCmdState::ERROR;
+                     cmd->command, this->active_, this->last_);
+            cmd->state = TxCmdState::ERROR;
           }
         }
       }
@@ -139,7 +145,7 @@ TxCmdState LD2410Sschedule::check_state() {
       break;
   }
 
-  return this->commands_[this->active_].state;
+  return cmd->state;
 }
 // Verifies if received response matches expected, if so procedes to next scheduled command
 void LD2410Sschedule::verify_response(uint16_t command_word) {
@@ -168,8 +174,8 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
 
 // Confirm frame ready
 void LD2410Sschedule::confirm_sent() {
-  if (this->commands_[this->active_].state == TxCmdState::SCHEDULED) {
-    TxTaskT *cmd = &commands_[this->active_];
+  TxTaskT *cmd = &commands_[this->active_];
+  if (cmd->state == TxCmdState::SCHEDULED || cmd->state == TxCmdState::SEND) {
     cmd->time_started = App.get_loop_component_start_time();
     cmd->state = TxCmdState::SENT;
   }

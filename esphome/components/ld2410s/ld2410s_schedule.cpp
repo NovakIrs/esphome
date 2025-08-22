@@ -16,6 +16,7 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   if (this->last_ == 0) {
     if (command != CONFIG_MODE_START_CMD) {
+      ESP_LOGI(TAG, "Config start is missing. Apending. command:%04x, last:%d", command, this->last_);
       this->append_(CONFIG_MODE_START_CMD);
     }
 
@@ -26,7 +27,16 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
       this->commands_[this->last_ - 1].state == TxCmdState::EMPTY;
 
       if (command == CONFIG_MODE_START_CMD) {
+        ESP_LOGI(TAG,
+                 "Config start is requested just after Confing end. Deleting Config end and skipping Config start. "
+                 "command:%04x, last:%d",
+                 command, this->last_);
         return;
+      } else {
+        ESP_LOGI(TAG,
+                 "Config start is missing after previous Confing end. Deleting Config end and proceeding with append. "
+                 "command:%04x, last:%d",
+                 command, this->last_);
       }
     }
   }

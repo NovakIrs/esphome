@@ -14,7 +14,7 @@ void LD2410Sschedule::append_sequence(const char *msg, uint16_t command, uint16_
 }
 // Appends new task to the end of schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, "append: %04x : %04x", command, sub_command);
+  ESP_LOGD(TAG, "append: %04x:%04x, last:%d", command, sub_command, this->last_);
   if (this->last_ == 0) {
     if (command != CONFIG_MODE_START_CMD) {
       ESP_LOGI(TAG, "Config start is missing. Apending. command:%04x, last:%d", command, this->last_);
@@ -47,9 +47,12 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 // Appends new task to the end of schedule
 void LD2410Sschedule::append_(uint16_t command, uint16_t sub_command) {
   if (this->commands_[this->last_].state != TxCmdState::EMPTY) {
+    ESP_LOGE(TAG,
+             "Inserting into non-empty command buffer location, reseting buffer !!! command:%04x, sub_command:%04x, at "
+             "position %d",
+             command, sub_command, this->last_);
     this->reset();
     this->commands_[this->last_].state = TxCmdState::ERROR;
-    ESP_LOGE(TAG, "Inserting into non-empty command buffer location, reseting buffer !!!");
     return;
   }
 
@@ -59,12 +62,12 @@ void LD2410Sschedule::append_(uint16_t command, uint16_t sub_command) {
   this->commands_[this->last_].time_started = 0;
   this->commands_[this->last_].retry = 0;
 
+  ESP_LOGI(TAG, "Scheduled command:%04x, sub_command:%04x, at position %d", command, sub_command, this->last_);
+
   this->last_++;
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
     this->last_ = 0;
   }
-
-  ESP_LOGI(TAG, "Scheduled command:%04x, sub_command:%04x, at position %d", command, sub_command, this->last_);
 }
 // Resets schedule buffer
 void LD2410Sschedule::reset() {

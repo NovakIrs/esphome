@@ -3,6 +3,7 @@
 #define LD2410S_V1
 #define LD2410S_V2
 // #define LD2410S_DEBUG_UART
+// #define LD2410S_LOG_RX_NOK
 
 // core
 #include "esphome/core/application.h"
@@ -214,7 +215,7 @@ class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
   uint16_t get_scheduled_command() { return this->commands_[this->active_].command; }
   uint16_t get_scheduled_sub_command() { return this->commands_[this->active_].sub_command; }
 
-  void append(uint16_t command, uint16_t sub_command = 0);
+  void append(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void append_sequence(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   void reset();
 

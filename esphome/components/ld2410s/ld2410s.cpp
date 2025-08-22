@@ -45,6 +45,7 @@ void LD2410S::send_() {
       }
       this->flush();
 
+      ESP_LOGD(TAG, "Loop count:%d", this->loop_count_);
       hex_diag(">", this->tx_frame_, this->tx_frame_size_);
 
       this->tx_schedule_.confirm_sent();

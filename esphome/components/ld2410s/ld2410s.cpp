@@ -36,6 +36,7 @@ float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 // prepares scheduled frames for sending
 // executes actual data sending
 void LD2410S::send_() {
+  std::string msg;
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
@@ -47,8 +48,9 @@ void LD2410S::send_() {
       // }
       // this->flush();
 
+      msg = format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ');
       ESP_LOGI(TAG, "> %04x:%04x, loop:%d > %d", this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command(),
-               this->loop_count_, format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' '));
+               this->loop_count_, msg);
       ESP_LOGD(TAG, "Sending, loop:%d", this->loop_count_);
       hex_diag(">", this->tx_frame_, this->tx_frame_size_);
 
@@ -78,7 +80,7 @@ void LD2410S::send_() {
 // builds CMD_FRAME
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 #ifdef LD2410S_DEBUG_UART
-  ESP_LOGD(TAG, "build_cmd_frame %04x : %04x", command, sub_command);
+  ESP_LOGD(TAG, ":>> build_cmd_frame %04x : %04x", command, sub_command);
 #endif
 
   this->tx_frame_size_ = 0;

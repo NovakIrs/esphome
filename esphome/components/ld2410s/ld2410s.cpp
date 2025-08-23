@@ -45,13 +45,10 @@ void LD2410S::send_() {
       // for (uint16_t index = 0; index < this->tx_frame_size_; index++) {
       //   this->write_byte(this->tx_frame_[index]);
       // }
-      // this->flush();
+      this->flush();
 
-      ESP_LOGI(TAG, "> [%d] %04x:%04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
-               this->tx_schedule_.get_sub_command(),
+      ESP_LOGI(TAG, "> [%d] %04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
-      // ESP_LOGD(TAG, "Sending, loop:%d", this->loop_count_);
-      // hex_diag(">", this->tx_frame_, this->tx_frame_size_);
 
       this->tx_schedule_.confirm_sent();
       break;

@@ -159,7 +159,7 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
 
   this->frame_type_ = RxFrameType::NOK;  // bad header
 #ifdef LD2410S_DEBUG_UART
-  ESP_LOGE(TAG, "rx received unkonw header, length:%d", end_pos_ + 1);
+  ESP_LOGE(TAG, "rx received unknown header, length:%d", end_pos_ + 1);
 #endif
   return RxEvaluationResult::NOK;
 }

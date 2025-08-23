@@ -140,6 +140,9 @@ void LD2410Sschedule::confirm_sent() {
     this->time_started_ = App.get_loop_component_start_time();
     this->state_ = TxCmdState::SENT;
     this->config_mode_closed_ = false;
+    ESP_LOGI(TAG, "confirm_sent, confirmed, config_mode_closed_:%d", this->config_mode_closed_);
+  } else {
+    ESP_LOGI(TAG, "confirm_sent, NOT CONFIRMED, config_mode_closed_:%d", this->config_mode_closed_);
   }
 }
 

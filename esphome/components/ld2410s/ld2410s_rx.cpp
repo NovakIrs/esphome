@@ -16,6 +16,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
+      ESP_LOGI(TAG, "<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
       break;
 
@@ -30,6 +31,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
+      ESP_LOGI(TAG, "<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       hex_diag("<", &this->rcv_buffer_[0], end_pos_ + 1);
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;

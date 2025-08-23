@@ -36,6 +36,8 @@ float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 // prepares scheduled frames for sending
 // executes actual data sending
 void LD2410S::send_() {
+  uint8_t test[] = {45, 42, 33, 32, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};
+
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
@@ -46,8 +48,6 @@ void LD2410S::send_() {
       //   this->write_byte(this->tx_frame_[index]);
       // }
       // this->flush();
-
-      uint8_t test[] = {45, 42, 33, 32, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};
       ESP_LOGI(TAG, "%s", format_hex_pretty(test, 16));
 
       ESP_LOGI(TAG, "%s", format_hex(this->tx_frame_, this->tx_frame_size_));

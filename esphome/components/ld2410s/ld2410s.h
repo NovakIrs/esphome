@@ -156,9 +156,6 @@ enum class RxEvaluationResult { UNKNOWN, OK, NOK };
 struct TxTaskT {
   uint16_t command;
   uint16_t sub_command;
-  TxCmdState state = TxCmdState::EMPTY;
-  uint32_t time_started;
-  uint8_t retry;
 };
 
 class LD2410Shelp {
@@ -211,24 +208,26 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
 
 class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
  public:
-  uint16_t get_scheduled_command() { return this->commands_[this->active_].command; }
-  uint16_t get_scheduled_sub_command() { return this->commands_[this->active_].sub_command; }
+  uint16_t get_command();
+  uint16_t get_sub_command();
 
   void append(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void append_sequence(const char *msg, uint16_t command, uint16_t sub_command = NO_SUB_CMD);
-  void reset();
-
   TxCmdState check_state();
   void confirm_sent();
   void verify_response(uint16_t command_word);
+  void reset();
 
  protected:
   TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE];
   uint8_t active_{0};
   uint8_t last_{0};
+  TxCmdState state_ = TxCmdState::EMPTY;
+  bool config_mode_closed_{true};
+  uint32_t time_started_;
+  uint8_t retry_count_{0};
   uint8_t restart_count_{0};
 
-  void append_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
+  TxTaskT *get_active_();
 };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
@@ -407,3 +406,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
 }  // namespace ld2410s
 }  // namespace esphome
+
+// this->status_set_warning("xxx");
+// this->status_clear_warning();

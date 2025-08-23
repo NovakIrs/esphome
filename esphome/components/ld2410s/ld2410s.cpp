@@ -36,8 +36,7 @@ float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
 void LD2410S::send_() {
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
-      this->build_cmd_frame_(this->tx_schedule_.get_scheduled_command(),
-                             this->tx_schedule_.get_scheduled_sub_command());
+      this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
 
     case TxCmdState::SEND:
       for (uint16_t index = 0; index < this->tx_frame_size_; index++) {

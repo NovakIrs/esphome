@@ -186,8 +186,8 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
       if (this->expected_frame_size_ == 0) {
         this->size_field_size_ = FRAME_DATA_LENGTH_SIZE;
         if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
-          this->payload_size_ = byteswap((uint16_t) this->rcv_buffer_[this->header_footer_size_]);
-          // this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
+          // this->payload_size_ = byteswap((uint16_t) this->rcv_buffer_[this->header_footer_size_]);
+          this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
           this->payload_pos_ = this->header_footer_size_ + this->size_field_size_;
           this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
         }

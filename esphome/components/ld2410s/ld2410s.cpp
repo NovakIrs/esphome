@@ -22,7 +22,7 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   if (!this->receive_()) {
-#ifdef LD2410S_ENABLE_DC
+#ifdef LD2410S_ENABLE_UART
     this->send_();
 #endif
   }

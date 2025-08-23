@@ -9,7 +9,7 @@ void LD2410Sdc::receive_byte(uint8_t byte) {
 
   this->end_pos_++;
   if (this->end_pos_ >= RX_DC_BUFFER_SIZE) {
-    this->flush();
+    this->flush(0);
   }
 }
 void LD2410Sdc::flush(uint32_t loop_count) {

@@ -2,7 +2,7 @@
 
 #define LD2410S_V1
 #define LD2410S_V2
-// #define LD2410S_DEBUG_UART
+#define LD2410S_DEBUG_UART
 
 // core
 #include "esphome/core/application.h"
@@ -222,7 +222,7 @@ class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
   uint8_t active_{0};
   uint8_t last_{0};
   TxCmdState state_ = TxCmdState::EMPTY;
-  bool config_mode_closed_{true};
+  bool config_mode_{true};
   uint32_t time_started_;
   uint8_t retry_count_{0};
   uint8_t restart_count_{0};

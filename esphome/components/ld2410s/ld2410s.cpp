@@ -46,7 +46,8 @@ void LD2410S::send_() {
       //   this->write_byte(this->tx_frame_[index]);
       // }
       // this->flush();
-
+      ESP_LOGI(TAG, "> %s", format_hex(this->tx_frame_, this->tx_frame_size_));
+      ESP_LOGI(TAG, "> %s", format_hex_pretty(this->tx_frame_, this->tx_frame_size_));
       ESP_LOGI(TAG, "> [%d] %04x:%04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
                this->tx_schedule_.get_sub_command(), format_hex_pretty(this->tx_frame_, this->tx_frame_size_));
       // ESP_LOGD(TAG, "Sending, loop:%d", this->loop_count_);

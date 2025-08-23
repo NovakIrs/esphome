@@ -3,8 +3,8 @@
 #define LD2410S_V1
 #define LD2410S_V2
 // #define LD2410S_DEBUG_UART
-#define LD2410S_ENABLE_UART
-// #define LD2410S_ENABLE_DC
+// #define LD2410S_ENABLE_UART
+#define LD2410S_ENABLE_DC
 
 // core
 #include "esphome/core/application.h"

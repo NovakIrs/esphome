@@ -173,7 +173,7 @@ class LD2410Shelp {
 class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
  public:
   void receive_byte(uint8_t byte);
-  void flush(uint32_t loop_count = 0);
+  void flush(uint32_t loop_count);
 
  protected:
   uint8_t rcv_buffer_[RX_DC_BUFFER_SIZE];

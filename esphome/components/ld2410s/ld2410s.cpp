@@ -294,7 +294,7 @@ bool LD2410S::receive_() {
 
   int rx_bytes_count = 0;
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
-    //    uint8_t rx = (int8_t) this->read();
+    //    uint8_t rx = (uint8_t) this->read();
     uint8_t rx;
     if (!this->read_byte(&rx))
       break;
@@ -312,7 +312,7 @@ bool LD2410S::receive_() {
 #endif
 
 #ifdef LD2410S_ENABLE_DC
-  this->dc_.flush();
+  this->dc_.flush(this->loop_count_);
 #endif
 
   return received;

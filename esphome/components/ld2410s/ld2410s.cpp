@@ -22,7 +22,9 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   if (!this->receive_()) {
+#ifdef LD2410S_ENABLE_DC
     this->send_();
+#endif
   }
   this->loop_count_++;
 }
@@ -39,10 +41,11 @@ void LD2410S::send_() {
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
 
     case TxCmdState::SEND:
-      for (uint16_t index = 0; index < this->tx_frame_size_; index++) {
-        this->write_byte(this->tx_frame_[index]);
-      }
-      this->flush();
+      this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
+      // for (uint16_t index = 0; index < this->tx_frame_size_; index++) {
+      //   this->write_byte(this->tx_frame_[index]);
+      // }
+      // this->flush();
 
       ESP_LOGD(TAG, "Sending, loop:%d", this->loop_count_);
       hex_diag(">", this->tx_frame_, this->tx_frame_size_);
@@ -288,16 +291,24 @@ bool LD2410S::receive_() {
 
   int rx_bytes_count = 0;
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
-    uint8_t rx = (int8_t) this->read();
-#ifdef LD2410S_DEBUG_UART
+    //    uint8_t rx = (int8_t) this->read();
+    uint8_t rx;
+    if (!this->read_byte(&rx))
+      break;
+
+#ifdef LD2410S_ENABLE_DC
     this->dc_.receive_byte(rx);
 #endif
+
+#ifdef LD2410S_ENABLE_UART
     if (this->rx_.receive_byte(rx) == RxEvaluationResult::OK) {
       this->process_();
     }
     rx_bytes_count++;
   }
-#ifdef LD2410S_DEBUG_UART
+#endif
+
+#ifdef LD2410S_ENABLE_DC
   this->dc_.flush();
 #endif
 

@@ -47,8 +47,9 @@ void LD2410S::send_() {
       // }
       // this->flush();
 
-      static const uint8_t test[] = {45, 42, 33, 32, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};
-      ESP_LOGI(TAG, "%s", format_hex(test, sizeof(test)));
+      uint8_t test[] = {45, 42, 33, 32, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28};
+      ESP_LOGI(TAG, "%s", format_hex_pretty(test, 16));
+
       ESP_LOGI(TAG, "%s", format_hex(this->tx_frame_, this->tx_frame_size_));
       ESP_LOGI(TAG, "%s", format_hex_pretty(this->tx_frame_, this->tx_frame_size_));
       ESP_LOGI(TAG, "> [%d] %04x:%04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
@@ -91,11 +92,11 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_HEADER);
 
   // Frame size placeholder
-  uint16_t size_start = this->tx_frame_size_;
+  size_t size_start = this->tx_frame_size_;
   this->tx_frame_size_ += sizeof(size_start);
 
   // Data start
-  uint16_t data_start = this->tx_frame_size_;
+  size_t data_start = this->tx_frame_size_;
 
   // Command
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &command, 1);
@@ -280,7 +281,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   }
 
   // Frame size
-  uint16_t data_size = this->tx_frame_size_ - data_start;
+  size_t data_size = this->tx_frame_size_ - data_start;
   append_seq_data(this->tx_frame_, size_start, &data_size);
 
   // Footer

@@ -35,7 +35,7 @@ TxCmdState LD2410Sschedule::check_state() {
   switch (this->state_) {
     case TxCmdState::SCHEDULED:
       this->retry_count_ = 0;
-      ESP_LOGD(TAG, "::> pos:%[:%d], cmd:%04x:%04x, retry:%d, Scheduled", this->active_, this->last_, active->command,
+      ESP_LOGD(TAG, "::> pos:%d[:%d], cmd:%04x:%04x, retry:%d, Scheduled", this->active_, this->last_, active->command,
                active->sub_command, this->retry_count_);
       break;
 

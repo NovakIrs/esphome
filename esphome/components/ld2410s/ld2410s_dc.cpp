@@ -14,8 +14,7 @@ void LD2410Sdc::receive_byte(uint8_t byte) {
 }
 void LD2410Sdc::flush() {
   if (this->end_pos_ > 0) {
-    const char msg[] = "<<<";
-    hex_diag(msg, this->rcv_buffer_, this->end_pos_);
+    ESP_LOGI(TAG, "<<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ - 1, ' ').c_str());
     this->end_pos_ = 0;
   }
 }

@@ -142,6 +142,7 @@ static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
 };
 
 static const uint16_t NO_SUB_CMD = 0xffff;
+static const uint16_t FRAME_DATA_LENGTH_SIZE = 2;
 
 static const size_t RX_TX_BUFFER_SIZE = 128;
 static const uint8_t RX_DC_BUFFER_SIZE = 30;
@@ -163,7 +164,6 @@ struct TxTaskT {
 class LD2410Shelp {
  public:
  protected:
-  static void hex_diag(const char *msg, const uint8_t *data, size_t length);
   static int read_int(const uint8_t *buffer, size_t pos, size_t len);
 #ifdef LD2410S_V2
   static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);

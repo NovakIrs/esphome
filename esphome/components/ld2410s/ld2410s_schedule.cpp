@@ -37,7 +37,7 @@ TxCmdState LD2410Sschedule::check_state() {
   switch (this->state_) {
     case TxCmdState::SCHEDULED:
       this->retry_count_ = 0;
-      ESP_LOGD(TAG, "::> pos:%d[:%d], cmd:%04x:%04x, retry:%d, Scheduled", this->active_, this->last_, active->command,
+      ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x:%04x, retry:%d, Scheduled", this->active_, this->last_, active->command,
                active->sub_command, this->retry_count_);
       break;
 
@@ -46,7 +46,7 @@ TxCmdState LD2410Sschedule::check_state() {
         if (this->retry_count_ < TX_MAX_RESEND) {
           this->retry_count_++;
           this->state_ = TxCmdState::SEND;
-          ESP_LOGE(TAG, ":>> pos:%d[:%d], cmd:%04x:%04x, retry:%d, Send Timeout Expired, Resend!", this->active_,
+          ESP_LOGE(TAG, ":>> pos:%d[%d], cmd:%04x:%04x, retry:%d, Send Timeout Expired, Resend!", this->active_,
                    this->last_, active->command, active->sub_command, this->retry_count_);
 
         } else {
@@ -99,17 +99,21 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     // config end confirmed
     if (command_word == CONFIG_MODE_END_CMD) {
       this->config_mode_closed_ = true;
+      ESP_LOGI(TAG, "config_mode_closed_ = true");
     }
 
     // just confirmed last task in the schedule
     if (this->active_ >= this->last_ - 1) {
+      ESP_LOGI(TAG, "confirmed last scheduled task");
       // config mode already closed
       if (this->config_mode_closed_) {
+        ESP_LOGI(TAG, "config_mode_closed_==true => reset");
         this->reset();
         return;
 
         // config mode not closed, thus appending config end
       } else {
+        ESP_LOGI(TAG, "config_mode_closed_==false => append:CONFIG_MODE_END_CMD");
         this->append(CONFIG_MODE_END_CMD);
         TxCmdState::SCHEDULED;
       }
@@ -119,6 +123,7 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     this->active_++;
     this->state_ = TxCmdState::SCHEDULED;
     if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
+      ESP_LOGE(TAG, "schedule buffer overflow => reset");
       this->reset();
     }
 

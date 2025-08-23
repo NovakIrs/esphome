@@ -85,14 +85,17 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_HEADER);
 
   // Frame size placeholder
-  size_t size_start = this->tx_frame_size_;
+  uint16_t size_start = this->tx_frame_size_;
   this->tx_frame_size_ += sizeof(size_start);
 
   // Data start
-  size_t data_start = this->tx_frame_size_;
+  uint16_t data_start = this->tx_frame_size_;
 
   // Command
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &command, 1);
+
+  ESP_LOGD(TAG, ":>> build_cmd_frame >> size_start:%d, data_start:%d, tx_frame_size_:%d", size_start, data_start,
+           tx_frame_size_);
 
   // Parameters
   switch (command) {
@@ -274,7 +277,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   }
 
   // Frame size
-  size_t data_size = this->tx_frame_size_ - data_start;
+  uint16_t data_size = this->tx_frame_size_ - data_start;
   append_seq_data(this->tx_frame_, size_start, &data_size);
 
   // Footer

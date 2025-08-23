@@ -94,12 +94,14 @@ TxCmdState LD2410Sschedule::check_state() {
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
-    ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, this->get_command());
+    ESP_LOGI(TAG, "Command response %x received, confirmed command %x, config_mode_closed_:%d", command_word,
+             this->get_command(), this->config_mode_closed_);
 
     // config end confirmed
     if (command_word == CONFIG_MODE_END_CMD | CMD_CONFIRMATION) {
       this->config_mode_closed_ = true;
-      ESP_LOGI(TAG, "config_mode_closed_ = true");
+      ESP_LOGI(TAG, "config_mode_closed_:%d, received:%04x", this->config_mode_closed_,
+               CONFIG_MODE_END_CMD | CMD_CONFIRMATION);
     }
 
     // just confirmed last task in the schedule

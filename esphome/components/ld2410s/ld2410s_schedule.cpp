@@ -20,9 +20,11 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 
   this->commands_[this->last_].command = command;
   this->commands_[this->last_].sub_command = sub_command;
-  this->state_ = TxCmdState::SCHEDULED;
   this->time_started_ = 0;
   this->retry_count_ = 0;
+  if (this->state_ == TxCmdState::EMPTY) {
+    this->state_ = TxCmdState::SCHEDULED;
+  }
 
   ESP_LOGI(TAG, "::: pos:%d, cmd:%04x:%04x", this->last_, command, sub_command);
 
@@ -99,20 +101,21 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
   } else {
     ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, this->get_command());
 
-    this->state_ = TxCmdState::EMPTY;
-
     if (command_word == CONFIG_MODE_END_CMD) {
       this->config_mode_closed_ = true;
     }
-
-    this->active_++;
-    if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
-      this->reset();
-    }
-    if (this->active_ >= this->last_) {
-      if (!this->config_mode_closed_) {
-        this->append(CONFIG_MODE_END_CMD);
+    if (this->active_ >= this->last_ - 1) {
+      if (this->config_mode_closed_) {
+        this->reset();
+        return;
       } else {
+        this->append(CONFIG_MODE_END_CMD);
+        TxCmdState::SCHEDULED;
+      }
+    } else {
+      this->active_++;
+      this->state_ = TxCmdState::SCHEDULED;
+      if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
         this->reset();
       }
     }

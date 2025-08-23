@@ -76,7 +76,7 @@ TxCmdState LD2410Sschedule::check_state() {
         this->append(CONFIG_MODE_END_CMD);
       }
 
-      if (this->active_ == this->last_ && this->active_ > 0) {
+      if (this->active_ >= this->last_ && this->active_ > 0) {
         this->reset();
       }
       break;

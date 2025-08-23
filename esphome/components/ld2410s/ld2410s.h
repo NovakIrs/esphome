@@ -305,7 +305,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
  protected:
   uint8_t tx_frame_[RX_TX_BUFFER_SIZE];
-  size_t tx_frame_size_ = 0;
+  uint16_t tx_frame_size_ = 0;
 
   // settings_;
   uint32_t thresholds_trigger_[16];
@@ -370,7 +370,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
   // append variable sized append_data to data, returns true if not overflow
   template<typename T>
-  static bool append_seq_data(uint8_t *data, size_t &insert_position, const T *append_data,
+  static bool append_seq_data(uint8_t *data, uint16_t &insert_position, const T *append_data,
                               uint16_t append_array_size = 1, uint16_t actual_size = 0) {
     size_t data_object_size = (actual_size == 0 ? sizeof(T) : actual_size);
     auto bytes_to_copy = append_array_size * data_object_size;

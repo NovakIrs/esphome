@@ -93,32 +93,39 @@ TxCmdState LD2410Sschedule::check_state() {
 // Verifies if received response matches expected, if so procedes to next scheduled command
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
-  if (command_word != expected) {
-#ifdef LD2410S_DEBUG_UART
-    ESP_LOGE(TAG, "Command response %x received, but expected response was %x", command_word, expected);
-#endif
-
-  } else {
+  if (command_word == expected) {
     ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, this->get_command());
 
+    // config end confirmed
     if (command_word == CONFIG_MODE_END_CMD) {
       this->config_mode_closed_ = true;
     }
+
+    // just confirmed last task in the schedule
     if (this->active_ >= this->last_ - 1) {
+      // config mode already closed
       if (this->config_mode_closed_) {
         this->reset();
         return;
+
+        // config mode not closed, thus appending config end
       } else {
         this->append(CONFIG_MODE_END_CMD);
         TxCmdState::SCHEDULED;
       }
-    } else {
-      this->active_++;
-      this->state_ = TxCmdState::SCHEDULED;
-      if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
-        this->reset();
-      }
     }
+
+    // procede to next task
+    this->active_++;
+    this->state_ = TxCmdState::SCHEDULED;
+    if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
+      this->reset();
+    }
+
+  } else {
+#ifdef LD2410S_DEBUG_UART
+    ESP_LOGE(TAG, "Command response %x received, but expected response was %x", command_word, expected);
+#endif
   }
 }
 

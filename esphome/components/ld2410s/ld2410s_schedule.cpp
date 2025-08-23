@@ -18,8 +18,8 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     this->append(CONFIG_MODE_START_CMD);
   }
 
-  this->get_active_()->command = command;
-  this->get_active_()->sub_command = sub_command;
+  this->commands_[this->last_].command = command;
+  this->commands_[this->last_].sub_command = sub_command;
   this->state_ = TxCmdState::SCHEDULED;
   this->time_started_ = 0;
   this->retry_count_ = 0;
@@ -105,13 +105,16 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
       this->config_mode_closed_ = true;
     }
 
-    if (!this->config_mode_closed_ && this->active_ == this->last_) {
-      this->append(CONFIG_MODE_END_CMD);
-    }
-
     this->active_++;
-    if (this->active_ > this->last_ || this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
+    if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
       this->reset();
+    }
+    if (this->active_ >= this->last_) {
+      if (!this->config_mode_closed_) {
+        this->append(CONFIG_MODE_END_CMD);
+      } else {
+        this->reset();
+      }
     }
   }
 }

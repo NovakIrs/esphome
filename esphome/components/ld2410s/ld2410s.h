@@ -4,7 +4,7 @@
 #define LD2410S_V2
 #define LD2410S_DEBUG_UART
 #define LD2410S_ENABLE_UART
-// #define LD2410S_ENABLE_DC
+#define LD2410S_ENABLE_DC
 
 // core
 #include "esphome/core/application.h"
@@ -145,7 +145,7 @@ static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint16_t FRAME_DATA_LENGTH_SIZE = 2;
 
 static const size_t RX_TX_BUFFER_SIZE = 128;
-static const uint8_t RX_DC_BUFFER_SIZE = 30;
+static const uint8_t RX_DC_BUFFER_SIZE = 50;
 static const uint16_t RX_MAX_BYTES_PER_LOOP = 100;
 static const uint8_t TX_SCHEDULE_BUFFER_SIZE = 32;
 static const uint8_t TX_MAX_RESEND = 2;
@@ -173,7 +173,7 @@ class LD2410Shelp {
 class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
  public:
   void receive_byte(uint8_t byte);
-  void flush();
+  void flush(uint32_t loop_count = 0);
 
  protected:
   uint8_t rcv_buffer_[RX_DC_BUFFER_SIZE];

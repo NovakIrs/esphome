@@ -12,9 +12,9 @@ void LD2410Sdc::receive_byte(uint8_t byte) {
     this->flush();
   }
 }
-void LD2410Sdc::flush() {
+void LD2410Sdc::flush(uint32_t loop_count) {
   if (this->end_pos_ > 0) {
-    ESP_LOGI(TAG, "<<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ - 1, ' ').c_str());
+    ESP_LOGI(TAG, "<<< [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ - 1, ' ').c_str());
     this->end_pos_ = 0;
   }
 }

@@ -44,7 +44,7 @@ void LD2410S::send_() {
       }
       this->flush();
 
-      ESP_LOGD(TAG, "Loop count:%d", this->loop_count_);
+      ESP_LOGD(TAG, "Sending, loop:%d", this->loop_count_);
       hex_diag(">", this->tx_frame_, this->tx_frame_size_);
 
       this->tx_schedule_.confirm_sent();
@@ -282,10 +282,8 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 bool LD2410S::receive_() {
   bool received = false;
   if (this->available()) {
+    ESP_LOGD(TAG, "receiving, loop:%d", this->loop_count_);
     received = true;
-#ifdef LD2410S_DEBUG_UART
-    ESP_LOGD(TAG, "receiving loop:%d", this->loop_count_);
-#endif
   }
 
   int rx_bytes_count = 0;

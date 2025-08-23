@@ -16,8 +16,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
-      ESP_LOGI(TAG, "<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
-      hex_diag("<", &this->rcv_buffer_[0], this->end_pos_ + 1);
+      ESP_LOGI(TAG, "< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       break;
 
     case RxEvaluationResult::UNKNOWN:
@@ -31,8 +30,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
-      ESP_LOGI(TAG, "<< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
-      hex_diag("<", &this->rcv_buffer_[0], end_pos_ + 1);
+      ESP_LOGI(TAG, "< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;
@@ -186,26 +184,15 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     case RxFrameType::STD_DATA_FRAME:
     case RxFrameType::CMD_FRAME:
       if (this->expected_frame_size_ == 0) {
-        this->size_field_size_ = 2;  // size field is 2 bytes
+        this->size_field_size_ = FRAME_DATA_LENGTH_SIZE;
         if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
-          this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
-          this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
+          this->payload_size_ = byteswap((uint16_t) this->rcv_buffer_[this->header_footer_size_]);
+          // this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
+          this->payload_pos_ = this->header_footer_size_ + this->size_field_size_;
           this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
         }
       }
       break;
-
-      // case RxFrameType::CMD_FRAME:
-      //   if (this->expected_frame_size_ == 0) {
-      //     this->size_field_size_ = 2;  // size field is 2 bytes
-      //     if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
-      //       this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
-      //       this->payload_pos_ = this->header_footer_size_ + +this->size_field_size_;
-      //       this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ +
-      //       this->payload_size_;
-      //     }
-      //   }
-      //   break;
 
     default:
       return RxEvaluationResult::NOK;  // unknown header type

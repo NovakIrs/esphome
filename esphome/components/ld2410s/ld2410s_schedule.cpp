@@ -97,7 +97,7 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     ESP_LOGI(TAG, "Command response %x received, confirmed command %x", command_word, this->get_command());
 
     // config end confirmed
-    if (command_word == CONFIG_MODE_END_CMD) {
+    if (command_word == CONFIG_MODE_END_CMD | CMD_CONFIRMATION) {
       this->config_mode_closed_ = true;
       ESP_LOGI(TAG, "config_mode_closed_ = true");
     }

@@ -11,12 +11,19 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
   }
 
   this->rcv_buffer_[this->end_pos_] = byte;
-  RxEvaluationResult result = this->evaluate_();
+
+  RxEvaluationResult result = this->evaluate_header_();
+  if (result == RxEvaluationResult::OK) {
+    result = this->evaluate_size_();
+    if (result == RxEvaluationResult::OK) {
+      result = this->evaluate_footer_();
+    }
+  }
 
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
-      ESP_LOGI(TAG, "<   [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+      // ESP_LOGI(TAG, "<   [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       break;
 
     case RxEvaluationResult::UNKNOWN:
@@ -30,79 +37,14 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
-      ESP_LOGE(TAG, "<XX [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+      ESP_LOGE(TAG, "<XX [%d] %s < %s", loop_count, this->msg_,
+               format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;
   }
 
   return result;
-}
-// checks if current rx buffer is full frame
-RxEvaluationResult LD2410Srx::evaluate_() {
-  switch (this->evaluate_header_()) {
-    case RxEvaluationResult::NOK:  // header does not match known frame type ie bad header
-      // ESP_LOGD(TAG, "header does not match known frame type ie bad header: %d", this->end_pos_);
-      return RxEvaluationResult::NOK;
-
-    case RxEvaluationResult::UNKNOWN:  // not enough data yet to determine frame type
-      return RxEvaluationResult::UNKNOWN;
-
-    case RxEvaluationResult::OK:
-    default:  // header ok, known type
-      break;
-  }
-
-  switch (this->evaluate_size_()) {
-    case RxEvaluationResult::NOK:  // known size, but greater then expected size for frame type
-#ifdef LD2410S_DEBUG_UART
-      ESP_LOGD(TAG, "correct header, but passed expected frame end: size:%d, expected:%d", this->end_pos_,
-               this->expected_frame_size_);
-#endif
-      return RxEvaluationResult::NOK;
-
-    case RxEvaluationResult::UNKNOWN:  // not enough data yet to determine correct size
-      return RxEvaluationResult::UNKNOWN;
-
-    case RxEvaluationResult::OK:  // correct size for frame type
-    default:
-      break;
-  }
-
-  switch (this->evaluate_footer_()) {
-    case RxEvaluationResult::NOK:  // size matches expected size, but footer does not match expected footer for frame
-                                   // type
-      ESP_LOGD(TAG,
-               "correct header and size, but footer does not match expected: real:%d, expected:%d, "
-               "head/foot:%d, size:%d, payload:%d",
-               this->end_pos_ + 1, this->expected_frame_size_, this->header_footer_size_, this->size_field_size_,
-               this->payload_size_);
-      switch (this->frame_type_) {
-        case RxFrameType::SHORT_DATA_FRAME:
-          ESP_LOGD(TAG, "SHORT_DATA_FRAME: %02X", SHORT_DATA_FRAME_HEADER);
-          break;
-
-        case RxFrameType::STD_DATA_FRAME:
-          ESP_LOGD(TAG, "STD_DATA_FRAME: %08X", STD_DATA_FRAME_HEADER);
-          break;
-
-        case RxFrameType::CMD_FRAME:
-          ESP_LOGD(TAG, "CMD_FRAME: %08X", CMD_FRAME_HEADER);
-          break;
-
-        default:
-          break;
-      }
-      return RxEvaluationResult::NOK;
-
-    case RxEvaluationResult::UNKNOWN:  // size less then expected size for frame type
-      return RxEvaluationResult::UNKNOWN;
-
-    default:  // size matches expected size, footer matches expected footer for frame type
-      break;
-  }
-
-  return RxEvaluationResult::OK;  // full frame received and verified
 }
 // checks if current rx buffer contains header
 RxEvaluationResult LD2410Srx::evaluate_header_() {
@@ -157,21 +99,15 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
     return RxEvaluationResult::UNKNOWN;
   }
 
-  this->frame_type_ = RxFrameType::NOK;  // bad header
 #ifdef LD2410S_DEBUG_UART
-  ESP_LOGD(TAG, "rx received unknown header, length:%d", end_pos_ + 1);
+  this->msg_ = "Unkown header";
 #endif
+  this->frame_type_ = RxFrameType::NOK;  // bad header
   return RxEvaluationResult::NOK;
 }
 // checks if current rx buffer has proper size for decoded header
 RxEvaluationResult LD2410Srx::evaluate_size_() {
   switch (this->frame_type_) {
-    case RxFrameType::UNKNOWN:
-      return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
-
-    case RxFrameType::NOK:
-      return RxEvaluationResult::NOK;  // already determined bad header
-
     case RxFrameType::SHORT_DATA_FRAME:
       if (this->expected_frame_size_ == 0) {
         this->size_field_size_ = 0;
@@ -193,8 +129,11 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
       }
       break;
 
-    default:
-      return RxEvaluationResult::NOK;  // unknown header type
+    case RxFrameType::UNKNOWN:
+      return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
+    case RxFrameType::NOK:                 // already determined bad header
+    default:                               // unknown header type
+      return RxEvaluationResult::NOK;
   }
 
   if (this->expected_frame_size_ == 0 || this->end_pos_ + 1 < this->expected_frame_size_) {
@@ -202,8 +141,7 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
 
   } else if (this->end_pos_ + 1 > this->expected_frame_size_) {
 #ifdef LD2410S_DEBUG_UART
-    ESP_LOGE(TAG, "rx passed the expected frame end, expected:%d, current:%d", this->expected_frame_size_,
-             this->end_pos_);
+    this->msg_ = "rx passed the expected frame, expected:" + to_string(this->expected_frame_size_);
 #endif
     return RxEvaluationResult::NOK;  // passed the end of short data frame
 
@@ -237,13 +175,12 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
 
     case RxFrameType::UNKNOWN:  // not enough data yet to determine size
       return RxEvaluationResult::UNKNOWN;
-
     case RxFrameType::NOK:  // already known bad data frame
     default:                // unknown header type
-      return RxEvaluationResult::NOK;
+      break;
   }
-#ifdef LD2410S_DEBUG_UART
-  ESP_LOGE(TAG, "rx footer does not match expected footer for frame type");
+#ifdef LD2410S_DEBUG_UART  // " + to_string() + "
+  this->msg_ = "footer does not match header: ";
 #endif
   return RxEvaluationResult::NOK;  // footer does not match expected footer for frame type
 }

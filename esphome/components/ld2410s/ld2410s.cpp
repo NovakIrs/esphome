@@ -40,12 +40,9 @@ void LD2410S::send_() {
 
     case TxCmdState::SEND:
       this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
-      // for (uint16_t index = 0; index < this->tx_frame_size_; index++) {
-      //   this->write_byte(this->tx_frame_[index]);
-      // }
-      this->flush();
+      // this->flush();
 
-      ESP_LOGI(TAG, ">   [%d] %04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
+      ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
 
       this->tx_schedule_.confirm_sent();
@@ -73,7 +70,7 @@ void LD2410S::send_() {
 }
 // builds CMD_FRAME
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, ":>> [%d] build_cmd_frame %04x:%04x", this->loop_count_, command, sub_command);
+  ESP_LOGD(TAG, ":>> [%d] %04x Prepare frame ", this->loop_count_, command);
 
   this->tx_frame_size_ = 0;
 

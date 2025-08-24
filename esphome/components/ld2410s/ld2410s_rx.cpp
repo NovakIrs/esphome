@@ -23,7 +23,6 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
-      // ESP_LOGI(TAG, "<   [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       break;
 
     case RxEvaluationResult::UNKNOWN:

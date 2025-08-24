@@ -104,10 +104,12 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     // config start confirmed
     if (command_word == (CONFIG_MODE_START_CMD | CMD_CONFIRMATION)) {
       this->config_mode_ = true;
+      this->status_set_warning("Config mode");
     }
     // config end confirmed
     if (command_word == (CONFIG_MODE_END_CMD | CMD_CONFIRMATION)) {
       this->config_mode_ = false;
+      this->status_clear_warning();
     }
 
     // just confirmed last task in the schedule

@@ -22,7 +22,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
     case RxEvaluationResult::UNKNOWN:
       this->end_pos_++;
       if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
-        ESP_LOGD(TAG, "XX< [%d] Received data buffer overflow, resetting");
+        ESP_LOGE(TAG, "XX< [%d] Received data buffer overflow, resetting");
         this->reset_();
       } else {
       }
@@ -30,7 +30,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
-      ESP_LOGI(TAG, "<XX [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+      ESP_LOGE(TAG, "<XX [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;

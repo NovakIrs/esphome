@@ -177,7 +177,7 @@ void LD2410S::process_ack_config_start_(const uint8_t *data) {
   read_seq_data(data, read_position, &buffer_size);
 
   this->status_set_warning("CONFIG MODE ENABLED");
-  ESP_LOGD(TAG, "CONFIG MODE ENABLED, protocol_version:%d  buffer_size:%d", protocol_version, buffer_size);
+  ESP_LOGW(TAG, "CONFIG MODE ENABLED, protocol_version:%d  buffer_size:%d", protocol_version, buffer_size);
 }
 void LD2410S::process_ack_config_end_(const uint8_t *data) {
   ESP_LOGW(TAG, "CONFIG MODE DISABLED");

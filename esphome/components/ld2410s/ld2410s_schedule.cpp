@@ -15,12 +15,23 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     return;
   }
 
-  if (this->last_ == 0) {
+  if (this->last_ <= 0) {
+    // first cmd must be config start
     if (command != CONFIG_MODE_START_CMD)
       this->append(CONFIG_MODE_START_CMD);
   } else {
-    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD)
-      this->append(CONFIG_MODE_START_CMD);
+    // if last cmd is config end...
+    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
+      // ... and it is not already sent - another config start must be appended
+      if (this->last_ == this->active_ && this->state_ != TxCmdState::SCHEDULED && command != CONFIG_MODE_START_CMD) {
+        this->append(CONFIG_MODE_START_CMD);
+      }
+
+      // ... otherwise previous config end can be deleted
+      else {
+        this->last_--;
+      }
+    }
   }
 
   this->commands_[this->last_].command = command;

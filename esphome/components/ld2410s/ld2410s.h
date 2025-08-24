@@ -170,7 +170,7 @@ class LD2410Shelp {
 #endif
 };
 
-class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
+class LD2410Sdc {
  public:
   void receive_byte(uint8_t byte);
   void flush(uint32_t loop_count);
@@ -180,7 +180,7 @@ class LD2410Sdc : public uart::UARTDevice, LD2410Shelp {
   uint16_t end_pos_{0};
 };
 
-class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
+class LD2410Srx : LD2410Shelp {
  public:
   RxEvaluationResult receive_byte(uint8_t byte);
   RxFrameType frame_type() const { return this->frame_type_; }
@@ -208,7 +208,7 @@ class LD2410Srx : public uart::UARTDevice, LD2410Shelp {
   void reset_();
 };
 
-class LD2410Sschedule : uart::UARTDevice, LD2410Shelp {
+class LD2410Sschedule : Component {
  public:
   uint16_t get_command();
   uint16_t get_sub_command();

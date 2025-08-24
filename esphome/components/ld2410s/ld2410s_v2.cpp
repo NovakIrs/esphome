@@ -127,10 +127,11 @@ void LD2410S::set_threshold_trigger(float threshold_trigger) {
 }
 // select
 void LD2410S::set_response_speed_select(const std::string &response_speed_select) {
-  this->resp_speed_ = response_speed_select == RESPONSE_SPEED_NORMAL ? 5 : 10;
+  this->resp_speed_ = response_speed_select == CFG_RESPONSE_SPEED_NORMAL ? 5 : 10;
   this->tx_schedule_.append(CFG_PARAMS_WRITE_CMD, CFG_RESPONSE_SPEED_VALUE);
 #ifdef USE_SELECT
-  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
+  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? CFG_RESPONSE_SPEED_NORMAL
+                                                                     : CFG_RESPONSE_SPEED_FAST);
 #endif
 }
 // switch
@@ -202,7 +203,8 @@ void LD2410S::parse_ack_config_read_(uint8_t *data) {
   this->distance_reporting_freq_number_->publish_state(static_cast<float>(this->dist_freq_) / 10);
 #endif
 #ifdef USE_SELECT
-  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
+  this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? CFG_RESPONSE_SPEED_NORMAL
+                                                                     : CFG_RESPONSE_SPEED_FAST);
 #endif
 }
 void LD2410S::parse_ack_fw_read_(const uint8_t *data) {

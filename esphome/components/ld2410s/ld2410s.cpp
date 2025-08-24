@@ -391,11 +391,12 @@ void LD2410S::process_cmd_frame_() {
   read_seq_data(data_start, read_position, &command_word);
   read_seq_data(data_start, read_position, &ack);
 
-  // ESP_LOGI(TAG, "<   [%d] cmd:%04x: %s", this->loop_count_,
-  //          format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
-
-  if (ack != 0x0000) {
-    ESP_LOGE(TAG, "Command %04x failed, ack: %04x", command_word, ack);
+  if (ack == 0x0000) {
+    ESP_LOGI(TAG, "<   [%d] cmd:%04x: %s", this->loop_count_, command_word,
+             format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+  } else {
+    ESP_LOGE(TAG, "<XX [%d] cmd:%04x, failed, ack: %04x: %s", this->loop_count_, command_word, ack,
+             format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
   }
 
   this->tx_schedule_.verify_response(command_word);

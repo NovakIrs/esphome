@@ -22,9 +22,7 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   if (!this->receive_()) {
-#ifdef LD2410S_ENABLE_UART
     this->send_();
-#endif
   }
   this->loop_count_++;
 }
@@ -47,14 +45,14 @@ void LD2410S::send_() {
       // }
       this->flush();
 
-      ESP_LOGI(TAG, "> [%d] %04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
+      ESP_LOGI(TAG, ">   [%d] %04x > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
 
       this->tx_schedule_.confirm_sent();
       break;
 
     case TxCmdState::ERROR:
-      ESP_LOGW(TAG, "Scheduling command send failed!!!, re-initializing...");
+      ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
       this->tx_schedule_.reset();
 #ifdef LD2410S_V2
       this->init_();
@@ -63,7 +61,7 @@ void LD2410S::send_() {
 
     case TxCmdState::EMPTY:
       if (!this->init_done_) {
-        ESP_LOGI(TAG, "Setup done");
+        ESP_LOGI(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
       }
       break;
@@ -75,9 +73,7 @@ void LD2410S::send_() {
 }
 // builds CMD_FRAME
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
-#ifdef LD2410S_DEBUG_UART
-  ESP_LOGD(TAG, ":>> build_cmd_frame %04x : %04x", command, sub_command);
-#endif
+  ESP_LOGD(TAG, ":>> [%d] build_cmd_frame %04x:%04x", this->loop_count_, command, sub_command);
 
   this->tx_frame_size_ = 0;
 
@@ -93,9 +89,6 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
   // Command
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &command, 1);
-
-  ESP_LOGD(TAG, ":>> build_cmd_frame >> size_start:%d, data_start:%d, tx_frame_size_:%d", size_start, data_start,
-           tx_frame_size_);
 
   // Parameters
   switch (command) {
@@ -286,36 +279,28 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
 // receives frames and starts processing
 bool LD2410S::receive_() {
-  bool received = false;
-  if (this->available()) {
-    ESP_LOGD(TAG, "receiving, loop:%d", this->loop_count_);
-    received = true;
-  }
-
+  uint8_t rx;
   int rx_bytes_count = 0;
+
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
-    //    uint8_t rx = (uint8_t) this->read();
-    uint8_t rx;
     if (!this->read_byte(&rx))
       break;
+    rx_bytes_count++;
 
-#ifdef LD2410S_ENABLE_DC
-    this->dc_.receive_byte(rx);
-#endif
-
-#ifdef LD2410S_ENABLE_UART
-    if (this->rx_.receive_byte(rx) == RxEvaluationResult::OK) {
+    if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->process_();
     }
-    rx_bytes_count++;
+
+#ifdef LD2410S_DEBUG_UART
+    this->dc_.receive_byte(this->loop_count_, rx);
+#endif
   }
+
+#ifdef LD2410S_DEBUG_UART
+  this->dc_.flush();
 #endif
 
-#ifdef LD2410S_ENABLE_DC
-  this->dc_.flush(this->loop_count_);
-#endif
-
-  return received;
+  return rx_bytes_count > 0;
 }
 // starts received frame decoding, and handling received data
 void LD2410S::process_() {
@@ -415,7 +400,7 @@ void LD2410S::process_cmd_frame_() {
       break;
 
     case CONFIG_MODE_END_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Config mode disabled");
+      this->process_ack_config_end_(data);
       break;
 
     case CALIBRATION_CMD | CMD_CONFIRMATION:

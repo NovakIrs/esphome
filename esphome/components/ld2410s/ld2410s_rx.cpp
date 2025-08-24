@@ -5,7 +5,7 @@ namespace esphome {
 namespace ld2410s {
 
 // appends one byte to rx buffer, and checks if that makes complete frame
-RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
+RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
   if (this->payload_ready_) {
     this->reset_();
   }
@@ -16,13 +16,13 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
   switch (result) {
     case RxEvaluationResult::OK:
       this->payload_ready_ = true;
-      ESP_LOGI(TAG, "< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+      ESP_LOGI(TAG, "<   [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       break;
 
     case RxEvaluationResult::UNKNOWN:
       this->end_pos_++;
       if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
-        ESP_LOGD(TAG, "Received data buffer overflow, resetting");
+        ESP_LOGD(TAG, "XX< [%d] Received data buffer overflow, resetting");
         this->reset_();
       } else {
       }
@@ -30,7 +30,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
-      ESP_LOGI(TAG, "< %s", format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+      ESP_LOGI(TAG, "<XX [%d] %s", loop_count, format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;

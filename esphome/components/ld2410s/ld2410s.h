@@ -1,10 +1,7 @@
 #pragma once
 
-#define LD2410S_V1
 #define LD2410S_V2
-// #define LD2410S_DEBUG_UART
-#define LD2410S_ENABLE_UART
-// #define LD2410S_ENABLE_DC
+#define LD2410S_DEBUG_UART
 
 // core
 #include "esphome/core/application.h"
@@ -170,19 +167,22 @@ class LD2410Shelp {
 #endif
 };
 
+#ifdef LD2410S_DEBUG_UART
 class LD2410Sdc {
  public:
-  void receive_byte(uint8_t byte);
-  void flush(uint32_t loop_count);
+  void receive_byte(uint32_t loop_count, uint8_t byte);
+  void flush();
 
  protected:
   uint8_t rcv_buffer_[RX_DC_BUFFER_SIZE];
   uint16_t end_pos_{0};
+  uint32_t loop_count_;
 };
+#endif
 
 class LD2410Srx : LD2410Shelp {
  public:
-  RxEvaluationResult receive_byte(uint8_t byte);
+  RxEvaluationResult receive_byte(uint32_t loop_count, uint8_t byte);
   RxFrameType frame_type() const { return this->frame_type_; }
   bool payload_ready() const { return payload_ready_; }
   uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
@@ -208,7 +208,7 @@ class LD2410Srx : LD2410Shelp {
   void reset_();
 };
 
-class LD2410Sschedule : Component {
+class LD2410Sschedule {
  public:
   uint16_t get_command();
   uint16_t get_sub_command();
@@ -351,7 +351,9 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void read_all_thresholds_();
 
   void process_data_energy_values_read_(uint8_t *data);
+
   void process_ack_config_start_(const uint8_t *data);
+  void process_ack_config_end_(const uint8_t *data);
   void process_ack_config_read_(uint8_t *data);
   void process_ack_fw_read_(const uint8_t *data);
   void process_ack_threshold_trigger_read_(uint8_t *data);

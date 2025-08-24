@@ -135,9 +135,8 @@ void LD2410Sschedule::confirm_sent() {
   }
 }
 
-uint16_t LD2410Sschedule::get_command() { return this->get_active_()->command; }
-uint16_t LD2410Sschedule::get_sub_command() { return this->get_active_()->sub_command; }
-TxTaskT *LD2410Sschedule::get_active_() { return &this->commands_[this->active_]; }
+uint16_t LD2410Sschedule::get_command() { return this->commands_[this->active_].command; }
+uint16_t LD2410Sschedule::get_sub_command() { return this->commands_[this->active_].sub_command; }
 // Resets schedule buffer
 void LD2410Sschedule::reset() {
   this->last_ = 0;

@@ -131,16 +131,7 @@ struct TxTaskT {
   uint16_t sub_command;
 };
 
-class LD2410Shelp {
- public:
- protected:
-  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
-#ifdef LD2410S_V2
-  static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
-#endif
-};
-
-class LD2410Srx : LD2410Shelp {
+class LD2410Srx {
  public:
   RxEvaluationResult receive_byte(uint32_t loop_count, uint8_t byte);
 
@@ -148,9 +139,9 @@ class LD2410Srx : LD2410Shelp {
   uint8_t *frame_data() { return this->rcv_buffer_; }
   uint8_t frame_size() const { return this->end_pos_; }
 
-  bool payload_ready() const { return payload_ready_; }
   uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
   uint8_t payload_size() const { return this->payload_size_; }
+  bool payload_ready() const { return payload_ready_; }
 
  protected:
   uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE];
@@ -160,10 +151,10 @@ class LD2410Srx : LD2410Shelp {
   uint16_t expected_frame_size_{0};
   uint16_t size_field_size_{0};
 
-  RxFrameType frame_type_{RxFrameType::UNKNOWN};
-  bool payload_ready_{false};
   uint16_t payload_pos_{0};
   uint16_t payload_size_{0};
+  RxFrameType frame_type_{RxFrameType::UNKNOWN};
+  bool payload_ready_{false};
 
   std::string msg_{""};
 
@@ -171,30 +162,29 @@ class LD2410Srx : LD2410Shelp {
   RxEvaluationResult evaluate_size_();
   RxEvaluationResult evaluate_footer_();
   void reset_();
+  static int read_int_(const uint8_t *buffer, size_t pos, size_t len);
 };
 
 class LD2410Sschedule {
  public:
-  uint16_t get_command();
-  uint16_t get_sub_command();
-
   void append(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
   TxCmdState check_state();
   void confirm_sent();
   void verify_response(uint16_t command_word);
   void reset();
+  uint16_t get_command();
+  uint16_t get_sub_command();
 
  protected:
   TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE];
+  uint32_t time_started_;
+  uint8_t retry_count_{0};
+  uint8_t restart_count_{0};
   uint8_t active_{0};
   uint8_t last_{0};
   TxCmdState state_ = TxCmdState::EMPTY;
   bool config_mode_{true};
-  uint32_t time_started_;
-  uint8_t retry_count_{0};
-  uint8_t restart_count_{0};
 
-  TxTaskT *get_active_();
   void schedule_();
   void resend_();
   void restart_();
@@ -203,7 +193,8 @@ class LD2410Sschedule {
   bool check_clear_();
 };
 
-class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
+class LD2410S : public Component, public uart::UARTDevice {
+#ifdef LD2410S_V2
 #ifdef USE_SENSOR
   SUB_SENSOR(distance)
 #endif
@@ -211,7 +202,6 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   SUB_BINARY_SENSOR(presence)
 #endif
 
-#ifdef LD2410S_V2
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
 #endif
@@ -255,6 +245,7 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
 #ifdef LD2410S_V2
   void dump_config() override;
+
   // button
   void calibration();
   void factory_reset();
@@ -275,6 +266,9 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 #endif
 
  protected:
+  LD2410Sschedule tx_schedule_;
+  LD2410Srx rx_;
+
   uint8_t tx_frame_[RX_TX_BUFFER_SIZE];
   uint16_t tx_frame_size_ = 0;
 
@@ -291,27 +285,20 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   uint8_t thresholds_selected_gate_{0};
   bool minimal_output_{true};
 
+  uint32_t loop_count_{0};
   bool init_done_{false};
 
   uint32_t energy_values_[16];
   std::string energy_values_str_ = "";
-  uint32_t loop_count_{0};
-
-  LD2410Sschedule tx_schedule_;
-  LD2410Srx rx_;
-
-  void build_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
 
   void send_();
+  void build_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);
 
   bool receive_();
   void parse_();
   void parse_short_data_frame_();
   void parse_data_frame_();
   void parse_cmd_frame_();
-
-  void publish_distance_(uint16_t distance, bool force_publish = false);
-  void publish_presence_(bool presence, bool force_publish = false);
 
 #ifdef LD2410S_V2
   void init_();
@@ -329,6 +316,8 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void parse_ack_threshold_hold_read_(uint8_t *data);
   void parse_ack_threshold_snr_read_(uint8_t *data);
 
+  void publish_distance_(uint16_t distance, bool force_publish = false);
+  void publish_presence_(bool presence, bool force_publish = false);
   void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
   void publish_calibration_runing_(bool running, bool force_publish = false);
   void publish_energy_values_(bool force_publish = false);
@@ -336,6 +325,9 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void publish_threshold_trigger_(bool force_publish = false);
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
+
+  static std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
+
 #endif
 
   // append variable sized append_data to data, returns true if not overflow
@@ -378,6 +370,3 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
 
 }  // namespace ld2410s
 }  // namespace esphome
-
-// this->status_set_warning("xxx");
-// this->status_clear_warning();

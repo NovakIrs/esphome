@@ -8,10 +8,11 @@ namespace ld2410s {
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
 
+#ifdef LD2410S_V2
+
   this->publish_distance_(0, true);
   this->publish_presence_(false, true);
 
-#ifdef LD2410S_V2
   this->publish_calibration_progress_(0, true);
   this->publish_calibration_runing_(false, true);
 
@@ -26,10 +27,7 @@ void LD2410S::loop() {
   }
   this->loop_count_++;
 }
-
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
-
-// PROTECTED
 
 // prepares scheduled frames for sending
 // executes actual data sending
@@ -263,7 +261,6 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       break;
 
     default:
-
       break;
   }
 
@@ -321,8 +318,10 @@ void LD2410S::parse_short_data_frame_() {
   if (!presence_state)
     distance = 0;
 
+#ifdef LD2410S_V2
   this->publish_distance_(distance);
   this->publish_presence_(presence_state);
+#endif
 }
 void LD2410S::parse_data_frame_() {
   switch (this->rx_.payload_data()[0]) {
@@ -337,10 +336,10 @@ void LD2410S::parse_data_frame_() {
       if (!presence_state)
         distance = 0;
 
+#ifdef LD2410S_V2
       this->publish_distance_(distance);
       this->publish_presence_(presence_state);
 
-#ifdef LD2410S_V2
       this->parse_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
 
@@ -461,25 +460,6 @@ void LD2410S::parse_cmd_frame_() {
       ESP_LOGE(TAG, "< Unknown: %4x", command_word);
       break;
   }
-}
-
-void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
-#ifdef USE_SENSOR
-  if (this->distance_sensor_ != nullptr) {
-    if (this->distance_sensor_->state != distance || force_publish) {
-      this->distance_sensor_->publish_state(distance);
-    }
-  }
-#endif
-}
-void LD2410S::publish_presence_(bool presence, bool force_publish) {
-#ifdef USE_BINARY_SENSOR
-  if (this->presence_binary_sensor_ != nullptr) {
-    if (this->presence_binary_sensor_->state != presence || force_publish) {
-      this->presence_binary_sensor_->publish_state(presence);
-    }
-  }
-#endif
 }
 
 }  // namespace ld2410s

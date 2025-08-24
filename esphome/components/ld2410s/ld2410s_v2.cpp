@@ -184,6 +184,16 @@ void LD2410S::parse_ack_config_end_(const uint8_t *data) {
   ESP_LOGW(TAG, "CONFIG MODE DISABLED");
   this->status_clear_warning();
 }
+void LD2410S::parse_ack_minimal_output_(uint8_t *data) {
+  if (this->minimal_output_) {
+    ESP_LOGW(TAG, "Minimal Output Mode switched ON");
+  } else {
+    ESP_LOGW(TAG, "Minimal Output Mode switched OFF");
+  }
+#ifdef USE_SWITCH
+  this->minimal_output_switch_->publish_state(this->minimal_output_);
+#endif
+}
 void LD2410S::parse_ack_config_read_(uint8_t *data) {
   ESP_LOGD(TAG, "parse_ack_config_read_");
 
@@ -253,17 +263,25 @@ void LD2410S::parse_ack_threshold_snr_read_(uint8_t *data) {
 
   this->publish_threshold_snr_();
 }
-void LD2410S::parse_ack_minimal_output_(uint8_t *data) {
-  if (this->minimal_output_) {
-    ESP_LOGW(TAG, "Minimal Output Mode switched ON");
-  } else {
-    ESP_LOGW(TAG, "Minimal Output Mode switched OFF");
+
+void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
+#ifdef USE_SENSOR
+  if (this->distance_sensor_ != nullptr) {
+    if (this->distance_sensor_->state != distance || force_publish) {
+      this->distance_sensor_->publish_state(distance);
+    }
   }
-#ifdef USE_SWITCH
-  this->minimal_output_switch_->publish_state(this->minimal_output_);
 #endif
 }
-
+void LD2410S::publish_presence_(bool presence, bool force_publish) {
+#ifdef USE_BINARY_SENSOR
+  if (this->presence_binary_sensor_ != nullptr) {
+    if (this->presence_binary_sensor_->state != presence || force_publish) {
+      this->presence_binary_sensor_->publish_state(presence);
+    }
+  }
+#endif
+}
 void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {
 #ifdef USE_SENSOR
   if (this->calibration_progress_sensor_ != nullptr) {
@@ -298,7 +316,7 @@ void LD2410S::publish_fw_version_(const std::string &version, bool force_publish
 #endif
 }
 void LD2410S::publish_threshold_trigger_(bool force_publish) {
-  std::string vals = format_int(this->thresholds_trigger_, 16, 2);
+  std::string vals = format_int_(this->thresholds_trigger_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_trigger_text_sensor_ != nullptr) {
@@ -309,7 +327,7 @@ void LD2410S::publish_threshold_trigger_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_threshold_hold_(bool force_publish) {
-  std::string vals = format_int(this->thresholds_hold_, 16, 2);
+  std::string vals = format_int_(this->thresholds_hold_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_hold_text_sensor_ != nullptr) {
@@ -320,7 +338,7 @@ void LD2410S::publish_threshold_hold_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_threshold_snr_(bool force_publish) {
-  std::string vals = format_int(this->thresholds_snr_, 16, 2);
+  std::string vals = format_int_(this->thresholds_snr_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_snr_text_sensor_ != nullptr) {
@@ -331,7 +349,7 @@ void LD2410S::publish_threshold_snr_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_energy_values_(bool force_publish) {
-  this->energy_values_str_ = format_int(this->energy_values_, 16, 2);
+  this->energy_values_str_ = format_int_(this->energy_values_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->energy_values_text_sensor_ != nullptr) {
@@ -341,6 +359,33 @@ void LD2410S::publish_energy_values_(bool force_publish) {
   }
 #endif
   ESP_LOGD(TAG, "Energy Values: %s", this->energy_values_str_.c_str());
+}
+
+std::string LD2410S::format_int_(uint32_t *in, uint8_t len, uint8_t min_w) {
+  if (len == 0)
+    return "";
+
+  std::string result;
+  int sum = 0;
+  for (uint8_t i = 0; i < len; ++i) {
+    sum += in[i];
+
+    if (i > 0)
+      result += ',';
+
+    std::string num = std::to_string(in[i]);
+
+    if (num.length() < min_w)
+      result += std::string(min_w - num.length(), '0');
+
+    result += num;
+  }
+
+  if (sum == 0) {
+    result = "";
+  }
+
+  return result;
 }
 
 #endif

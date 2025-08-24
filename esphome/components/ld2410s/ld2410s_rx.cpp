@@ -118,7 +118,7 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
       if (this->expected_frame_size_ == 0) {
         this->size_field_size_ = FRAME_DATA_LENGTH_SIZE;
         if (this->end_pos_ >= this->header_footer_size_ + this->size_field_size_) {
-          this->payload_size_ = read_int(this->rcv_buffer_, this->header_footer_size_, 2);
+          this->payload_size_ = read_int_(this->rcv_buffer_, this->header_footer_size_, 2);
           this->payload_pos_ = this->header_footer_size_ + this->size_field_size_;
           this->expected_frame_size_ = 2 * this->header_footer_size_ + this->size_field_size_ + this->payload_size_;
         }
@@ -187,6 +187,16 @@ void LD2410Srx::reset_() {
   this->payload_size_ = 0;
   this->expected_frame_size_ = 0;
 }
+
+int LD2410Srx::read_int_(const uint8_t *buffer, size_t pos, size_t len) {
+  unsigned int ret = 0;
+  int shift = 0;
+  for (size_t i = 0; i < len; i++) {
+    ret |= static_cast<unsigned int>(buffer[pos + i]) << shift;
+    shift += 8;
+  }
+  return ret;
+};
 
 }  // namespace ld2410s
 }  // namespace esphome

@@ -20,15 +20,17 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     if (command != CONFIG_MODE_START_CMD)
       this->append(CONFIG_MODE_START_CMD);
   } else {
-    // if last cmd is config end...
+    // if last cmd is config end it won't be possible tu just append new command
     if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
-      // ... and it is not already sent - another config start must be appended
+      // If config end is not already sent - another config start must be appended
       if (this->last_ == this->active_ && this->state_ != TxCmdState::SCHEDULED && command != CONFIG_MODE_START_CMD) {
+        ESP_LOGD(TAG, "Last cmd is config end and it's already executing => appending config start");
         this->append(CONFIG_MODE_START_CMD);
       }
 
       // ... otherwise previous config end can be deleted
       else {
+        ESP_LOGD(TAG, "Last cmd was config end and it's not executing executing yet => deleting config end");
         this->last_--;
       }
     }

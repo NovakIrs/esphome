@@ -235,9 +235,12 @@ class LD2410Sschedule {
   uint8_t restart_count_{0};
 
   TxTaskT *get_active_();
+  void schedule_();
   void resend_();
   void restart_();
   void give_up_();
+  bool check_append_config_end_();
+  bool check_clear_();
 };
 
 class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {

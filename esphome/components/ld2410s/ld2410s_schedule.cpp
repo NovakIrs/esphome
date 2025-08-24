@@ -6,9 +6,10 @@ namespace ld2410s {
 
 // Appends new task to schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
+  ESP_LOGI(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
+
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "++: pos:[%d], cmd:%04x:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command,
-             sub_command);
+    ESP_LOGE(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
 
     this->reset();
     this->state_ = TxCmdState::ERROR;
@@ -21,10 +22,9 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
       this->append(CONFIG_MODE_START_CMD);
   } else {
     // if last cmd is config end it won't be possible tu just append new command
-    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
+    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD && command != CONFIG_MODE_START_CMD) {
       // If config end is not already sent - another config start must be appended
-      if (this->active_ == this->last_ - 1 && this->state_ != TxCmdState::SCHEDULED &&
-          command != CONFIG_MODE_START_CMD) {
+      if (this->active_ == this->last_ - 1 && this->state_ != TxCmdState::SCHEDULED) {
         ESP_LOGD(TAG, "Last cmd is config end and it's already executing => appending config start");
         this->append(CONFIG_MODE_START_CMD);
       }
@@ -43,8 +43,6 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   if (this->state_ == TxCmdState::EMPTY) {
     this->state_ = TxCmdState::SCHEDULED;
   }
-
-  ESP_LOGI(TAG, "++: pos:[%d], cmd:%04x:%04x", this->last_, command, sub_command);
 
   this->last_++;
 }
@@ -189,7 +187,7 @@ void LD2410Sschedule::give_up_() {
 bool LD2410Sschedule::check_append_config_end_() {
   if (this->active_ < this->last_ - 1 || this->last_ <= 0 || !this->config_mode_)
     return false;
-  ESP_LOGD(TAG, "+:< pos:%d[%d], Appending config end", this->active_, this->last_ - 1);
+  ESP_LOGD(TAG, "+:< Appending config end, pos:%d, ", this->active_, this->last_);
   this->append(CONFIG_MODE_END_CMD);
   return true;
 }

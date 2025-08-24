@@ -1,6 +1,6 @@
 #pragma once
 
-// #define LD2410S_V2
+#define LD2410S_V2
 
 // core
 #include "esphome/core/application.h"
@@ -54,16 +54,13 @@ static const uint16_t CMD_CONFIRMATION = 0x0100;  // Command confirmation respon
 
 static const uint8_t SHORT_DATA_FRAME_HEADER = 0x6E;
 static const uint8_t SHORT_DATA_FRAME_FOOTER = 0x62;
-
 static const uint32_t STD_DATA_FRAME_HEADER = 0xF1F2F3F4;
 static const uint32_t STD_DATA_FRAME_FOOTER = 0xF5F6F7F8;
-
 static const uint32_t CMD_FRAME_HEADER = 0xFAFBFCFD;
 static const uint32_t CMD_FRAME_FOOTER = 0x01020304;
 
 static const uint16_t CONFIG_MODE_START_CMD = 0x00FF;
 static const uint16_t CONFIG_MODE_START_VALUE = 0x0001;
-
 static const uint16_t CONFIG_MODE_END_CMD = 0x00FE;
 
 static const uint16_t OUTPUT_MODE_SWITCH_CMD = 0x007A;
@@ -75,8 +72,8 @@ static const uint16_t FW_READ_CMD = 0x0000;
 // static const uint16_t SN_READ_CMD = 0x0011;
 // static const uint16_t SN_WRITE_CMD = 0x0010;
 
-static const uint16_t PARAMS_READ_CMD = 0x0071;
-static const uint16_t PARAMS_WRITE_CMD = 0x0070;
+static const uint16_t CFG_PARAMS_READ_CMD = 0x0071;
+static const uint16_t CFG_PARAMS_WRITE_CMD = 0x0070;
 static const uint16_t CFG_MAX_DETECTION_VALUE = 0x0005;
 static const uint16_t CFG_MIN_DETECTION_VALUE = 0x000A;
 static const uint16_t CFG_NO_DELAY_VALUE = 0x0006;

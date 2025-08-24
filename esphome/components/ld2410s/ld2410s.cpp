@@ -105,7 +105,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
     case CONFIG_MODE_END_CMD:
       break;
 
-    case PARAMS_READ_CMD:
+    case CFG_PARAMS_READ_CMD:
 
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
@@ -147,9 +147,9 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
     case FW_READ_CMD:
       break;
 
-    case PARAMS_WRITE_CMD:
+    case CFG_PARAMS_WRITE_CMD:
       if (this->resp_speed_ == 0) {
-        ESP_LOGD(TAG, "PARAMS_WRITE_CMD Error, bad new_config");
+        ESP_LOGD(TAG, "CFG_PARAMS_WRITE_CMD Error, bad new_config");
         return;
       } else {
         switch (sub_command) {
@@ -414,7 +414,7 @@ void LD2410S::parse_cmd_frame_() {
 
       // Write command acknowledgements
 
-    case PARAMS_WRITE_CMD | CMD_CONFIRMATION:
+    case CFG_PARAMS_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGI(TAG, "Config written");
       break;
 
@@ -436,7 +436,7 @@ void LD2410S::parse_cmd_frame_() {
 
       // Read command acknowledgements
 
-    case PARAMS_READ_CMD | CMD_CONFIRMATION:
+    case CFG_PARAMS_READ_CMD | CMD_CONFIRMATION:
       this->parse_ack_config_read_(data);
       break;
 

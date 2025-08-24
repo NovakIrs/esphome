@@ -214,9 +214,9 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       append_seq_data(this->tx_frame_, this->tx_frame_size_, &CALIBRATION_TIME_VALUE);
       break;
 
-    case GATE_THRESHOLD_TRIGGER_READ_CMD:
-    case GATE_THRESHOLD_HOLD_READ_CMD:
-    case GATE_THRESHOLD_SNR_READ_CMD:
+    case CFG_GATE_THRESHOLD_TRIGGER_READ_CMD:
+    case CFG_GATE_THRESHOLD_HOLD_READ_CMD:
+    case CFG_GATE_THRESHOLD_SNR_READ_CMD:
       if (sub_command != NO_SUB_CMD) {
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
       } else {
@@ -226,7 +226,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       }
       break;
 
-    case GATE_THRESHOLD_TRIGGER_WRITE_CMD:
+    case CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->thresholds_trigger_[sub_command]);
@@ -238,7 +238,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       }
       break;
 
-    case GATE_THRESHOLD_HOLD_WRITE_CMD:
+    case CFG_GATE_THRESHOLD_HOLD_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->thresholds_hold_[sub_command]);
@@ -250,7 +250,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       }
       break;
 
-    case GATE_THRESHOLD_SNR_WRITE_CMD:
+    case CFG_GATE_THRESHOLD_SNR_WRITE_CMD:
       if (sub_command != NO_SUB_CMD) {
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
         append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->thresholds_snr_[sub_command]);
@@ -422,15 +422,15 @@ void LD2410S::parse_cmd_frame_() {
       this->parse_ack_minimal_output_(data);
       break;
 
-    case GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGI(TAG, "Trigger Threshold written");
       break;
 
-    case GATE_THRESHOLD_HOLD_WRITE_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_HOLD_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGI(TAG, "Trigger Hold written");
       break;
 
-    case GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
       ESP_LOGI(TAG, "Trigger SNR written");
       break;
 
@@ -444,15 +444,15 @@ void LD2410S::parse_cmd_frame_() {
       this->parse_ack_fw_read_(data);
       break;
 
-    case GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
       this->parse_ack_threshold_trigger_read_(data);
       break;
 
-    case GATE_THRESHOLD_HOLD_READ_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_HOLD_READ_CMD | CMD_CONFIRMATION:
       this->parse_ack_threshold_hold_read_(data);
       break;
 
-    case GATE_THRESHOLD_SNR_READ_CMD | CMD_CONFIRMATION:
+    case CFG_GATE_THRESHOLD_SNR_READ_CMD | CMD_CONFIRMATION:
       this->parse_ack_threshold_snr_read_(data);
       break;
 #endif

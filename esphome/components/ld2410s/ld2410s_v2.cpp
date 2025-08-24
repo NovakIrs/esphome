@@ -34,9 +34,9 @@ void LD2410S::read_all_() {
   this->tx_schedule_.append(OUTPUT_MODE_SWITCH_CMD);
   this->tx_schedule_.append(FW_READ_CMD);
   this->tx_schedule_.append(CFG_PARAMS_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_SNR_READ_CMD);
 }
 
 // button
@@ -55,22 +55,22 @@ void LD2410S::factory_reset() {
   this->resp_speed_ = 5;
 
   for (uint8_t i = 0; i < 16; i++) {
-    this->thresholds_trigger_[i] = GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
-    this->thresholds_hold_[i] = GATE_THRESHOLD_HOLD_WRITE_DATA[i];
-    this->thresholds_snr_[i] = GATE_THRESHOLD_SNR_WRITE_DATA[i];
+    this->thresholds_trigger_[i] = CFG_GATE_THRESHOLD_TRIGGER_WRITE_DATA[i];
+    this->thresholds_hold_[i] = CFG_GATE_THRESHOLD_HOLD_WRITE_DATA[i];
+    this->thresholds_snr_[i] = CFG_GATE_THRESHOLD_SNR_WRITE_DATA[i];
   }
 
   this->tx_schedule_.append(OUTPUT_MODE_SWITCH_CMD);
 
   this->tx_schedule_.append(CFG_PARAMS_WRITE_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_WRITE_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_WRITE_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_SNR_WRITE_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_WRITE_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_SNR_WRITE_CMD);
 
   this->tx_schedule_.append(CFG_PARAMS_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_SNR_READ_CMD);
 }
 // number
 void LD2410S::set_delay(float delay) {
@@ -100,7 +100,7 @@ void LD2410S::set_status_reporting_freq(float status_reporting_freq) {
 }
 void LD2410S::set_threshold_hold(float threshold_hold) {
   this->thresholds_hold_[this->thresholds_selected_gate_] = threshold_hold;
-  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_selected_gate_);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_WRITE_CMD, this->thresholds_selected_gate_);
   this->threshold_hold_number_->publish_state(this->thresholds_hold_[this->thresholds_selected_gate_]);
   this->publish_threshold_hold_();
 }
@@ -115,13 +115,13 @@ void LD2410S::set_threshold_selected_gate(float threshold_selected_gate) {
 }
 void LD2410S::set_threshold_snr(float threshold_snr) {
   this->thresholds_snr_[this->thresholds_selected_gate_] = threshold_snr;
-  this->tx_schedule_.append(GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_selected_gate_);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_SNR_WRITE_CMD, this->thresholds_selected_gate_);
   this->threshold_snr_number_->publish_state(this->thresholds_snr_[this->thresholds_selected_gate_]);
   this->publish_threshold_snr_();
 }
 void LD2410S::set_threshold_trigger(float threshold_trigger) {
   this->thresholds_trigger_[this->thresholds_selected_gate_] = threshold_trigger;
-  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_selected_gate_);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD, this->thresholds_selected_gate_);
   this->threshold_trigger_number_->publish_state(this->thresholds_trigger_[this->thresholds_selected_gate_]);
   this->publish_threshold_trigger_();
 }
@@ -146,9 +146,9 @@ void LD2410S::set_minimal_output(bool state) {
 
 // PROTECTED
 void LD2410S::read_all_thresholds_() {
-  this->tx_schedule_.append(GATE_THRESHOLD_TRIGGER_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_HOLD_READ_CMD);
-  this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_READ_CMD);
+  this->tx_schedule_.append(CFG_GATE_THRESHOLD_SNR_READ_CMD);
 }
 
 void LD2410S::parse_data_energy_values_read_(uint8_t *data) {

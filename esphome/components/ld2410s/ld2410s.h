@@ -88,9 +88,9 @@ static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
 static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
 
-static const uint16_t GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
-static const uint16_t GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
-static const uint32_t GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
+static const uint16_t CFG_GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
+static const uint16_t CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
+static const uint32_t CFG_GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
 
     48, 42, 36, 34, 32, 31, 31, 31, 31,
     31, 31, 31, 31, 31, 31, 31
@@ -105,9 +105,9 @@ static const uint32_t GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
     //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
 };
 
-static const uint16_t GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
-static const uint16_t GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
-static const uint32_t GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
+static const uint16_t CFG_GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
+static const uint16_t CFG_GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
+static const uint32_t CFG_GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
 
     45, 42, 33, 32, 28, 28, 28, 28, 28,
     28, 28, 28, 28, 28, 28, 28
@@ -121,9 +121,9 @@ static const uint32_t GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
     //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
 };
 
-static const uint16_t GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
-static const uint16_t GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
-static const uint32_t GATE_THRESHOLD_SNR_WRITE_DATA[] = {
+static const uint16_t CFG_GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
+static const uint16_t CFG_GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
+static const uint32_t CFG_GATE_THRESHOLD_SNR_WRITE_DATA[] = {
 
     34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34

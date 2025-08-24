@@ -45,6 +45,7 @@ void LD2410S::send_() {
       ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
 
+      this->init_done_ = false;
       this->tx_schedule_.confirm_sent();
       break;
 

@@ -316,7 +316,7 @@ void LD2410S::publish_fw_version_(const std::string &version, bool force_publish
 #endif
 }
 void LD2410S::publish_threshold_trigger_(bool force_publish) {
-  std::string vals = format_int_(this->thresholds_trigger_, 16, 2);
+  std::string vals = format_int(this->thresholds_trigger_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_trigger_text_sensor_ != nullptr) {
@@ -327,7 +327,7 @@ void LD2410S::publish_threshold_trigger_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_threshold_hold_(bool force_publish) {
-  std::string vals = format_int_(this->thresholds_hold_, 16, 2);
+  std::string vals = format_int(this->thresholds_hold_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_hold_text_sensor_ != nullptr) {
@@ -338,7 +338,7 @@ void LD2410S::publish_threshold_hold_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_threshold_snr_(bool force_publish) {
-  std::string vals = format_int_(this->thresholds_snr_, 16, 2);
+  std::string vals = format_int(this->thresholds_snr_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->threshold_snr_text_sensor_ != nullptr) {
@@ -349,7 +349,7 @@ void LD2410S::publish_threshold_snr_(bool force_publish) {
 #endif
 }
 void LD2410S::publish_energy_values_(bool force_publish) {
-  this->energy_values_str_ = format_int_(this->energy_values_, 16, 2);
+  this->energy_values_str_ = format_int(this->energy_values_, 16, 2);
 
 #ifdef USE_TEXT_SENSOR
   if (this->energy_values_text_sensor_ != nullptr) {
@@ -361,7 +361,7 @@ void LD2410S::publish_energy_values_(bool force_publish) {
   ESP_LOGD(TAG, "Energy Values: %s", this->energy_values_str_.c_str());
 }
 
-std::string LD2410S::format_int_(uint32_t *in, uint8_t len, uint8_t min_w) {
+std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
   if (len == 0)
     return "";
 

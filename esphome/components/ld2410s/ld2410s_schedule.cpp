@@ -59,11 +59,11 @@ TxCmdState LD2410Sschedule::check_state() {
           this->resend_();
 
         } else {
-          if (this->restart_count_ < TX_MAX_RESTART)
+          if (this->restart_count_ < TX_MAX_RESTART) {
             this->restart_();
-
-          else
+          } else {
             this->give_up_();
+          }
         }
       }
       break;
@@ -106,9 +106,11 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
         break;
     }
 
-    if (!this->check_append_config_end_())
-      if (check_clear_())
+    if (!this->check_append_config_end_()) {
+      if (check_clear_()) {
         return;
+      }
+    }
 
     // procede to next task
     this->active_++;
@@ -186,7 +188,7 @@ void LD2410Sschedule::give_up_() {
 bool LD2410Sschedule::check_append_config_end_() {
   if (this->active_ < this->last_ - 1 || this->last_ <= 0 || !this->config_mode_)
     return false;
-  ESP_LOGD(TAG, "+:< Appending config end, pos:%d, ", this->active_, this->last_);
+  ESP_LOGD(TAG, "+:< Appending config end, pos:%d, ", this->active_);
   this->append(CONFIG_MODE_END_CMD);
   return true;
 }

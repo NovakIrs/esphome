@@ -120,7 +120,7 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
 
   } else {
 #ifdef LD2410S_DEBUG_UART
-    ESP_LOGD(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Unexpected response", this->active_, this->last_,
+    ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Unexpected response", this->active_, this->last_,
              this->get_command(), command_word);
 #endif
   }
@@ -153,7 +153,6 @@ void LD2410Sschedule::reset() {
 void LD2410Sschedule::schedule_() {
   this->time_started_ = App.get_loop_component_start_time();
   this->retry_count_ = 0;
-  this->restart_count_ = 0;
   ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
 }
 void LD2410Sschedule::resend_() {

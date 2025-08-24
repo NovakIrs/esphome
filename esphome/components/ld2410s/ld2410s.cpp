@@ -144,7 +144,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
       break;
 
-    case FW_READ_CMD:
+    case CFG_FW_READ_CMD:
       break;
 
     case CFG_PARAMS_WRITE_CMD:
@@ -440,7 +440,7 @@ void LD2410S::parse_cmd_frame_() {
       this->parse_ack_config_read_(data);
       break;
 
-    case FW_READ_CMD | CMD_CONFIRMATION:
+    case CFG_FW_READ_CMD | CMD_CONFIRMATION:
       this->parse_ack_fw_read_(data);
       break;
 

@@ -32,7 +32,7 @@ void LD2410S::init_() {
 }
 void LD2410S::read_all_() {
   this->tx_schedule_.append(OUTPUT_MODE_SWITCH_CMD);
-  this->tx_schedule_.append(FW_READ_CMD);
+  this->tx_schedule_.append(CFG_FW_READ_CMD);
   this->tx_schedule_.append(CFG_PARAMS_READ_CMD);
   this->tx_schedule_.append(CFG_GATE_THRESHOLD_TRIGGER_READ_CMD);
   this->tx_schedule_.append(CFG_GATE_THRESHOLD_HOLD_READ_CMD);

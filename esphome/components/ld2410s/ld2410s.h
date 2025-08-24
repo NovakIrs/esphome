@@ -67,10 +67,12 @@ static const uint16_t OUTPUT_MODE_SWITCH_CMD = 0x007A;
 static const uint8_t OUTPUT_MODE_VALUE_STD[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
 static const uint8_t OUTPUT_MODE_VALUE_MIN[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static const uint16_t FW_READ_CMD = 0x0000;
+static const uint16_t CALIBRATION_CMD = 0x0009;
+static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
+static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
+static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
 
-// static const uint16_t SN_READ_CMD = 0x0011;
-// static const uint16_t SN_WRITE_CMD = 0x0010;
+static const uint16_t CFG_FW_READ_CMD = 0x0000;
 
 static const uint16_t CFG_PARAMS_READ_CMD = 0x0071;
 static const uint16_t CFG_PARAMS_WRITE_CMD = 0x0070;
@@ -83,56 +85,32 @@ static const uint16_t CFG_RESPONSE_SPEED_VALUE = 0x000B;
 static const std::string RESPONSE_SPEED_NORMAL = "Normal";
 static const std::string RESPONSE_SPEED_FAST = "Fast";
 
-static const uint16_t CALIBRATION_CMD = 0x0009;
-static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
-static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
-static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;
-
 static const uint16_t CFG_GATE_THRESHOLD_TRIGGER_READ_CMD = 0x0073;
 static const uint16_t CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD = 0x0072;
 static const uint32_t CFG_GATE_THRESHOLD_TRIGGER_WRITE_DATA[] = {
-
     48, 42, 36, 34, 32, 31, 31, 31, 31,
     31, 31, 31, 31, 31, 31, 31
     // 10~95 dB
-
-    // Factory defaults:
-    // tool - reset
-    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
-    //   48,42,36,34,32,31,31,31,31,31,31,31,31,31,31,31
-    // tool default
-    //  https://drive.google.com/drive/folders/1wC8KC-DaNavNbpeVouZ1HdiBzZ9YrAcg
-    //   50,46,34,32,32,32,32,32,25,25,25,25,25,25,25,25
 };
 
 static const uint16_t CFG_GATE_THRESHOLD_HOLD_READ_CMD = 0x0077;
 static const uint16_t CFG_GATE_THRESHOLD_HOLD_WRITE_CMD = 0x0076;
 static const uint32_t CFG_GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
-
     45, 42, 33, 32, 28, 28, 28, 28, 28,
     28, 28, 28, 28, 28, 28, 28
     // 10~95 dB
-
-    // Factory defaults:
-    // tool - reset
-    //  https://github.com/MrUndead1996/ld2410s-esphome/issues/4
-    //   45,42,33,32,28,28,28,28,28,28,28,28,28,28,28,28
-    // tool default
-    //   52,49,26,25,25,21,22,24,23,22,21,21,20,21,21,20
 };
 
 static const uint16_t CFG_GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
 static const uint16_t CFG_GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
 static const uint32_t CFG_GATE_THRESHOLD_SNR_WRITE_DATA[] = {
-
     34, 34, 34, 34, 34, 34, 34, 34, 34,
     34, 34, 34, 34, 34, 34, 34
     // 5~63 dB
-
-    // Factory defaults:
-    // Not available... and probably need improvement ToDo
-    // It would be good to get it from virgin ld2410s, before any calibration.
 };
+
+// static const uint16_t SN_READ_CMD = 0x0011;
+// static const uint16_t SN_WRITE_CMD = 0x0010;
 
 static const uint16_t NO_SUB_CMD = 0xffff;
 static const uint16_t FRAME_DATA_LENGTH_SIZE = 2;

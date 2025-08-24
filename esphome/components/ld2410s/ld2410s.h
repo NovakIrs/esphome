@@ -81,7 +81,7 @@ static const uint16_t CFG_MIN_DETECTION_VALUE = 0x000A;
 static const uint16_t CFG_NO_DELAY_VALUE = 0x0006;
 static const uint16_t CFG_STATUS_FREQ_VALUE = 0x0002;
 static const uint16_t CFG_DISTANCE_FREQ_VALUE = 0x000C;
-static const uint16_t CFG_CFG_RESPONSE_SPEED_VALUE = 0x000B;
+static const uint16_t CFG_RESPONSE_SPEED_VALUE = 0x000B;
 static const std::string CFG_RESPONSE_SPEED_NORMAL = "Normal";
 static const std::string CFG_RESPONSE_SPEED_FAST = "Fast";
 

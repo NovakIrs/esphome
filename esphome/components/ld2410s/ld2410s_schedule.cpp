@@ -7,7 +7,7 @@ namespace ld2410s {
 // Appends new task to schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "++: pos:[%d], cmd:%04x:%04x, Buffer overflow, reseting buffer !!!", this->last_, command,
+    ESP_LOGE(TAG, "++: pos:[%d], cmd:%04x:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command,
              sub_command);
 
     this->reset();
@@ -23,7 +23,8 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     // if last cmd is config end it won't be possible tu just append new command
     if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
       // If config end is not already sent - another config start must be appended
-      if (this->last_ == this->active_ && this->state_ != TxCmdState::SCHEDULED && command != CONFIG_MODE_START_CMD) {
+      if (this->active_ == this->last_ - 1 && this->state_ != TxCmdState::SCHEDULED &&
+          command != CONFIG_MODE_START_CMD) {
         ESP_LOGD(TAG, "Last cmd is config end and it's already executing => appending config start");
         this->append(CONFIG_MODE_START_CMD);
       }
@@ -38,8 +39,7 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 
   this->commands_[this->last_].command = command;
   this->commands_[this->last_].sub_command = sub_command;
-  this->time_started_ = 0;
-  this->retry_count_ = 0;
+
   if (this->state_ == TxCmdState::EMPTY) {
     this->state_ = TxCmdState::SCHEDULED;
   }
@@ -50,12 +50,9 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 }
 // Returns active scheduled task status
 TxCmdState LD2410Sschedule::check_state() {
-  TxTaskT *active = this->get_active_();
-
   switch (this->state_) {
     case TxCmdState::SCHEDULED:
-      this->retry_count_ = 0;
-      ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_, active->command);
+      this->schedule_();
       break;
 
     case TxCmdState::SENT:
@@ -64,29 +61,20 @@ TxCmdState LD2410Sschedule::check_state() {
           this->resend_();
 
         } else {
-          if (this->restart_count_ < TX_MAX_RESTART) {
+          if (this->restart_count_ < TX_MAX_RESTART)
             this->restart_();
 
-          } else {
+          else
             this->give_up_();
-          }
         }
       }
       break;
 
     case TxCmdState::EMPTY:
 
-      // schedule nas reached the end but config was not closed
-      if (this->active_ == this->last_ && this->config_mode_) {
-        ESP_LOGD(TAG, "+:: pos:%d[%d], cmd:%04x:%04x, Appending: CONFIG_MODE_END_CMD", this->active_, this->last_,
-                 CONFIG_MODE_END_CMD, NO_SUB_CMD);
-        this->append(CONFIG_MODE_END_CMD);
-        TxCmdState::SCHEDULED;
-      }
-
-      if (this->active_ >= this->last_ && this->active_ > 0)
-        ESP_LOGI(TAG, "::: Schedule cleared");
-      this->reset();
+      // schedule has passed the end
+      if (!this->check_append_config_end_())
+        this->check_clear_();
       break;
 
     case TxCmdState::SEND:
@@ -101,8 +89,8 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
 #ifdef LD2410S_DEBUG_UART
-    ESP_LOGV(TAG, "::< pos:%d[%d], cmd:%04x, Sending confirmed, rx:%x", this->active_, this->last_, this->get_command(),
-             command_word);
+    ESP_LOGV(TAG, "::< pos:%d[%d], cmd:%04x, Sending confirmed, rx:%x", this->active_, this->last_ - 1,
+             this->get_command(), command_word);
 #endif
 
     switch (command_word) {
@@ -120,22 +108,9 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
         break;
     }
 
-    // just confirmed last task in the schedule
-    if (this->active_ >= this->last_ - 1) {
-      // config mode not closed, thus appending config end
-      if (this->config_mode_) {
-        ESP_LOGD(TAG, "+:< pos:%d[%d], cmd:%04x, Appending: CONFIG_MODE_END_CMD", this->active_, this->last_,
-                 CONFIG_MODE_END_CMD);
-        this->append(CONFIG_MODE_END_CMD);
-        TxCmdState::SCHEDULED;
-
-        // config mode already closed
-      } else {
-        this->reset();
-        ESP_LOGI(TAG, "::: Schedule cleared");
+    if (!this->check_append_config_end_())
+      if (check_clear_())
         return;
-      }
-    }
 
     // procede to next task
     this->active_++;
@@ -175,13 +150,20 @@ void LD2410Sschedule::reset() {
   this->retry_count_ = 0;
   this->restart_count_ = 0;
   this->state_ = TxCmdState::EMPTY;
+  ESP_LOGI(TAG, "::: Schedule cleared");
+}
+void LD2410Sschedule::schedule_() {
+  this->time_started_ = App.get_loop_component_start_time();
+  this->retry_count_ = 0;
+  this->restart_count_ = 0;
+  ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
 }
 void LD2410Sschedule::resend_() {
   this->time_started_ = App.get_loop_component_start_time();
   this->retry_count_++;
   this->state_ = TxCmdState::SEND;
   ESP_LOGW(TAG, ":>> pos:%d[%d], cmd:%04x, retry:%d, restart:%d, Send Timeout Expired, Resend!", this->active_,
-           this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+           this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
 }
 void LD2410Sschedule::restart_() {
   this->active_ = 0;
@@ -190,19 +172,32 @@ void LD2410Sschedule::restart_() {
   this->restart_count_++;
   this->state_ = TxCmdState::SCHEDULED;
   ESP_LOGW(TAG, ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Resend limit reached, Restart sequence!!",
-           this->active_, this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+           this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
 }
 void LD2410Sschedule::give_up_() {
   ESP_LOGE(
       TAG,
       ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Restart sequence limit reached, Giving up, Reseting buffer!!!",
-      this->active_, this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+      this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
   this->last_ = 0;
   this->active_ = 0;
   this->time_started_ = App.get_loop_component_start_time();
   this->retry_count_ = 0;
   this->restart_count_ = 0;
   this->state_ = TxCmdState::ERROR;
+}
+bool LD2410Sschedule::check_append_config_end_() {
+  if (this->active_ < this->last_ - 1 || this->last_ <= 0 || !this->config_mode_)
+    return false;
+  ESP_LOGD(TAG, "+:< pos:%d[%d], Appending config end", this->active_, this->last_ - 1);
+  this->append(CONFIG_MODE_END_CMD);
+  return true;
+}
+bool LD2410Sschedule::check_clear_() {
+  if (this->active_ < this->last_ - 1 || this->last_ <= 0 || this->config_mode_)
+    return false;
+  this->reset();
+  return true;
 }
 }  // namespace ld2410s
 }  // namespace esphome

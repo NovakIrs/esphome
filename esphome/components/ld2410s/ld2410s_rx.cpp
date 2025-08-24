@@ -39,8 +39,10 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
     case RxEvaluationResult::NOK:
     default:
 #ifdef LD2410S_DEBUG_UART
+#ifdef LD2410S_SHOW_DC
       ESP_LOGE(TAG, "<XX [%d] %s < %s", loop_count, this->msg_.c_str(),
                format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
+#endif
 #endif
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;

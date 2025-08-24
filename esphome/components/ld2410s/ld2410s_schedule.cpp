@@ -61,29 +61,14 @@ TxCmdState LD2410Sschedule::check_state() {
     case TxCmdState::SENT:
       if (App.get_loop_component_start_time() > this->time_started_ + TX_CONFIRMATION_TIMEOUT) {
         if (this->retry_count_ < TX_MAX_RESEND) {
-          this->retry_count_++;
-          this->state_ = TxCmdState::SEND;
-          ESP_LOGW(TAG, ":>> pos:%d[%d], cmd:%04x:%04x, retry:%d, restart:%d, Send Timeout Expired, Resend!",
-                   this->active_, this->last_, active->command, active->sub_command, this->retry_count_,
-                   this->restart_count_);
+          this->resend_();
 
         } else {
           if (this->restart_count_ < TX_MAX_RESTART) {
-            this->active_ = 0;
-            this->retry_count_ = 0;
-            this->restart_count_++;
-            this->state_ = TxCmdState::SCHEDULED;
-            ESP_LOGW(TAG, ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Resend limit reached, Restart sequence!!",
-                     this->active_, this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+            this->restart_();
 
           } else {
-            active = &commands_[this->active_];
-            ESP_LOGE(TAG,
-                     ":>> pos:%d[:%d], cmd:%04x, retry:%d, Restart sequence limit reached, Giving up, Reseting "
-                     "buffer!!!",
-                     this->active_, this->last_, this->get_command(), this->retry_count_);
-            this->reset();
-            this->state_ = TxCmdState::ERROR;
+            this->give_up_();
           }
         }
       }
@@ -184,12 +169,40 @@ uint16_t LD2410Sschedule::get_sub_command() { return this->get_active_()->sub_co
 TxTaskT *LD2410Sschedule::get_active_() { return &this->commands_[this->active_]; }
 // Resets schedule buffer
 void LD2410Sschedule::reset() {
-  this->active_ = 0;
   this->last_ = 0;
+  this->active_ = 0;
+  this->time_started_ = App.get_loop_component_start_time();
   this->retry_count_ = 0;
   this->restart_count_ = 0;
   this->state_ = TxCmdState::EMPTY;
 }
-
+void LD2410Sschedule::resend_() {
+  this->time_started_ = App.get_loop_component_start_time();
+  this->retry_count_++;
+  this->state_ = TxCmdState::SEND;
+  ESP_LOGW(TAG, ":>> pos:%d[%d], cmd:%04x, retry:%d, restart:%d, Send Timeout Expired, Resend!", this->active_,
+           this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+}
+void LD2410Sschedule::restart_() {
+  this->active_ = 0;
+  this->time_started_ = App.get_loop_component_start_time();
+  this->retry_count_ = 0;
+  this->restart_count_++;
+  this->state_ = TxCmdState::SCHEDULED;
+  ESP_LOGW(TAG, ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Resend limit reached, Restart sequence!!",
+           this->active_, this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+}
+void LD2410Sschedule::give_up_() {
+  ESP_LOGE(
+      TAG,
+      ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Restart sequence limit reached, Giving up, Reseting buffer!!!",
+      this->active_, this->last_, this->get_command(), this->retry_count_, this->restart_count_);
+  this->last_ = 0;
+  this->active_ = 0;
+  this->time_started_ = App.get_loop_component_start_time();
+  this->retry_count_ = 0;
+  this->restart_count_ = 0;
+  this->state_ = TxCmdState::ERROR;
+}
 }  // namespace ld2410s
 }  // namespace esphome

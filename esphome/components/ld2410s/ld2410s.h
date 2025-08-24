@@ -162,7 +162,7 @@ class LD2410Srx {
   RxEvaluationResult evaluate_size_();
   RxEvaluationResult evaluate_footer_();
   void reset_();
-  static int read_int_(const uint8_t *buffer, size_t pos, size_t len);
+  static int read_int(const uint8_t *buffer, size_t pos, size_t len);
 };
 
 class LD2410Sschedule {
@@ -326,7 +326,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   void publish_threshold_hold_(bool force_publish = false);
   void publish_threshold_snr_(bool force_publish = false);
 
-  static std::string format_int_(uint32_t *in, uint8_t len, uint8_t min_w);
+  static std::string format_int(uint32_t *in, uint8_t len, uint8_t min_w);
 
 #endif
 

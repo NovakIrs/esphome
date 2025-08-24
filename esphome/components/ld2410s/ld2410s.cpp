@@ -287,16 +287,7 @@ bool LD2410S::receive_() {
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->parse_();
     }
-
-#ifdef LD2410S_DEBUG_UART
-    this->dc_.receive_byte(this->loop_count_, rx);
-#endif
   }
-
-#ifdef LD2410S_DEBUG_UART
-  this->dc_.flush();
-#endif
-
   return rx_bytes_count > 0;
 }
 // starts received frame decoding, and handling received data

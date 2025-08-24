@@ -183,7 +183,11 @@ class LD2410Sdc {
 class LD2410Srx : LD2410Shelp {
  public:
   RxEvaluationResult receive_byte(uint32_t loop_count, uint8_t byte);
+
   RxFrameType frame_type() const { return this->frame_type_; }
+  uint8_t *frame_data() { return this->rcv_buffer_; }
+  uint8_t frame_size() const { return this->end_pos_; }
+
   bool payload_ready() const { return payload_ready_; }
   uint8_t *payload_data() { return &this->rcv_buffer_[this->payload_pos_]; }
   uint8_t payload_size() const { return this->payload_size_; }
@@ -201,7 +205,8 @@ class LD2410Srx : LD2410Shelp {
   uint16_t payload_pos_{0};
   uint16_t payload_size_{0};
 
-  RxEvaluationResult evaluate_();
+  std::string msg_{""};
+
   RxEvaluationResult evaluate_header_();
   RxEvaluationResult evaluate_size_();
   RxEvaluationResult evaluate_footer_();

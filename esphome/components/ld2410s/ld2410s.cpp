@@ -288,7 +288,7 @@ bool LD2410S::receive_() {
     rx_bytes_count++;
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
-      // this->process_();
+      this->process_();
     }
 
 #ifdef LD2410S_DEBUG_UART
@@ -323,8 +323,8 @@ void LD2410S::process_() {
   }
 }
 void LD2410S::process_short_data_frame_() {
-  ESP_LOGI(TAG, "<   [%d] short:   %s", this->loop_count_,
-           format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+  // ESP_LOGI(TAG, "<   [%d] short:   %s", this->loop_count_,
+  //          format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
   const bool presence_state = this->rx_.payload_data()[0] > 1;
   uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
@@ -339,8 +339,8 @@ void LD2410S::process_data_frame_() {
   switch (this->rx_.payload_data()[0]) {
     case 0x01:  // standard data
     {
-      ESP_LOGI(TAG, "<   [%d] std:     %s", this->loop_count_,
-               format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+      // ESP_LOGI(TAG, "<   [%d] std:     %s", this->loop_count_,
+      //          format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
       const bool presence_state = this->rx_.payload_data()[1] > 1;
 
@@ -361,8 +361,8 @@ void LD2410S::process_data_frame_() {
     case 0x03:  // calibration progress
     {
 #ifdef LD2410S_V2
-      ESP_LOGI(TAG, "<   [%d] cal:     %s", this->loop_count_,
-               format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+      // ESP_LOGI(TAG, "<   [%d] cal:     %s", this->loop_count_,
+      //          format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
       uint16_t progress = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
 
@@ -391,11 +391,11 @@ void LD2410S::process_cmd_frame_() {
   read_seq_data(data_start, read_position, &command_word);
   read_seq_data(data_start, read_position, &ack);
 
-  ESP_LOGI(TAG, "<   [%d] cmd:%04x: %s", this->loop_count_,
-           format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+  // ESP_LOGI(TAG, "<   [%d] cmd:%04x: %s", this->loop_count_,
+  //          format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
   if (ack != 0x0000) {
-    ESP_LOGW(TAG, "Command %04x failed, ack: %04x", command_word, ack);
+    ESP_LOGE(TAG, "Command %04x failed, ack: %04x", command_word, ack);
   }
 
   this->tx_schedule_.verify_response(command_word);

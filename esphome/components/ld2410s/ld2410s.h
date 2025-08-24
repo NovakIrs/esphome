@@ -2,7 +2,7 @@
 
 #define LD2410S_V2
 #define LD2410S_DEBUG_UART
-// #define LD2410S_SHOW_RX_NOK
+#define LD2410S_SHOW_RX_NOK
 
 // core
 #include "esphome/core/application.h"

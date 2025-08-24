@@ -342,10 +342,10 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void send_();
 
   bool receive_();
-  void process_();
-  void process_short_data_frame_();
-  void process_data_frame_();
-  void process_cmd_frame_();
+  void parse_();
+  void parse_short_data_frame_();
+  void parse_data_frame_();
+  void parse_cmd_frame_();
 
   void publish_distance_(uint16_t distance, bool force_publish = false);
   void publish_presence_(bool presence, bool force_publish = false);
@@ -355,16 +355,16 @@ class LD2410S : public Component, public uart::UARTDevice, LD2410Shelp {
   void read_all_();
   void read_all_thresholds_();
 
-  void process_data_energy_values_read_(uint8_t *data);
+  void parse_data_energy_values_read_(uint8_t *data);
 
-  void process_ack_config_start_(const uint8_t *data);
-  void process_ack_config_end_(const uint8_t *data);
-  void process_ack_config_read_(uint8_t *data);
-  void process_ack_fw_read_(const uint8_t *data);
-  void process_ack_threshold_trigger_read_(uint8_t *data);
-  void process_ack_threshold_hold_read_(uint8_t *data);
-  void process_ack_threshold_snr_read_(uint8_t *data);
-  void process_ack_minimal_output_(uint8_t *data);
+  void parse_ack_config_start_(const uint8_t *data);
+  void parse_ack_config_end_(const uint8_t *data);
+  void parse_ack_config_read_(uint8_t *data);
+  void parse_ack_fw_read_(const uint8_t *data);
+  void parse_ack_minimal_output_(uint8_t *data);
+  void parse_ack_threshold_trigger_read_(uint8_t *data);
+  void parse_ack_threshold_hold_read_(uint8_t *data);
+  void parse_ack_threshold_snr_read_(uint8_t *data);
 
   void publish_calibration_progress_(uint16_t calibration_progress, bool force_publish = false);
   void publish_calibration_runing_(bool running, bool force_publish = false);

@@ -151,7 +151,7 @@ void LD2410S::read_all_thresholds_() {
   this->tx_schedule_.append(GATE_THRESHOLD_SNR_READ_CMD);
 }
 
-void LD2410S::process_data_energy_values_read_(uint8_t *data) {
+void LD2410S::parse_data_energy_values_read_(uint8_t *data) {
   uint16_t read_position = 0;
 
   for (uint32_t &energy_value : this->energy_values_) {
@@ -169,7 +169,7 @@ void LD2410S::process_data_energy_values_read_(uint8_t *data) {
   this->publish_energy_values_();
 }
 
-void LD2410S::process_ack_config_start_(const uint8_t *data) {
+void LD2410S::parse_ack_config_start_(const uint8_t *data) {
   uint16_t read_position = 0;
   uint16_t protocol_version = 0;
   uint16_t buffer_size = 0;
@@ -179,12 +179,12 @@ void LD2410S::process_ack_config_start_(const uint8_t *data) {
   this->status_set_warning("CONFIG MODE ENABLED");
   ESP_LOGW(TAG, "CONFIG MODE ENABLED, protocol_version:%d  buffer_size:%d", protocol_version, buffer_size);
 }
-void LD2410S::process_ack_config_end_(const uint8_t *data) {
+void LD2410S::parse_ack_config_end_(const uint8_t *data) {
   ESP_LOGW(TAG, "CONFIG MODE DISABLED");
   this->status_clear_warning();
 }
-void LD2410S::process_ack_config_read_(uint8_t *data) {
-  ESP_LOGD(TAG, "process_ack_config_read_");
+void LD2410S::parse_ack_config_read_(uint8_t *data) {
+  ESP_LOGD(TAG, "parse_ack_config_read_");
 
   uint16_t read_position = 0;
   read_seq_data(data, read_position, &this->max_dist_);
@@ -205,7 +205,8 @@ void LD2410S::process_ack_config_read_(uint8_t *data) {
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? RESPONSE_SPEED_NORMAL : RESPONSE_SPEED_FAST);
 #endif
 }
-void LD2410S::process_ack_fw_read_(const uint8_t *data) {
+void LD2410S::parse_ack_fw_read_(const uint8_t *data) {
+  ESP_LOGD(TAG, "parse_ack_fw_read_");
   uint16_t read_position = 0;
   uint32_t equipment_type = 0;
   uint16_t major_v = 0;
@@ -219,7 +220,8 @@ void LD2410S::process_ack_fw_read_(const uint8_t *data) {
 
   this->publish_fw_version_(version);
 }
-void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
+void LD2410S::parse_ack_threshold_trigger_read_(uint8_t *data) {
+  ESP_LOGD(TAG, "parse_ack_threshold_trigger_read_");
   uint16_t read_position = 0;
   read_seq_data(data, read_position, &this->thresholds_trigger_, 16, 4);
 
@@ -229,7 +231,8 @@ void LD2410S::process_ack_threshold_trigger_read_(uint8_t *data) {
 
   this->publish_threshold_trigger_();
 }
-void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
+void LD2410S::parse_ack_threshold_hold_read_(uint8_t *data) {
+  ESP_LOGD(TAG, "parse_ack_threshold_hold_read_");
   uint16_t read_position = 0;
   read_seq_data(data, read_position, &this->thresholds_hold_, 16, 4);
 #ifdef USE_NUMBER
@@ -238,7 +241,8 @@ void LD2410S::process_ack_threshold_hold_read_(uint8_t *data) {
 
   this->publish_threshold_hold_();
 }
-void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
+void LD2410S::parse_ack_threshold_snr_read_(uint8_t *data) {
+  ESP_LOGD(TAG, "parse_ack_threshold_snr_read_");
   uint16_t read_position = 0;
   read_seq_data(data, read_position, &this->thresholds_snr_, 16, 4);
 #ifdef USE_NUMBER
@@ -247,7 +251,7 @@ void LD2410S::process_ack_threshold_snr_read_(uint8_t *data) {
 
   this->publish_threshold_snr_();
 }
-void LD2410S::process_ack_minimal_output_(uint8_t *data) {
+void LD2410S::parse_ack_minimal_output_(uint8_t *data) {
   if (this->minimal_output_) {
     ESP_LOGW(TAG, "Minimal Output Mode switched ON");
   } else {

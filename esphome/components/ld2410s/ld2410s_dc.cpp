@@ -15,7 +15,7 @@ void LD2410Sdc::receive_byte(uint32_t loop_count, uint8_t byte) {
 }
 void LD2410Sdc::flush() {
   if (this->end_pos_ > 0) {
-    ESP_LOGD(TAG, "<<< [%d] %s", this->loop_count_, format_hex_pretty(this->rcv_buffer_, end_pos_, ' ').c_str());
+    ESP_LOGV(TAG, "<<< [%d] %s", this->loop_count_, format_hex_pretty(this->rcv_buffer_, end_pos_, ' ').c_str());
     this->end_pos_ = 0;
   }
 }

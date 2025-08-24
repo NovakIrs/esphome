@@ -285,7 +285,7 @@ bool LD2410S::receive_() {
     rx_bytes_count++;
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
-      this->process_();
+      this->parse_();
     }
 
 #ifdef LD2410S_DEBUG_UART
@@ -300,18 +300,18 @@ bool LD2410S::receive_() {
   return rx_bytes_count > 0;
 }
 // starts received frame decoding, and handling received data
-void LD2410S::process_() {
+void LD2410S::parse_() {
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:
-      this->process_short_data_frame_();
+      this->parse_short_data_frame_();
       break;
 
     case RxFrameType::STD_DATA_FRAME:
-      this->process_data_frame_();
+      this->parse_data_frame_();
       break;
 
     case RxFrameType::CMD_FRAME:
-      this->process_cmd_frame_();
+      this->parse_cmd_frame_();
       break;
 
     default:
@@ -319,7 +319,7 @@ void LD2410S::process_() {
       break;
   }
 }
-void LD2410S::process_short_data_frame_() {
+void LD2410S::parse_short_data_frame_() {
   ESP_LOGI(TAG, "<   [%d] short data < %s", this->loop_count_,
            format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
@@ -332,7 +332,7 @@ void LD2410S::process_short_data_frame_() {
   this->publish_distance_(distance);
   this->publish_presence_(presence_state);
 }
-void LD2410S::process_data_frame_() {
+void LD2410S::parse_data_frame_() {
   switch (this->rx_.payload_data()[0]) {
     case 0x01:  // standard data
     {
@@ -349,7 +349,7 @@ void LD2410S::process_data_frame_() {
       this->publish_presence_(presence_state);
 
 #ifdef LD2410S_V2
-      this->process_data_energy_values_read_(&this->rx_.payload_data()[6]);
+      this->parse_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
 
       break;
@@ -382,7 +382,7 @@ void LD2410S::process_data_frame_() {
       break;
   }
 }
-void LD2410S::process_cmd_frame_() {
+void LD2410S::parse_cmd_frame_() {
   uint8_t *data_start = this->rx_.payload_data();
   uint16_t read_position = 0;
   uint16_t command_word = 0;
@@ -409,59 +409,59 @@ void LD2410S::process_cmd_frame_() {
 #ifdef LD2410S_V2
 
     case CONFIG_MODE_START_CMD | CMD_CONFIRMATION:
-      this->process_ack_config_start_(data);
+      this->parse_ack_config_start_(data);
       break;
 
     case CONFIG_MODE_END_CMD | CMD_CONFIRMATION:
-      this->process_ack_config_end_(data);
+      this->parse_ack_config_end_(data);
       break;
 
     case CALIBRATION_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Calibration started");
+      ESP_LOGI(TAG, "Calibration started");
       break;
 
       // Write command acknowledgements
 
     case PARAMS_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Config written");
+      ESP_LOGI(TAG, "Config written");
       break;
 
     case OUTPUT_MODE_SWITCH_CMD | CMD_CONFIRMATION:
-      this->process_ack_minimal_output_(data);
+      this->parse_ack_minimal_output_(data);
       break;
 
     case GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Trigger Threshold written");
+      ESP_LOGI(TAG, "Trigger Threshold written");
       break;
 
     case GATE_THRESHOLD_HOLD_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Trigger Hold written");
+      ESP_LOGI(TAG, "Trigger Hold written");
       break;
 
     case GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGD(TAG, "Trigger SNR written");
+      ESP_LOGI(TAG, "Trigger SNR written");
       break;
 
       // Read command acknowledgements
 
     case PARAMS_READ_CMD | CMD_CONFIRMATION:
-      this->process_ack_config_read_(data);
+      this->parse_ack_config_read_(data);
       break;
 
     case FW_READ_CMD | CMD_CONFIRMATION:
-      this->process_ack_fw_read_(data);
+      this->parse_ack_fw_read_(data);
       break;
 
     case GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
-      this->process_ack_threshold_trigger_read_(data);
+      this->parse_ack_threshold_trigger_read_(data);
       break;
 
     case GATE_THRESHOLD_HOLD_READ_CMD | CMD_CONFIRMATION:
-      this->process_ack_threshold_hold_read_(data);
+      this->parse_ack_threshold_hold_read_(data);
       break;
 
     case GATE_THRESHOLD_SNR_READ_CMD | CMD_CONFIRMATION:
-      this->process_ack_threshold_snr_read_(data);
+      this->parse_ack_threshold_snr_read_(data);
       break;
 #endif
 

@@ -288,7 +288,7 @@ bool LD2410S::receive_() {
     rx_bytes_count++;
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
-      this->process_();
+      // this->process_();
     }
 
 #ifdef LD2410S_DEBUG_UART

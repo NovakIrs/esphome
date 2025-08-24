@@ -100,7 +100,8 @@ TxCmdState LD2410Sschedule::check_state() {
       }
 
       if (this->active_ >= this->last_ && this->active_ > 0)
-        this->reset();
+        ESP_LOGI(TAG, "::: Schedule cleared");
+      this->reset();
       break;
 
     case TxCmdState::SEND:

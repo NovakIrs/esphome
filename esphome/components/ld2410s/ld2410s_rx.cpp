@@ -28,19 +28,15 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
     case RxEvaluationResult::UNKNOWN:
       this->end_pos_++;
       if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
-#ifdef LD2410S_DEBUG_UART
         ESP_LOGE(TAG, "XX< [%d] Received data buffer overflow, resetting", loop_count);
-#endif
         this->reset_();
       }
       break;
 
     case RxEvaluationResult::NOK:
     default:
-#ifdef LD2410S_SHOW_RX_NOK
       ESP_LOGE(TAG, "<XX [%d] %s < %s", loop_count, this->msg_.c_str(),
                format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
-#endif
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
       break;
@@ -101,9 +97,7 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
     return RxEvaluationResult::UNKNOWN;
   }
 
-#ifdef LD2410S_DEBUG_UART
   this->msg_ = "Unkown header";
-#endif
   this->frame_type_ = RxFrameType::NOK;  // bad header
   return RxEvaluationResult::NOK;
 }
@@ -142,9 +136,7 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
   } else if (this->end_pos_ + 1 > this->expected_frame_size_) {
-#ifdef LD2410S_DEBUG_UART
     this->msg_ = "rx passed the expected frame, expected:" + to_string(this->expected_frame_size_);
-#endif
     return RxEvaluationResult::NOK;  // passed the end of short data frame
 
   } else {
@@ -181,9 +173,7 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
     default:                // unknown header type
       break;
   }
-#ifdef LD2410S_DEBUG_UART  // " + to_string() + "
   this->msg_ = "footer does not match header: ";
-#endif
   return RxEvaluationResult::NOK;  // footer does not match expected footer for frame type
 }
 // reset rx buffer

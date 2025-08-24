@@ -86,10 +86,8 @@ TxCmdState LD2410Sschedule::check_state() {
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
-#ifdef LD2410S_DEBUG_UART
     ESP_LOGV(TAG, "::< pos:%d[%d], cmd:%04x, Sending confirmed, rx:%x", this->active_, this->last_ - 1,
              this->get_command(), command_word);
-#endif
 
     switch (command_word) {
       // config start confirmed
@@ -121,10 +119,8 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     }
 
   } else {
-#ifdef LD2410S_DEBUG_UART
     ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Unexpected response", this->active_, this->last_,
              this->get_command(), command_word);
-#endif
   }
 }
 

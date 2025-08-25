@@ -23,7 +23,9 @@ void LD2410S::setup() {
 }
 void LD2410S::loop() {
   if (!this->receive_()) {
-    this->send_();
+    if (!this->pause_tx_) {
+      this->send_();
+    }
   }
   this->loop_count_++;
 }
@@ -49,13 +51,39 @@ void LD2410S::send_() {
 
     case TxCmdState::ERROR:
       ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
-      this->tx_schedule_.reset();
+      this->recover_strategy_++;
+      switch (this->recover_strategy_) {
+        case 1:
+          static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
+          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          break;
+
+        case 2:
+          this->tx_schedule_.reset();
+          this->tx_schedule_.append(CONFIG_MODE_END_CMD);
+          break;
+
+        case 3:
+          this->tx_schedule_.reset();
+          this->tx_schedule_.append(CONFIG_MODE_START_CMD);
+          break;
+
+        case 4:
+          ESP.restart();
+          break;
+
+        default:
+          this->recover_strategy_ = 0;
+          this->tx_schedule_.reset();
 #ifdef LD2410S_V2
-      this->init_();
+          this->init_();
 #endif
+          break;
+      }
       break;
 
     case TxCmdState::EMPTY:
+      this->recover_strategy_ = 0;
       if (!this->init_done_) {
         ESP_LOGI(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
@@ -284,6 +312,11 @@ bool LD2410S::receive_() {
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->parse_();
+      this->pause_tx_ = true;
+      this->set_timeout(TX_PAUSE_TIMEOUT, [this]() {
+        ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
+        this->pause_tx_ = true;
+      });
     }
   }
   return rx_bytes_count > 0;

@@ -118,9 +118,10 @@ static const uint16_t FRAME_DATA_LENGTH_SIZE = 2;
 static const size_t RX_TX_BUFFER_SIZE = 128;
 static const uint16_t RX_MAX_BYTES_PER_LOOP = 128;
 static const uint8_t TX_SCHEDULE_BUFFER_SIZE = 32;
-static const uint8_t TX_MAX_RESEND = 5;
-static const uint8_t TX_MAX_RESTART = 5;
-static const uint32_t TX_CONFIRMATION_TIMEOUT = 2000;  // timeout for waiting for cmd response
+static const uint8_t TX_MAX_RESEND = 1;
+static const uint8_t TX_MAX_RESTART = 1;
+static const uint32_t TX_CONFIRMATION_TIMEOUT = 1000;  // timeout for waiting for cmd response
+static const uint32_t TX_PAUSE_TIMEOUT = 500;          // pause after receiving response
 
 enum class TxCmdState { EMPTY, SCHEDULED, SEND, SENT, ERROR };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };
@@ -283,6 +284,8 @@ class LD2410S : public Component, public uart::UARTDevice {
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
   uint8_t thresholds_selected_gate_{0};
+  uint8_t recover_strategy_{0};
+  bool pause_tx_{0};
   bool minimal_output_{true};
 
   uint32_t loop_count_{0};

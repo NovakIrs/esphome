@@ -417,6 +417,8 @@ void LD2410S::parse_data_frame_() {
 
       uint16_t progress = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
 
+      this->sending_pause_();
+
       if (progress == 100) {
         this->publish_calibration_runing_(false);
         this->read_all_thresholds_();

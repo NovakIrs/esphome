@@ -68,10 +68,6 @@ void LD2410S::send_() {
           this->tx_schedule_.append(CONFIG_MODE_START_CMD);
           break;
 
-        case 4:
-          ESP.restart();
-          break;
-
         default:
           this->recover_strategy_ = 0;
           this->tx_schedule_.reset();

@@ -55,7 +55,8 @@ void LD2410S::send_() {
       switch (this->recover_strategy_) {
         case 1:
           ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S ?");
-          static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
+          // static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
+          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
           this->write_array(reboot_cmd, sizeof(reboot_cmd));
           this->tx_schedule_.reset();
           this->tx_schedule_.append(CONFIG_MODE_END_CMD);

@@ -304,6 +304,14 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_FOOTER);
 }
 
+void LD2410S::sending_pause_() {
+  this->pause_tx_ = true;
+  this->set_timeout(TX_PAUSE_TIMEOUT, [this]() {
+    ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
+    this->pause_tx_ = true;
+  });
+}
+
 // receives frames and starts processing
 bool LD2410S::receive_() {
   uint8_t rx;
@@ -316,11 +324,7 @@ bool LD2410S::receive_() {
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->parse_();
-      this->pause_tx_ = true;
-      this->set_timeout(TX_PAUSE_TIMEOUT, [this]() {
-        ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
-        this->pause_tx_ = true;
-      });
+      this->sending_pause_();
     }
   }
   return rx_bytes_count > 0;

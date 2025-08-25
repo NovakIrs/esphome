@@ -72,7 +72,17 @@ void LD2410S::send_() {
           break;
 
         case 3:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - CONFIG MODE END");
+          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - REBOOT LD2410S V2?");
+          static const uint8_t reboot_cmd_v2[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00,
+                                                  0xA2, 0x00, 0x04, 0x03, 0x02, 0x01};
+          this->write_array(reboot_cmd_v2, sizeof(reboot_cmd_v2));
+          this->flush();
+          this->tx_schedule_.reset();
+          this->init_();
+          break;
+
+        case 4:
+          ESP_LOGE(TAG, "RECOVER STRATEGY 4 - CONFIG MODE END");
           static const uint8_t config_end_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00,
                                                    0xFE, 0x00, 0x04, 0x03, 0x02, 0x01};
           this->write_array(config_end_cmd, sizeof(config_end_cmd));
@@ -81,8 +91,8 @@ void LD2410S::send_() {
           this->init_();
           break;
 
-        case 4:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 4 - CONFIG MODE START + END");
+        case 5:
+          ESP_LOGE(TAG, "RECOVER STRATEGY 5 - CONFIG MODE START + END");
           this->tx_schedule_.reset();
           this->tx_schedule_.append(CONFIG_MODE_START_CMD);
           break;

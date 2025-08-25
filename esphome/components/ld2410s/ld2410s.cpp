@@ -346,7 +346,6 @@ bool LD2410S::receive_() {
 
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->parse_();
-      this->sending_pause_();
     }
   }
   return rx_bytes_count > 0;
@@ -363,6 +362,7 @@ void LD2410S::parse_() {
       break;
 
     case RxFrameType::CMD_FRAME:
+      this->sending_pause_();
       this->parse_cmd_frame_();
       break;
 

@@ -330,7 +330,7 @@ void LD2410S::sending_pause_() {
   this->pause_tx_ = true;
   this->set_timeout(TX_PAUSE_TIMEOUT, [this]() {
     ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
-    this->pause_tx_ = true;
+    this->pause_tx_ = false;
   });
 }
 

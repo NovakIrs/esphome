@@ -55,16 +55,17 @@ void LD2410S::send_() {
       switch (this->recover_strategy_) {
         case 1:
           ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S V1?");
-          static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
-          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          static const uint8_t reboot_cmd_v1[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
+          this->write_array(reboot_cmd_v1, sizeof(reboot_cmd_v1));
           this->tx_schedule_.reset();
           this->init_();
           break;
 
         case 2:
           ESP_LOGE(TAG, "RECOVER STRATEGY 2 - REBOOT LD2410S V2?");
-          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
-          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          static const uint8_t reboot_cmd_v2[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00,
+                                                  0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
+          this->write_array(reboot_cmd_v2, sizeof(reboot_cmd_v2));
           this->flush();
           this->tx_schedule_.reset();
           this->init_();
@@ -72,8 +73,9 @@ void LD2410S::send_() {
 
         case 3:
           ESP_LOGE(TAG, "RECOVER STRATEGY 3 - CONFIG MODE END");
-          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x03, 0x01};
-          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          static const uint8_t config_end_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00,
+                                                   0xFE, 0x00, 0x04, 0x03, 0x03, 0x01};
+          this->write_array(config_end_cmd, sizeof(config_end_cmd));
           this->flush();
           this->tx_schedule_.reset();
           this->init_();

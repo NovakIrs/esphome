@@ -72,7 +72,7 @@ void LD2410S::send_() {
           break;
 
         case 3:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - REBOOT LD2410S V2?");
+          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - REBOOT LD2410S V3?");
           static const uint8_t reboot_cmd_v2[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00,
                                                   0xA2, 0x00, 0x04, 0x03, 0x02, 0x01};
           this->write_array(reboot_cmd_v2, sizeof(reboot_cmd_v2));

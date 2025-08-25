@@ -40,7 +40,7 @@ void LD2410S::send_() {
 
     case TxCmdState::SEND:
       this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
-      // this->flush();
+      this->flush();
 
       ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
@@ -54,23 +54,42 @@ void LD2410S::send_() {
       this->recover_strategy_++;
       switch (this->recover_strategy_) {
         case 1:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S ?");
-          // static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
-          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
+          ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S V1?");
+          static const uint8_t reboot_cmd[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
           this->write_array(reboot_cmd, sizeof(reboot_cmd));
           this->tx_schedule_.reset();
-          this->tx_schedule_.append(CONFIG_MODE_END_CMD);
-          this->tx_schedule_.append(CONFIG_MODE_START_CMD);
+          this->init_();
           break;
 
         case 2:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 2 - CONFIG MODE END");
+          ESP_LOGE(TAG, "RECOVER STRATEGY 2 - REBOOT LD2410S V2?");
+          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
+          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          this->flush();
           this->tx_schedule_.reset();
-          this->tx_schedule_.append(CONFIG_MODE_END_CMD);
+          this->init_();
+          break;
+
+        case 1:
+          ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S ?");
+          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x03, 0x01};
+          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          this->flush();
+          this->tx_schedule_.reset();
+          this->init_();
           break;
 
         case 3:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - CONFIG MODE START + END");
+          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - CONFIG MODE END");
+          static const uint8_t reboot_cmd[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x03, 0x01};
+          this->write_array(reboot_cmd, sizeof(reboot_cmd));
+          this->flush();
+          this->tx_schedule_.reset();
+          this->init_();
+          break;
+
+        case 4:
+          ESP_LOGE(TAG, "RECOVER STRATEGY 4 - CONFIG MODE START + END");
           this->tx_schedule_.reset();
           this->tx_schedule_.append(CONFIG_MODE_START_CMD);
           break;

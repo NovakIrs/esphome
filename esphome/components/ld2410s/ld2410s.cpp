@@ -9,16 +9,6 @@ void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
 
 #ifdef LD2410S_V2
-  this->status_set_warning();
-  this->publish_distance_(0, true);
-  this->publish_presence_(false, true);
-
-  this->publish_calibration_progress_(0, true);
-  this->publish_calibration_runing_(false, true);
-
-  this->set_threshold_selected_gate(0);
-
-  this->init_();
 #endif
 }
 void LD2410S::loop() {
@@ -60,7 +50,6 @@ void LD2410S::send_() {
       ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
       this->tx_schedule_.reset();
 #ifdef LD2410S_V2
-      this->init_();
 #endif
       static const uint8_t CFG_END[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x02, 0x01};
       this->write_array(CFG_END, sizeof(CFG_END));
@@ -333,15 +322,13 @@ void LD2410S::parse_short_data_frame_() {
   ESP_LOGI(TAG, "<   [%d] short data < %s", this->loop_count_,
            format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
-  const bool presence_state = this->rx_.payload_data()[0] > 1;
-  uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
+  // const bool presence_state = this->rx_.payload_data()[0] > 1;
+  // uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
 
-  if (!presence_state)
-    distance = 0;
+  // if (!presence_state)
+  //   distance = 0;
 
 #ifdef LD2410S_V2
-  this->publish_distance_(distance);
-  this->publish_presence_(presence_state);
 #endif
 }
 void LD2410S::parse_data_frame_() {
@@ -351,17 +338,13 @@ void LD2410S::parse_data_frame_() {
       ESP_LOGI(TAG, "<   [%d] std data < %s", this->loop_count_,
                format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
-      const bool presence_state = this->rx_.payload_data()[1] > 1;
+      // const bool presence_state = this->rx_.payload_data()[1] > 1;
 
-      uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
-      if (!presence_state)
-        distance = 0;
+      // uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
+      // if (!presence_state)
+      //   distance = 0;
 
 #ifdef LD2410S_V2
-      this->publish_distance_(distance);
-      this->publish_presence_(presence_state);
-
-      this->parse_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
 
       break;
@@ -370,20 +353,6 @@ void LD2410S::parse_data_frame_() {
     case 0x03:  // calibration progress
     {
 #ifdef LD2410S_V2
-      ESP_LOGI(TAG, "<   [%d] std calibration < %s", this->loop_count_,
-               format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
-
-      uint16_t progress = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
-
-      this->sending_pause_();
-
-      if (progress == 100) {
-        this->publish_calibration_runing_(false);
-        this->read_all_thresholds_();
-      } else {
-        this->publish_calibration_runing_(true);
-      }
-      this->publish_calibration_progress_(progress);
 #endif
 
       break;
@@ -415,68 +384,12 @@ void LD2410S::parse_cmd_frame_() {
 
   this->tx_schedule_.verify_response(command_word);
 
-  uint8_t *data = &data_start[read_position];
+  // uint8_t *data = &data_start[read_position];
 
   switch (command_word) {
     // Process acknowledgements
 
 #ifdef LD2410S_V2
-
-    case CONFIG_MODE_START_CMD | CMD_CONFIRMATION:
-      this->parse_ack_config_start_(data);
-      break;
-
-    case CONFIG_MODE_END_CMD | CMD_CONFIRMATION:
-      this->parse_ack_config_end_(data);
-      break;
-
-    case CALIBRATION_CMD | CMD_CONFIRMATION:
-      ESP_LOGI(TAG, "Calibration started");
-      break;
-
-      // Write command acknowledgements
-
-    case CFG_PARAMS_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGI(TAG, "Config written");
-      break;
-
-    case OUTPUT_MODE_SWITCH_CMD | CMD_CONFIRMATION:
-      this->parse_ack_minimal_output_(data);
-      break;
-
-    case CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGI(TAG, "Trigger Threshold written");
-      break;
-
-    case CFG_GATE_THRESHOLD_HOLD_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGI(TAG, "Trigger Hold written");
-      break;
-
-    case CFG_GATE_THRESHOLD_SNR_WRITE_CMD | CMD_CONFIRMATION:
-      ESP_LOGI(TAG, "Trigger SNR written");
-      break;
-
-      // Read command acknowledgements
-
-    case CFG_PARAMS_READ_CMD | CMD_CONFIRMATION:
-      this->parse_ack_config_read_(data);
-      break;
-
-    case CFG_FW_READ_CMD | CMD_CONFIRMATION:
-      this->parse_ack_fw_read_(data);
-      break;
-
-    case CFG_GATE_THRESHOLD_TRIGGER_READ_CMD | CMD_CONFIRMATION:
-      this->parse_ack_threshold_trigger_read_(data);
-      break;
-
-    case CFG_GATE_THRESHOLD_HOLD_READ_CMD | CMD_CONFIRMATION:
-      this->parse_ack_threshold_hold_read_(data);
-      break;
-
-    case CFG_GATE_THRESHOLD_SNR_READ_CMD | CMD_CONFIRMATION:
-      this->parse_ack_threshold_snr_read_(data);
-      break;
 #endif
 
     default:

@@ -71,7 +71,9 @@ static const uint16_t OUTPUT_MODE_SWITCH_CMD = 0x007A;
 static const uint8_t OUTPUT_MODE_VALUE_STD[] = {0x00, 0x00, 0x01, 0x00, 0x00, 0x00};
 static const uint8_t OUTPUT_MODE_VALUE_MIN[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-static const uint16_t CALIBRATION_CMD = 0x0009;
+static const uint16_t CALIBRATION_CMD = 0x00A2;
+
+// static const uint16_t CALIBRATION_CMD = 0x0009;
 static const uint16_t CALIBRATION_TRIGGER_VALUE = 0x0002;
 static const uint16_t CALIBRATION_RETENTION_VALUE = 0x0001;
 static const uint16_t CALIBRATION_TIME_VALUE = 0x0078;

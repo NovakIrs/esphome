@@ -121,7 +121,7 @@ static const uint8_t TX_SCHEDULE_BUFFER_SIZE = 32;
 static const uint8_t TX_MAX_RESEND = 1;
 static const uint8_t TX_MAX_RESTART = 1;
 static const uint32_t TX_CONFIRMATION_TIMEOUT = 1000;  // timeout for waiting for cmd response
-static const uint32_t TX_PAUSE_TIMEOUT = 1000;         // pause after receiving response
+static const uint32_t TX_PAUSE_TIMEOUT = 2000;         // pause after receiving response
 
 enum class TxCmdState { EMPTY, SCHEDULED, SEND, SENT, ERROR };
 enum class RxFrameType { UNKNOWN, SHORT_DATA_FRAME, STD_DATA_FRAME, CMD_FRAME, NOK };

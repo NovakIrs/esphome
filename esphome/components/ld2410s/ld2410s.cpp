@@ -9,7 +9,7 @@ void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
 
 #ifdef LD2410S_V2
-
+  this->status_set_warning();
   this->publish_distance_(0, true);
   this->publish_presence_(false, true);
 
@@ -22,6 +22,11 @@ void LD2410S::setup() {
 #endif
 }
 void LD2410S::loop() {
+  if (!this->init_done_) {
+    this->status_set_warning();
+  } else {
+    this->status_clear_warning();
+  }
   if (!this->receive_()) {
     if (!this->pause_tx_) {
       this->send_();

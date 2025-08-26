@@ -68,7 +68,6 @@ void LD2410S::send_() {
       break;
 
     case TxCmdState::EMPTY:
-      this->recover_strategy_ = 0;
       if (!this->init_done_) {
         ESP_LOGI(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;

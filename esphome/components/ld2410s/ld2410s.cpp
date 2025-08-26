@@ -4,7 +4,6 @@ namespace ld2410s {
 #pragma region LD2410S
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
-
 #ifdef LD2410S_V2
 #endif
 }
@@ -26,19 +25,16 @@ void LD2410S::send_() {
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
-
     case TxCmdState::SEND:
       this->status_set_warning();
       this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
       this->flush();
-
       ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
 
       this->init_done_ = false;
       this->tx_schedule_.confirm_sent();
       break;
-
     case TxCmdState::ERROR:
       this->status_set_warning();
       ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
@@ -49,14 +45,12 @@ void LD2410S::send_() {
       this->write_array(CFG_END, sizeof(CFG_END));
       this->flush();
       break;
-
     case TxCmdState::EMPTY:
       if (!this->init_done_) {
         ESP_LOGI(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
       }
       break;
-
     case TxCmdState::SENT:
     default:
       break;
@@ -64,23 +58,12 @@ void LD2410S::send_() {
 }
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, ":>> [%d] %04x Prepare frame ", this->loop_count_, command);
-
   this->tx_frame_size_ = 0;
-
-  // Header
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_HEADER);
-
-  // Frame size placeholder
   uint16_t size_start = this->tx_frame_size_;
   this->tx_frame_size_ += sizeof(size_start);
-
-  // Data start
   uint16_t data_start = this->tx_frame_size_;
-
-  // Command
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &command, 1);
-
-  // Parameters
   switch (command) {
     case OUTPUT_MODE_SWITCH_CMD: {
       if (this->minimal_output_) {
@@ -257,12 +240,8 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
     default:
       break;
   }
-
-  // Frame size
   uint16_t data_size = this->tx_frame_size_ - data_start;
   append_seq_data(this->tx_frame_, size_start, &data_size);
-
-  // Footer
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_FOOTER);
 }
 void LD2410S::sending_pause_() {
@@ -272,12 +251,10 @@ void LD2410S::sending_pause_() {
 bool LD2410S::receive_() {
   uint8_t rx;
   int rx_bytes_count = 0;
-
   while (this->available() && rx_bytes_count < RX_MAX_BYTES_PER_LOOP) {
     if (!this->read_byte(&rx))
       break;
     rx_bytes_count++;
-
     if (this->rx_.receive_byte(this->loop_count_, rx) == RxEvaluationResult::OK) {
       this->parse_();
     }
@@ -289,16 +266,13 @@ void LD2410S::parse_() {
     case RxFrameType::SHORT_DATA_FRAME:
       this->parse_short_data_frame_();
       break;
-
     case RxFrameType::STD_DATA_FRAME:
       this->parse_data_frame_();
       break;
-
     case RxFrameType::CMD_FRAME:
       this->sending_pause_();
       this->parse_cmd_frame_();
       break;
-
     default:
       ESP_LOGE(TAG, "Received Unknown package type!!!");
       break;
@@ -307,13 +281,10 @@ void LD2410S::parse_() {
 void LD2410S::parse_short_data_frame_() {
   ESP_LOGI(TAG, "<   [%d] short data < %s", this->loop_count_,
            format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
-
   // const bool presence_state = this->rx_.payload_data()[0] > 1;
   // uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
-
   // if (!presence_state)
   //   distance = 0;
-
 #ifdef LD2410S_V2
 #endif
 }
@@ -356,10 +327,8 @@ void LD2410S::parse_cmd_frame_() {
   uint16_t read_position = 0;
   uint16_t command_word = 0;
   uint16_t ack = 0;
-
   read_seq_data(data_start, read_position, &command_word);
   read_seq_data(data_start, read_position, &ack);
-
   if (ack == 0x0000) {
     ESP_LOGI(TAG, "<   [%d] %04x cmd < %s", this->loop_count_, command_word,
              format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
@@ -367,17 +336,14 @@ void LD2410S::parse_cmd_frame_() {
     ESP_LOGE(TAG, "<XX [%d] %04x cmd Failed ack:%04x < %s", this->loop_count_, command_word, ack,
              format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
   }
-
   this->tx_schedule_.verify_response(command_word);
 
   // uint8_t *data = &data_start[read_position];
 
   switch (command_word) {
     // Process acknowledgements
-
 #ifdef LD2410S_V2
 #endif
-
     default:
       ESP_LOGE(TAG, "< Unknown: %4x", command_word);
       break;

@@ -296,7 +296,6 @@ class LD2410S : public Component, public uart::UARTDevice {
   uint32_t dist_freq_{0};
   uint32_t resp_speed_{0};
   uint8_t thresholds_selected_gate_{0};
-  uint8_t recover_strategy_{0};
   bool pause_tx_{false};
   bool minimal_output_{true};
 

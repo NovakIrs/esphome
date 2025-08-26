@@ -1,10 +1,7 @@
 #include "ld2410s.h"
-
 namespace esphome {
 namespace ld2410s {
-
 #pragma region LD2410S
-
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
 
@@ -25,9 +22,6 @@ void LD2410S::loop() {
   this->loop_count_++;
 }
 float LD2410S::get_setup_priority() const { return setup_priority::HARDWARE; }
-
-// prepares scheduled frames for sending
-// executes actual data sending
 void LD2410S::send_() {
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
@@ -68,7 +62,6 @@ void LD2410S::send_() {
       break;
   }
 }
-// builds CMD_FRAME
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   ESP_LOGD(TAG, ":>> [%d] %04x Prepare frame ", this->loop_count_, command);
 
@@ -272,16 +265,10 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
   // Footer
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_FOOTER);
 }
-
 void LD2410S::sending_pause_() {
   this->pause_tx_ = true;
-  this->set_timeout("Pausing Sending", TX_PAUSE_TIMEOUT, [this]() {
-    // ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
-    this->pause_tx_ = false;
-  });
+  this->set_timeout("Pausing Sending", TX_PAUSE_TIMEOUT, [this]() { this->pause_tx_ = false; });
 }
-
-// receives frames and starts processing
 bool LD2410S::receive_() {
   uint8_t rx;
   int rx_bytes_count = 0;
@@ -297,7 +284,6 @@ bool LD2410S::receive_() {
   }
   return rx_bytes_count > 0;
 }
-// starts received frame decoding, and handling received data
 void LD2410S::parse_() {
   switch (this->rx_.frame_type()) {
     case RxFrameType::SHORT_DATA_FRAME:
@@ -397,12 +383,8 @@ void LD2410S::parse_cmd_frame_() {
       break;
   }
 }
-
 #pragma endregion
-
 #pragma region LD2410Srx
-
-// appends one byte to rx buffer, and checks if that makes complete frame
 RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
   if (this->payload_ready_) {
     this->reset_();
@@ -442,7 +424,6 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
 
   return result;
 }
-// checks if current rx buffer contains header
 RxEvaluationResult LD2410Srx::evaluate_header_() {
   switch (this->frame_type_) {
     case RxFrameType::CMD_FRAME:
@@ -499,7 +480,6 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
   this->frame_type_ = RxFrameType::NOK;  // bad header
   return RxEvaluationResult::NOK;
 }
-// checks if current rx buffer has proper size for decoded header
 RxEvaluationResult LD2410Srx::evaluate_size_() {
   switch (this->frame_type_) {
     case RxFrameType::SHORT_DATA_FRAME:
@@ -541,7 +521,6 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     return RxEvaluationResult::OK;  // correct size
   }
 }
-// checks if current rx buffer containts proper footer for decoded header
 RxEvaluationResult LD2410Srx::evaluate_footer_() {
   switch (this->frame_type_) {
     case RxFrameType::SHORT_DATA_FRAME:  // footer matches expected for short data frame
@@ -574,7 +553,6 @@ RxEvaluationResult LD2410Srx::evaluate_footer_() {
   this->msg_ = "footer does not match header: ";
   return RxEvaluationResult::NOK;  // footer does not match expected footer for frame type
 }
-// reset rx buffer
 void LD2410Srx::reset_() {
   this->end_pos_ = 0;
   this->header_footer_size_ = 0;
@@ -585,7 +563,6 @@ void LD2410Srx::reset_() {
   this->payload_size_ = 0;
   this->expected_frame_size_ = 0;
 }
-
 int LD2410Srx::read_int(const uint8_t *buffer, size_t pos, size_t len) {
   unsigned int ret = 0;
   int shift = 0;
@@ -595,12 +572,8 @@ int LD2410Srx::read_int(const uint8_t *buffer, size_t pos, size_t len) {
   }
   return ret;
 };
-
 #pragma endregion
-
 #pragma region LD2410Sschedule
-
-// Appends new task to schedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   ESP_LOGI(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
 
@@ -642,7 +615,6 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
 
   this->last_++;
 }
-// Returns active scheduled task status
 TxCmdState LD2410Sschedule::check_state() {
   switch (this->state_) {
     case TxCmdState::SCHEDULED:
@@ -678,7 +650,6 @@ TxCmdState LD2410Sschedule::check_state() {
 
   return this->state_;
 }
-// Verifies if received response matches expected, if so procedes to next scheduled command
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
@@ -729,8 +700,6 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
     }
   }
 }
-
-// Confirm frame ready
 void LD2410Sschedule::confirm_sent() {
   if (this->state_ == TxCmdState::SCHEDULED || this->state_ == TxCmdState::SEND) {
     this->time_started_ = App.get_loop_component_start_time();
@@ -740,10 +709,8 @@ void LD2410Sschedule::confirm_sent() {
     ESP_LOGE(TAG, ":>> pos:%d[%d], cmd:%04x, Sending NOT CONFIRMED", this->active_, this->last_, this->get_command());
   }
 }
-
 uint16_t LD2410Sschedule::get_command() { return this->commands_[this->active_].command; }
 uint16_t LD2410Sschedule::get_sub_command() { return this->commands_[this->active_].sub_command; }
-// Resets schedule buffer
 void LD2410Sschedule::reset() {
   this->last_ = 0;
   this->active_ = 0;
@@ -799,8 +766,6 @@ bool LD2410Sschedule::check_clear_() {
   this->reset();
   return true;
 }
-
 #pragma endregion
-
 }  // namespace ld2410s
 }  // namespace esphome

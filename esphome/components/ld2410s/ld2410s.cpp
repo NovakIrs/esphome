@@ -328,8 +328,8 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
 void LD2410S::sending_pause_() {
   this->pause_tx_ = true;
-  this->set_timeout(TX_PAUSE_TIMEOUT, [this]() {
-    ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
+  this->set_timeout("Pausing Sending", TX_PAUSE_TIMEOUT, [this]() {
+    // ESP_LOGI("ld2410s", "Proceeding after tx pause of %d ms", TX_PAUSE_TIMEOUT);
     this->pause_tx_ = false;
   });
 }

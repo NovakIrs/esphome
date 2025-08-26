@@ -44,6 +44,7 @@ void LD2410S::send_() {
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
 
     case TxCmdState::SEND:
+      this->status_set_warning();
       this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
       this->flush();
 
@@ -55,6 +56,7 @@ void LD2410S::send_() {
       break;
 
     case TxCmdState::ERROR:
+      this->status_set_warning();
       ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
       this->recover_strategy_++;
       switch (this->recover_strategy_) {

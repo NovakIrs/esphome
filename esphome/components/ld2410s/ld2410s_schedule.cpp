@@ -123,7 +123,6 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
       ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received confirmation for wrong command", this->active_,
                this->last_, this->get_command(), command_word);
     } else {
-      int16_t previous = this->get_command() | CMD_CONFIRMATION;
       if (this->active_ > 0 && command_word == (this->commands_[this->active_ - 1].command | CMD_CONFIRMATION)) {
         ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received unexpected confirmation for previous cmd",
                  this->active_, this->last_, this->get_command(), command_word);

@@ -58,58 +58,13 @@ void LD2410S::send_() {
     case TxCmdState::ERROR:
       this->status_set_warning();
       ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
-      this->recover_strategy_++;
-      switch (this->recover_strategy_) {
-        case 1:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 1 - REBOOT LD2410S V1?");
-          static const uint8_t V1[] = {0xF8, 0xF8, 0x04, 0x00, 0x0B, 0x00, 0x0B, 0x00};
-          this->write_array(V1, sizeof(V1));
-          this->tx_schedule_.reset();
-          this->init_();
-          break;
-
-        case 2:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 2 - REBOOT LD2410S V2?");
-          static const uint8_t V2[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0x0B, 0x00, 0x04, 0x03, 0x02, 0x01};
-          this->write_array(V2, sizeof(V2));
-          this->flush();
-          this->tx_schedule_.reset();
-          this->init_();
-          break;
-
-        case 3:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 3 - REBOOT LD2410S V3?");
-          static const uint8_t V3[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xA2, 0x00, 0x04, 0x03, 0x02, 0x01};
-          this->write_array(V3, sizeof(V3));
-          this->flush();
-          this->tx_schedule_.reset();
-          this->init_();
-          break;
-
-        case 4:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 4 - CONFIG MODE END");
-          static const uint8_t CFG_END[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x02, 0x01};
-          this->write_array(CFG_END, sizeof(CFG_END));
-          this->flush();
-          this->tx_schedule_.reset();
-          this->init_();
-          break;
-
-        case 5:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 5 - CONFIG MODE START + END");
-          this->tx_schedule_.reset();
-          this->tx_schedule_.append(CONFIG_MODE_START_CMD);
-          break;
-
-        default:
-          ESP_LOGE(TAG, "RECOVER STRATEGY 0 - INIT");
-          this->recover_strategy_ = 0;
-          this->tx_schedule_.reset();
+      this->tx_schedule_.reset();
 #ifdef LD2410S_V2
-          this->init_();
+      this->init_();
 #endif
-          break;
-      }
+      static const uint8_t CFG_END[] = {0xFD, 0xFC, 0xFB, 0xFA, 0x02, 0x00, 0xFE, 0x00, 0x04, 0x03, 0x02, 0x01};
+      this->write_array(CFG_END, sizeof(CFG_END));
+      this->flush();
       break;
 
     case TxCmdState::EMPTY:

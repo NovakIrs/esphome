@@ -108,8 +108,8 @@ static const uint32_t CFG_GATE_THRESHOLD_HOLD_WRITE_DATA[] = {
 static const uint16_t CFG_GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
 static const uint16_t CFG_GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
 static const uint32_t CFG_GATE_THRESHOLD_SNR_WRITE_DATA[] = {
-    34, 34, 34, 34, 34, 34, 34, 34, 34,
-    34, 34, 34, 34, 34, 34, 34
+    51, 50, 30, 28, 25, 25, 25, 25, 25,
+    25, 25, 25, 25, 22, 22, 22
     // 5~63 dB
 };
 

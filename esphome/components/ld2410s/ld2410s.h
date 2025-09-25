@@ -56,7 +56,7 @@ static const uint32_t CFG_GATE_THRESHOLD_HOLD_WRITE_DATA[] = {45, 42, 33, 32, 28
                                                               28, 28, 28, 28, 28, 28, 28, 28};
 static const uint16_t CFG_GATE_THRESHOLD_SNR_READ_CMD = 0x0075;
 static const uint16_t CFG_GATE_THRESHOLD_SNR_WRITE_CMD = 0x0074;
-static const uint32_t CFG_GATE_THRESHOLD_SNR_WRITE_DATA[] = {51, 50, 30, 28, 25, 25, 25, 25, 
+static const uint32_t CFG_GATE_THRESHOLD_SNR_WRITE_DATA[] = {51, 50, 30, 28, 25, 25, 25, 25,
                                                              25, 25, 25, 25, 25, 22, 22, 22};
 // static const uint16_t SN_READ_CMD = 0x0011;
 // static const uint16_t SN_WRITE_CMD = 0x0010;

@@ -14,8 +14,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <type_traits>
-namespace esphome {
-namespace ld2410s {
+namespace esphome::ld2410s {
 #pragma region ld2410s specific Constants
 static const char *const TAG = "ld2410s";
 static const uint16_t CMD_CONFIRMATION = 0x0100;  // Command confirmation response code

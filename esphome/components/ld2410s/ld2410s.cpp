@@ -316,7 +316,7 @@ void LD2410S::parse_data_frame_() {
     }
 
     default:
-      ESP_LOGE(TAG, "<XX [%d] std, Unknow std frame type < %s", this->loop_count_,
+      ESP_LOGE(TAG, "<XX [%d] std, Unknown std frame type < %s", this->loop_count_,
                format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
       break;

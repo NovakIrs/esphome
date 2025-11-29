@@ -25,6 +25,7 @@ void LD2410S::send_() {
   switch (this->tx_schedule_.check_state()) {
     case TxCmdState::SCHEDULED:
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
+      [[fallthrough]];
     case TxCmdState::SEND:
       this->status_set_warning();
       this->write_array(this->tx_frame_, this->tx_frame_size_);

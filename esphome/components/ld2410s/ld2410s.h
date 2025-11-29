@@ -202,5 +202,5 @@ class LD2410S : public Component, public uart::UARTDevice {
     return true;
   }
 };
-}  // namespace ld2410s
-}  // namespace esphome
+
+}  // namespace esphome::ld2410s

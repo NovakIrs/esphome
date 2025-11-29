@@ -147,57 +147,36 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
       } else {
         switch (sub_command) {
           case CFG_MAX_DETECTION_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MAX_DETECTION_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->max_dist_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->max_dist_);
             break;
 
           case CFG_MIN_DETECTION_VALUE:
-            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_MIN_DETECTION_VALUE, &this->min_dist_);
-
-            // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
-            // append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->min_dist_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->min_dist_);
             break;
 
           case CFG_NO_DELAY_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_NO_DELAY_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->delay_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->delay_);
             break;
 
           case CFG_STATUS_FREQ_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_STATUS_FREQ_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->status_freq_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->status_freq_);
             break;
 
           case CFG_DISTANCE_FREQ_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_DISTANCE_FREQ_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->dist_freq_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->dist_freq_);
             break;
 
           case CFG_RESPONSE_SPEED_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_RESPONSE_SPEED_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->resp_speed_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->resp_speed_);
             break;
 
           default:
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MAX_DETECTION_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->max_dist_);
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->min_dist_);
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_NO_DELAY_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->delay_);
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_STATUS_FREQ_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->status_freq_);
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_DISTANCE_FREQ_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->dist_freq_);
-
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_RESPONSE_SPEED_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->resp_speed_);
-
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_MAX_DETECTION_VALUE, &this->max_dist_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_MIN_DETECTION_VALUE, &this->min_dist_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_NO_DELAY_VALUE, &this->delay_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_STATUS_FREQ_VALUE, &this->status_freq_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_DISTANCE_FREQ_VALUE, &this->dist_freq_);
+            append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_RESPONSE_SPEED_VALUE, &this->resp_speed_);
             break;
         }
         break;

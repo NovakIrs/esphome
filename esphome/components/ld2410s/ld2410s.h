@@ -1,7 +1,6 @@
 #pragma once
 // #define LD2410S_V2
 #include "esphome/core/application.h"
-#include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 #include "esphome/core/defines.h"
 #include "esphome/core/helpers.h"
@@ -9,11 +8,8 @@
 #include "esphome/components/uart/uart.h"
 #ifdef LD2410S_V2
 #endif
-#include <functional>
-#include <iomanip>
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
 namespace esphome::ld2410s {
 #pragma region ld2410s specific Constants
 static const char *const TAG = "ld2410s";

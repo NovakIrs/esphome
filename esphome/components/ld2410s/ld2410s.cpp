@@ -27,7 +27,7 @@ void LD2410S::send_() {
       this->build_cmd_frame_(this->tx_schedule_.get_command(), this->tx_schedule_.get_sub_command());
     case TxCmdState::SEND:
       this->status_set_warning();
-      this->write_array(this->tx_frame_, sizeof(this->tx_frame_));
+      this->write_array(this->tx_frame_, this->tx_frame_size_);
       this->flush();
       ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());

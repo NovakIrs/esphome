@@ -121,7 +121,7 @@ class LD2410Sschedule {
 
  protected:
   TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE] = {};
-  uint32_t time_started_;
+  uint32_t time_started_{0};
   uint8_t retry_count_{0};
   uint8_t restart_count_{0};
   uint8_t active_{0};

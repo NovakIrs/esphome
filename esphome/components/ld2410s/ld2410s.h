@@ -184,6 +184,7 @@ class LD2410S : public Component, public uart::UARTDevice {
     insert_position += bytes_to_copy;
     return true;
   }
+
   template<typename T>
   static bool read_seq_data(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size = 1,
                             uint16_t actual_size = 0) {
@@ -196,6 +197,26 @@ class LD2410S : public Component, public uart::UARTDevice {
     memcpy(out_data, read_ptr, bytes_to_read);
     read_position += bytes_to_read;
     return true;
+  }
+
+  template<typename T>
+  static bool append_seq_data_value(uint8_t *data, uint16_t &insert_position, uint16_t identifier, const T *append_data,
+                                    uint16_t append_array_size = 1, uint16_t actual_size = 0) {
+    return append_seq_data(data, insert_position, &identifier) &&
+           append_seq_data(data, insert_position, append_data, append_array_size, actual_size);
+  }
+
+  static void append_gate_thresholds(uint8_t *data, uint16_t &insert_position, uint16_t sub_command,
+                                     const uint32_t *thresholds_array) {
+    if (sub_command != NO_SUB_CMD) {
+      append_seq_data(data, insert_position, &sub_command);
+      append_seq_data(data, insert_position, &thresholds_array[sub_command]);
+    } else {
+      for (uint16_t i = 0; i < 16; i++) {
+        append_seq_data(data, insert_position, &i, 1);
+        append_seq_data(data, insert_position, &thresholds_array[i]);
+      }
+    }
   }
 };
 

@@ -4,7 +4,7 @@
 
 // core
 #include "esphome/core/application.h"
-#include "esphome/core/automation.h"
+// #include "esphome/core/automation.h"
 #include "esphome/core/component.h"
 #include "esphome/core/defines.h"
 #include "esphome/core/helpers.h"
@@ -40,11 +40,11 @@
 #endif
 
 // std
-#include <functional>
-#include <iomanip>
+// #include <functional>
+// #include <iomanip>
 #include <cstddef>
 #include <cstdint>
-#include <type_traits>
+// #include <type_traits>
 
 namespace esphome::ld2410s {
 

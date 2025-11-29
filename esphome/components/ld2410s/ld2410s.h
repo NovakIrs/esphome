@@ -380,7 +380,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   template<typename T>
   static bool append_seq_value(uint8_t *data, uint16_t &insert_position, uint16_t identifier, const T *append_data,
                                uint16_t append_array_size = 1, uint16_t actual_size = 0) {
-    return append_seq_data(data, insert_position, identifier) &&
+    return append_seq_data(data, insert_position, &identifier) &&
            append_seq_data(data, insert_position, append_data, append_array_size, actual_size);
   }
 

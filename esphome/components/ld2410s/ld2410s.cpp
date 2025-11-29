@@ -152,8 +152,10 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
             break;
 
           case CFG_MIN_DETECTION_VALUE:
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
-            append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->min_dist_);
+            append_seq_value(this->tx_frame_, this->tx_frame_size_, CFG_MIN_DETECTION_VALUE, &this->min_dist_);
+
+            // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
+            // append_seq_data(this->tx_frame_, this->tx_frame_size_, &this->min_dist_);
             break;
 
           case CFG_NO_DELAY_VALUE:

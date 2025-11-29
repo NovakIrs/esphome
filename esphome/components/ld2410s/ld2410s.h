@@ -46,8 +46,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace esphome {
-namespace ld2410s {
+namespace esphome::ld2410s {
 
 #pragma region ld2410s specific Constants
 
@@ -383,5 +382,4 @@ class LD2410S : public Component, public uart::UARTDevice {
   }
 };
 
-}  // namespace ld2410s
-}  // namespace esphome
+}  // namespace esphome::ld2410s

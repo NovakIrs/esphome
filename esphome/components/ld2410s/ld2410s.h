@@ -93,7 +93,7 @@ class LD2410Srx {
   bool payload_ready() const { return payload_ready_; }
 
  protected:
-  uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE];
+  uint8_t rcv_buffer_[RX_TX_BUFFER_SIZE] = {};
   uint16_t end_pos_{0};
   uint16_t header_footer_size_{0};
   uint16_t expected_frame_size_{0};
@@ -120,7 +120,7 @@ class LD2410Sschedule {
   uint16_t get_sub_command();
 
  protected:
-  TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE];
+  TxTaskT commands_[TX_SCHEDULE_BUFFER_SIZE] = {};
   uint32_t time_started_;
   uint8_t retry_count_{0};
   uint8_t restart_count_{0};
@@ -147,11 +147,11 @@ class LD2410S : public Component, public uart::UARTDevice {
  protected:
   LD2410Sschedule tx_schedule_;
   LD2410Srx rx_;
-  uint8_t tx_frame_[RX_TX_BUFFER_SIZE];
+  uint8_t tx_frame_[RX_TX_BUFFER_SIZE] = {};
   uint16_t tx_frame_size_ = 0;
-  uint32_t thresholds_trigger_[16];
-  uint32_t thresholds_hold_[16];
-  uint32_t thresholds_snr_[16];
+  uint32_t thresholds_trigger_[16] = {};
+  uint32_t thresholds_hold_[16] = {};
+  uint32_t thresholds_snr_[16] = {};
   uint32_t max_dist_{0};
   uint32_t min_dist_{0};
   uint32_t delay_{0};
@@ -163,7 +163,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   bool minimal_output_{true};
   uint32_t loop_count_{0};
   bool init_done_{false};
-  uint32_t energy_values_[16];
+  uint32_t energy_values_[16] = {};
   std::string energy_values_str_ = "";
   void send_();
   void build_cmd_frame_(uint16_t command, uint16_t sub_command = NO_SUB_CMD);

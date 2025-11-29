@@ -119,36 +119,25 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
 
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MAX_DETECTION_VALUE);
-          break;
-
         case CFG_MIN_DETECTION_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
-          break;
-
         case CFG_NO_DELAY_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_NO_DELAY_VALUE);
-          break;
-
         case CFG_STATUS_FREQ_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_STATUS_FREQ_VALUE);
-          break;
-
         case CFG_DISTANCE_FREQ_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_DISTANCE_FREQ_VALUE);
-          break;
-
         case CFG_RESPONSE_SPEED_VALUE:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_RESPONSE_SPEED_VALUE);
+          append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
           break;
 
         default:
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MAX_DETECTION_VALUE);
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_NO_DELAY_VALUE);
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_STATUS_FREQ_VALUE);
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_DISTANCE_FREQ_VALUE);
-          append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_RESPONSE_SPEED_VALUE);
+          static const uint16_t dt[] = {CFG_MAX_DETECTION_VALUE, CFG_MIN_DETECTION_VALUE, CFG_NO_DELAY_VALUE,
+                                        CFG_STATUS_FREQ_VALUE,   CFG_DISTANCE_FREQ_VALUE, CFG_RESPONSE_SPEED_VALUE};
+          append_seq_data(this->tx_frame_, this->tx_frame_size_, &dt, 6, sizeof(sub_command));
+
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MAX_DETECTION_VALUE);
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_MIN_DETECTION_VALUE);
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_NO_DELAY_VALUE);
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_STATUS_FREQ_VALUE);
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_DISTANCE_FREQ_VALUE);
+          // append_seq_data(this->tx_frame_, this->tx_frame_size_, &CFG_RESPONSE_SPEED_VALUE);
           break;
       }
 

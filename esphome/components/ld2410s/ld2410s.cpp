@@ -220,12 +220,13 @@ void LD2410S::parse_() {
 void LD2410S::parse_short_data_frame_() {
   ESP_LOGVV(TAG, "<   [%d] short data < %s", this->loop_count_,
             format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
-  // const bool presence_state = this->rx_.payload_data()[0] > 1;
-  // uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
-  // if (!presence_state)
-  //   distance = 0;
-#ifdef LD2410S_V2
-#endif
+  const bool presence_state = this->rx_.payload_data()[0] > 1;
+  uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
+  if (!presence_state)
+    distance = 0;
+
+  this->publish_distance_(distance);
+  this->publish_presence_(presence_state);
 }
 void LD2410S::parse_data_frame_() {
   switch (this->rx_.payload_data()[0]) {
@@ -234,13 +235,17 @@ void LD2410S::parse_data_frame_() {
       ESP_LOGVV(TAG, "<   [%d] std data < %s", this->loop_count_,
                 format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
-      // const bool presence_state = this->rx_.payload_data()[1] > 1;
+      const bool presence_state = this->rx_.payload_data()[1] > 1;
 
-      // uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
-      // if (!presence_state)
-      //   distance = 0;
+      uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
+      if (!presence_state)
+        distance = 0;
+
+      this->publish_distance_(distance);
+      this->publish_presence_(presence_state);
 
 #ifdef LD2410S_V2
+      this->parse_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
 
       break;

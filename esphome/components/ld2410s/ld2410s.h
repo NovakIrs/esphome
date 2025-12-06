@@ -126,6 +126,20 @@ class LD2410Sschedule {
   bool config_mode_{true};
 };
 class LD2410S : public Component, public uart::UARTDevice {
+#ifdef USE_SENSOR
+  SUB_SENSOR(distance)
+#endif
+#ifdef USE_BINARY_SENSOR
+  SUB_BINARY_SENSOR(presence)
+#endif
+
+#ifdef USE_SENSOR
+  SUB_SENSOR(calibration_progress)
+#endif
+#ifdef USE_BINARY_SENSOR
+  SUB_BINARY_SENSOR(calibration_runing)
+#endif
+
 #ifdef LD2410S_V2
 #endif
  public:
@@ -163,6 +177,10 @@ class LD2410S : public Component, public uart::UARTDevice {
   void parse_short_data_frame_();
   void parse_data_frame_();
   void parse_cmd_frame_();
+
+  void publish_distance_(uint16_t distance, bool force_publish = false);
+  void publish_presence_(bool presence, bool force_publish = false);
+
 #ifdef LD2410S_V2
 #endif
   template<typename T>

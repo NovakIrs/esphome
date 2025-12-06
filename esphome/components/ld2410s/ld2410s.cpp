@@ -686,7 +686,7 @@ TxCmdState LD2410Sschedule::check_state() {
     case TxCmdState::SCHEDULED:
       this->time_started_ = App.get_loop_component_start_time();
       this->retry_count_ = 0;
-      ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
+      ESP_LOGV(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
       break;
 
     case TxCmdState::SENT:

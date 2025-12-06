@@ -1,7 +1,6 @@
 #include "ld2410s.h"
 
-namespace esphome {
-namespace ld2410s {
+namespace esphome::ld2410s {
 
 #ifdef LD2410S_V2
 
@@ -389,5 +388,4 @@ std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {
 
 #endif
 
-}  // namespace ld2410s
-}  // namespace esphome
+}  // namespace esphome::ld2410s

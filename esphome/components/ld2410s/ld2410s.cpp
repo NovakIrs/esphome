@@ -1,6 +1,5 @@
 #include "ld2410s.h"
-namespace esphome {
-namespace ld2410s {
+namespace esphome::ld2410s {
 #pragma region LD2410S
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
@@ -663,5 +662,4 @@ void LD2410Sschedule::reset() {
   ESP_LOGV(TAG, "::: Schedule cleared");
 }
 #pragma endregion
-}  // namespace ld2410s
-}  // namespace esphome
+}  // namespace esphome::ld2410s

@@ -70,7 +70,7 @@ void LD2410S::send_() {
 
     case TxCmdState::EMPTY:
       if (!this->init_done_) {
-        ESP_LOGD(TAG, "+++ [%d] Setup done", this->loop_count_);
+        ESP_LOGV(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
       }
       break;
@@ -808,7 +808,7 @@ void LD2410Sschedule::reset() {
   this->retry_count_ = 0;
   this->restart_count_ = 0;
   this->state_ = TxCmdState::EMPTY;
-  ESP_LOGD(TAG, "::: Schedule cleared");
+  ESP_LOGV(TAG, "::: Schedule cleared");
 }
 
 #pragma endregion

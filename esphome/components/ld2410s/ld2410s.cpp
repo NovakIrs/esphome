@@ -30,15 +30,15 @@ void LD2410S::send_() {
       this->status_set_warning();
       this->write_array(this->tx_frame_, this->tx_frame_size_);
       this->flush();
-      ESP_LOGI(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
-               format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
+      ESP_LOGVV(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(),
+                format_hex_pretty(this->tx_frame_, this->tx_frame_size_, ' ').c_str());
 
       this->init_done_ = false;
       this->tx_schedule_.confirm_sent();
       break;
     case TxCmdState::ERROR:
       this->status_set_warning();
-      ESP_LOGW(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
+      ESP_LOGD(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
       this->tx_schedule_.reset();
 #ifdef LD2410S_V2
 #endif
@@ -48,7 +48,7 @@ void LD2410S::send_() {
       break;
     case TxCmdState::EMPTY:
       if (!this->init_done_) {
-        ESP_LOGI(TAG, "+++ [%d] Setup done", this->loop_count_);
+        ESP_LOGV(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
       }
       break;
@@ -58,7 +58,7 @@ void LD2410S::send_() {
   }
 }
 void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
-  ESP_LOGD(TAG, ":>> [%d] %04x Prepare frame ", this->loop_count_, command);
+  ESP_LOGV(TAG, ":>> [%d] %04x Prepare frame ", this->loop_count_, command);
   this->tx_frame_size_ = 0;
   append_seq_data(this->tx_frame_, this->tx_frame_size_, &CMD_FRAME_HEADER);
   uint16_t size_start = this->tx_frame_size_;
@@ -213,13 +213,13 @@ void LD2410S::parse_() {
       this->parse_cmd_frame_();
       break;
     default:
-      ESP_LOGE(TAG, "Received Unknown package type!!!");
+      ESP_LOGD(TAG, "Received Unknown package type!!!");
       break;
   }
 }
 void LD2410S::parse_short_data_frame_() {
-  ESP_LOGI(TAG, "<   [%d] short data < %s", this->loop_count_,
-           format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+  ESP_LOGVV(TAG, "<   [%d] short data < %s", this->loop_count_,
+            format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
   // const bool presence_state = this->rx_.payload_data()[0] > 1;
   // uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
   // if (!presence_state)
@@ -231,8 +231,8 @@ void LD2410S::parse_data_frame_() {
   switch (this->rx_.payload_data()[0]) {
     case 0x01:  // standard data
     {
-      ESP_LOGI(TAG, "<   [%d] std data < %s", this->loop_count_,
-               format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+      ESP_LOGVV(TAG, "<   [%d] std data < %s", this->loop_count_,
+                format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
       // const bool presence_state = this->rx_.payload_data()[1] > 1;
 
@@ -255,7 +255,7 @@ void LD2410S::parse_data_frame_() {
     }
 
     default:
-      ESP_LOGE(TAG, "<XX [%d] std, Unknown std frame type < %s", this->loop_count_,
+      ESP_LOGV(TAG, "<XX [%d] std, Unknown std frame type < %s", this->loop_count_,
                format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
 
       break;
@@ -269,10 +269,10 @@ void LD2410S::parse_cmd_frame_() {
   read_seq_data(data_start, read_position, &command_word);
   read_seq_data(data_start, read_position, &ack);
   if (ack == 0x0000) {
-    ESP_LOGI(TAG, "<   [%d] %04x cmd < %s", this->loop_count_, command_word,
-             format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
+    ESP_LOGVV(TAG, "<   [%d] %04x cmd < %s", this->loop_count_, command_word,
+              format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
   } else {
-    ESP_LOGE(TAG, "<XX [%d] %04x cmd Failed ack:%04x < %s", this->loop_count_, command_word, ack,
+    ESP_LOGD(TAG, "<XX [%d] %04x cmd Failed ack:%04x < %s", this->loop_count_, command_word, ack,
              format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
   }
   this->tx_schedule_.verify_response(command_word);
@@ -284,7 +284,7 @@ void LD2410S::parse_cmd_frame_() {
 #ifdef LD2410S_V2
 #endif
     default:
-      ESP_LOGE(TAG, "< Unknown: %4x", command_word);
+      ESP_LOGD(TAG, "< Unknown: %4x", command_word);
       break;
   }
 }
@@ -313,14 +313,14 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
     case RxEvaluationResult::UNKNOWN:
       this->end_pos_++;
       if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
-        ESP_LOGE(TAG, "XX< [%d] Received data buffer overflow, resetting", loop_count);
+        ESP_LOGV(TAG, "XX< [%d] Received data buffer overflow, resetting", loop_count);
         this->reset_();
       }
       break;
 
     case RxEvaluationResult::NOK:
     default:
-      ESP_LOGE(TAG, "<XX [%d] %s < %s", loop_count, this->msg_.c_str(),
+      ESP_LOGV(TAG, "<XX [%d] %s < %s", loop_count, this->msg_.c_str(),
                format_hex_pretty(this->rcv_buffer_, end_pos_ + 1, ' ').c_str());
       this->reset_();
       result = RxEvaluationResult::UNKNOWN;
@@ -480,62 +480,96 @@ int LD2410Srx::read_int(const uint8_t *buffer, size_t pos, size_t len) {
 #pragma endregion
 #pragma region LD2410Sschedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
-  ESP_LOGI(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
+  ESP_LOGV(TAG, "append => cmd:%04x, prev_cmd:%04x, active:%d, last:%d", command,
+           this->commands_[this->last_ - 1].command, this->active_, this->last_);
 
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
-    ESP_LOGE(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
+    ESP_LOGW(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
 
     this->reset();
     this->state_ = TxCmdState::ERROR;
     return;
   }
 
-  if (this->last_ <= 0) {
-    // first cmd must be config start
-    if (command != CONFIG_MODE_START_CMD)
+  if (command != CONFIG_MODE_START_CMD) {
+    if (this->last_ <= 0) {
+      ESP_LOGV(TAG, "First cmd must be config start => appending config start and new cmd");
       this->append(CONFIG_MODE_START_CMD);
-  } else {
-    // if last cmd is config end it won't be possible tu just append new command
-    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD && command != CONFIG_MODE_START_CMD) {
-      // If config end is not already sent - another config start must be appended
-      if (this->active_ == this->last_ - 1 && this->state_ != TxCmdState::SCHEDULED) {
-        ESP_LOGD(TAG, "Last cmd is config end and it's already executing => appending config start");
-        this->append(CONFIG_MODE_START_CMD);
-      }
+    } else {
+      // if previous cmd is config end, it's not possible tu just append new command
+      if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
+        if (command == CONFIG_MODE_END_CMD) {
+          ESP_LOGV(TAG, "Ignoring duplicated config end cmd");
+          return;
+        }
 
-      // ... otherwise previous config end can be deleted
-      else {
-        ESP_LOGD(TAG, "Last cmd was config end and it's not executing executing yet => deleting config end");
-        this->last_--;
+        if (this->active_ == this->last_ - 1) {
+          ESP_LOGV(TAG, "Previous cmd is config end and it's already executing => appending config start and new cmd");
+          this->append(CONFIG_MODE_START_CMD);
+
+        } else {
+          ESP_LOGV(TAG, "Last cmd was config end and it's not executing executing yet => deleting last config end and "
+                        "appending new cmd");
+          this->last_--;
+        }
       }
     }
   }
 
+  ESP_LOGV(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
+
   this->commands_[this->last_].command = command;
   this->commands_[this->last_].sub_command = sub_command;
+
+  this->last_++;
+
+  if (command != CONFIG_MODE_START_CMD && command != CONFIG_MODE_END_CMD) {
+    ESP_LOGV(TAG, "Appending end");
+    this->append(CONFIG_MODE_END_CMD);
+  }
 
   if (this->state_ == TxCmdState::EMPTY) {
     this->state_ = TxCmdState::SCHEDULED;
   }
-
-  this->last_++;
 }
+
 TxCmdState LD2410Sschedule::check_state() {
   switch (this->state_) {
     case TxCmdState::SCHEDULED:
-      this->schedule_();
+      this->time_started_ = App.get_loop_component_start_time();
+      this->retry_count_ = 0;
+      ESP_LOGV(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
       break;
 
     case TxCmdState::SENT:
       if (App.get_loop_component_start_time() > this->time_started_ + TX_CONFIRMATION_TIMEOUT) {
+        this->time_started_ = App.get_loop_component_start_time();
+
         if (this->retry_count_ < TX_MAX_RESEND) {
-          this->resend_();
+          ESP_LOGD(TAG, ":>> pos:%d[%d], cmd:%04x, retry:%d, restart:%d, Send Timeout Expired, Resend!", this->active_,
+                   this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
+          this->state_ = TxCmdState::SEND;
+          this->retry_count_++;
 
         } else {
           if (this->restart_count_ < TX_MAX_RESTART) {
-            this->restart_();
+            ESP_LOGW(TAG, ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Resend limit reached, Restart sequence!!",
+                     this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
+            this->state_ = TxCmdState::SCHEDULED;
+            this->retry_count_ = 0;
+            this->restart_count_++;
+            this->active_ = 0;
+
           } else {
-            this->give_up_();
+            ESP_LOGE(TAG,
+                     ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Restart sequence limit reached, Giving up, "
+                     "Reseting buffer!!!",
+                     this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
+            this->state_ = TxCmdState::ERROR;
+            this->retry_count_ = 0;
+            this->restart_count_ = 0;
+            this->active_ = 0;
+            this->last_ = 0;
           }
         }
       }
@@ -544,8 +578,10 @@ TxCmdState LD2410Sschedule::check_state() {
     case TxCmdState::EMPTY:
 
       // schedule has passed the end
-      if (!this->check_append_config_end_())
-        this->check_clear_();
+      if (this->last_ > 0 && !this->config_mode_ && this->active_ >= this->last_ - 1) {
+        this->reset();
+      }
+
       break;
 
     case TxCmdState::SEND:
@@ -558,6 +594,7 @@ TxCmdState LD2410Sschedule::check_state() {
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
+    ESP_LOGD(TAG, "Sent cmd: %04x", this->get_command());
     ESP_LOGV(TAG, "::< pos:%d[%d], cmd:%04x, Sending confirmed, rx:%x", this->active_, this->last_ - 1,
              this->get_command(), command_word);
 
@@ -576,43 +613,38 @@ void LD2410Sschedule::verify_response(uint16_t command_word) {
         break;
     }
 
-    if (!this->check_append_config_end_()) {
-      if (check_clear_()) {
-        return;
-      }
+    if (this->active_ >= this->last_ - 1 && this->last_ > 0 && !this->config_mode_) {
+      this->reset();
+      return;
     }
 
     // procede to next task
-    this->active_++;
     this->state_ = TxCmdState::SCHEDULED;
+    this->active_++;
     if (this->active_ >= TX_SCHEDULE_BUFFER_SIZE) {
-      ESP_LOGE(TAG, "::: Schedule overflow, Reseting");
+      ESP_LOGD(TAG, "::: Schedule overflow, Reseting");
       this->reset();
     }
 
   } else {
     if (this->state_ == TxCmdState::SENT) {
-      ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received confirmation for wrong command", this->active_,
+      ESP_LOGD(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received confirmation for wrong command", this->active_,
                this->last_, this->get_command(), command_word);
     } else {
       if (this->active_ > 0 && command_word == (this->commands_[this->active_ - 1].command | CMD_CONFIRMATION)) {
-        ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received unexpected confirmation for previous cmd",
+        ESP_LOGD(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received unexpected confirmation for previous cmd",
                  this->active_, this->last_, this->get_command(), command_word);
       } else {
-        ESP_LOGE(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received unexpected confirmation", this->active_,
+        ESP_LOGD(TAG, "::< pos:%d[%d], cmd:%04x, received:%x, Received unexpected confirmation", this->active_,
                  this->last_, this->get_command(), command_word);
       }
     }
   }
 }
 void LD2410Sschedule::confirm_sent() {
-  if (this->state_ == TxCmdState::SCHEDULED || this->state_ == TxCmdState::SEND) {
-    this->time_started_ = App.get_loop_component_start_time();
-    this->state_ = TxCmdState::SENT;
-    this->config_mode_ = true;
-  } else {
-    ESP_LOGE(TAG, ":>> pos:%d[%d], cmd:%04x, Sending NOT CONFIRMED", this->active_, this->last_, this->get_command());
-  }
+  this->time_started_ = App.get_loop_component_start_time();
+  this->state_ = TxCmdState::SENT;
+  this->config_mode_ = true;
 }
 uint16_t LD2410Sschedule::get_command() { return this->commands_[this->active_].command; }
 uint16_t LD2410Sschedule::get_sub_command() { return this->commands_[this->active_].sub_command; }
@@ -623,53 +655,7 @@ void LD2410Sschedule::reset() {
   this->retry_count_ = 0;
   this->restart_count_ = 0;
   this->state_ = TxCmdState::EMPTY;
-  ESP_LOGI(TAG, "::: Schedule cleared");
-}
-void LD2410Sschedule::schedule_() {
-  this->time_started_ = App.get_loop_component_start_time();
-  this->retry_count_ = 0;
-  ESP_LOGD(TAG, "::> pos:%d[%d], cmd:%04x, Scheduled", this->active_, this->last_ - 1, this->get_command());
-}
-void LD2410Sschedule::resend_() {
-  this->time_started_ = App.get_loop_component_start_time();
-  this->retry_count_++;
-  this->state_ = TxCmdState::SEND;
-  ESP_LOGW(TAG, ":>> pos:%d[%d], cmd:%04x, retry:%d, restart:%d, Send Timeout Expired, Resend!", this->active_,
-           this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
-}
-void LD2410Sschedule::restart_() {
-  this->active_ = 0;
-  this->time_started_ = App.get_loop_component_start_time();
-  this->retry_count_ = 0;
-  this->restart_count_++;
-  this->state_ = TxCmdState::SCHEDULED;
-  ESP_LOGW(TAG, ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Resend limit reached, Restart sequence!!",
-           this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
-}
-void LD2410Sschedule::give_up_() {
-  ESP_LOGE(
-      TAG,
-      ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Restart sequence limit reached, Giving up, Reseting buffer!!!",
-      this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
-  this->last_ = 0;
-  this->active_ = 0;
-  this->time_started_ = App.get_loop_component_start_time();
-  this->retry_count_ = 0;
-  this->restart_count_ = 0;
-  this->state_ = TxCmdState::ERROR;
-}
-bool LD2410Sschedule::check_append_config_end_() {
-  if (this->active_ < this->last_ - 1 || this->last_ <= 0 || !this->config_mode_)
-    return false;
-  ESP_LOGD(TAG, "+:< Appending config end, pos:%d, ", this->active_);
-  this->append(CONFIG_MODE_END_CMD);
-  return true;
-}
-bool LD2410Sschedule::check_clear_() {
-  if (this->active_ < this->last_ - 1 || this->last_ <= 0 || this->config_mode_)
-    return false;
-  this->reset();
-  return true;
+  ESP_LOGV(TAG, "::: Schedule cleared");
 }
 #pragma endregion
 }  // namespace ld2410s

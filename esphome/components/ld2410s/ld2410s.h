@@ -124,12 +124,6 @@ class LD2410Sschedule {
   uint8_t last_{0};
   TxCmdState state_ = TxCmdState::EMPTY;
   bool config_mode_{true};
-  void schedule_();
-  void resend_();
-  void restart_();
-  void give_up_();
-  bool check_append_config_end_();
-  bool check_clear_();
 };
 class LD2410S : public Component, public uart::UARTDevice {
 #ifdef LD2410S_V2

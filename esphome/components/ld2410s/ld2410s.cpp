@@ -664,7 +664,7 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     }
   }
 
-  ESP_LOGI(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
+  ESP_LOGV(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
 
   this->commands_[this->last_].command = command;
   this->commands_[this->last_].sub_command = sub_command;
@@ -743,6 +743,7 @@ TxCmdState LD2410Sschedule::check_state() {
 void LD2410Sschedule::verify_response(uint16_t command_word) {
   int16_t expected = this->get_command() | CMD_CONFIRMATION;
   if (command_word == expected) {
+    ESP_LOGD(TAG, "Sent cmd: %04x", this->get_command());
     ESP_LOGV(TAG, "::< pos:%d[%d], cmd:%04x, Sending confirmed, rx:%x", this->active_, this->last_ - 1,
              this->get_command(), command_word);
 

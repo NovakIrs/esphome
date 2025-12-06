@@ -18,6 +18,12 @@ void LD2410S::dump_config() {
   ESP_LOGCONFIG(TAG, "Switches:");
   LOG_SWITCH("  ", "Minimal Output", this->minimal_output_switch_);
 #endif
+
+  ESP_LOGCONFIG(TAG,
+                "Config Params Read: \n  max_dist:%d \n  min_dist:%d \n  delay:%d \n  status_freq:%d \n  dist_freq:%d "
+                "\n  resp_speed:%d",
+                this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_,
+                this->resp_speed_);
 }
 
 void LD2410S::init_() {
@@ -214,8 +220,6 @@ void LD2410S::parse_ack_config_read_(uint8_t *data) {
   this->response_speed_select_->publish_state(this->resp_speed_ == 5 ? CFG_RESPONSE_SPEED_NORMAL
                                                                      : CFG_RESPONSE_SPEED_FAST);
 #endif
-  ESP_LOGI(TAG, "Config Params Read: max_dist:%d  min_dist:%d  delay:%d  status_freq:%d  dist_freq:%d  resp_speed:%d",
-           this->max_dist_, this->min_dist_, this->delay_, this->status_freq_, this->dist_freq_, this->resp_speed_);
 }
 void LD2410S::parse_ack_fw_read_(const uint8_t *data) {
   uint16_t read_position = 0;
@@ -229,7 +233,6 @@ void LD2410S::parse_ack_fw_read_(const uint8_t *data) {
   read_seq_data(data, read_position, &patch_v);
   std::string version = "v" + std::to_string(major_v) + "." + std::to_string(minor_v) + "." + std::to_string(patch_v);
 
-  ESP_LOGD(TAG, "Version: %s", version.c_str());
   this->publish_fw_version_(version);
 }
 void LD2410S::parse_ack_threshold_trigger_read_(uint8_t *data) {
@@ -269,7 +272,6 @@ void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Distance: %f", distance);
 }
 void LD2410S::publish_presence_(bool presence, bool force_publish) {
 #ifdef USE_BINARY_SENSOR
@@ -279,7 +281,6 @@ void LD2410S::publish_presence_(bool presence, bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Presence: %s", presence ? "ON" : "OFF");
 }
 void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool force_publish) {
 #ifdef USE_SENSOR
@@ -295,7 +296,6 @@ void LD2410S::publish_calibration_progress_(uint16_t calibration_progress, bool 
     }
   }
 #endif
-  ESP_LOGI(TAG, "Calibration Progress: %d%%", calibration_progress);
 }
 void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
 #ifdef USE_BINARY_SENSOR
@@ -305,7 +305,6 @@ void LD2410S::publish_calibration_runing_(bool running, bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Calibration Running: %s", running ? "ON" : "OFF");
 }
 void LD2410S::publish_fw_version_(const std::string &version, bool force_publish) {
 #ifdef USE_TEXT_SENSOR
@@ -326,7 +325,6 @@ void LD2410S::publish_threshold_trigger_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Threshold Trigger: %s", vals.c_str());
 }
 void LD2410S::publish_threshold_hold_(bool force_publish) {
   std::string vals = format_int(this->thresholds_hold_, 16, 2);
@@ -338,7 +336,6 @@ void LD2410S::publish_threshold_hold_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Threshold Hold: %s", vals.c_str());
 }
 void LD2410S::publish_threshold_snr_(bool force_publish) {
   std::string vals = format_int(this->thresholds_snr_, 16, 2);
@@ -350,7 +347,6 @@ void LD2410S::publish_threshold_snr_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGI(TAG, "Threshold SNR: %s", vals.c_str());
 }
 void LD2410S::publish_energy_values_(bool force_publish) {
   this->energy_values_str_ = format_int(this->energy_values_, 16, 2);
@@ -362,7 +358,6 @@ void LD2410S::publish_energy_values_(bool force_publish) {
     }
   }
 #endif
-  ESP_LOGD(TAG, "Energy Values: %s", this->energy_values_str_.c_str());
 }
 
 std::string LD2410S::format_int(uint32_t *in, uint8_t len, uint8_t min_w) {

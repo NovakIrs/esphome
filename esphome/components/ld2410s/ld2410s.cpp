@@ -639,25 +639,27 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     return;
   }
 
-  if (this->last_ <= 0 && command != CONFIG_MODE_START_CMD) {
-    ESP_LOGV(TAG, "First cmd must be config start => appending config start and new cmd");
-    this->append(CONFIG_MODE_START_CMD);
-  } else {
-    // if previous cmd is config end, it's not possible tu just append new command
-    if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
-      if (command == CONFIG_MODE_END_CMD) {
-        ESP_LOGV(TAG, "Ignoring duplicated config end cmd");
-        return;
-      }
+  if (command != CONFIG_MODE_START_CMD) {
+    if (this->last_ <= 0) {
+      ESP_LOGV(TAG, "First cmd must be config start => appending config start and new cmd");
+      this->append(CONFIG_MODE_START_CMD);
+    } else {
+      // if previous cmd is config end, it's not possible tu just append new command
+      if (this->commands_[this->last_ - 1].command == CONFIG_MODE_END_CMD) {
+        if (command == CONFIG_MODE_END_CMD) {
+          ESP_LOGV(TAG, "Ignoring duplicated config end cmd");
+          return;
+        }
 
-      if (this->active_ == this->last_ - 1) {
-        ESP_LOGV(TAG, "Previous cmd is config end and it's already executing => appending config start and new cmd");
-        this->append(CONFIG_MODE_START_CMD);
+        if (this->active_ == this->last_ - 1) {
+          ESP_LOGV(TAG, "Previous cmd is config end and it's already executing => appending config start and new cmd");
+          this->append(CONFIG_MODE_START_CMD);
 
-      } else {
-        ESP_LOGV(TAG, "Last cmd was config end and it's not executing executing yet => deleting last config end and "
-                      "appending new cmd");
-        this->last_--;
+        } else {
+          ESP_LOGV(TAG, "Last cmd was config end and it's not executing executing yet => deleting last config end and "
+                        "appending new cmd");
+          this->last_--;
+        }
       }
     }
   }

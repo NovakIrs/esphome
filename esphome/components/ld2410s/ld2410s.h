@@ -6,14 +6,12 @@
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
 #include "esphome/components/uart/uart.h"
-
 #ifdef USE_SENSOR
 #include "esphome/components/sensor/sensor.h"
 #endif
 #ifdef USE_BINARY_SENSOR
 #include "esphome/components/binary_sensor/binary_sensor.h"
 #endif
-
 #ifdef LD2410S_V2
 #endif
 #include <cstddef>
@@ -140,14 +138,12 @@ class LD2410S : public Component, public uart::UARTDevice {
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(presence)
 #endif
-
 #ifdef USE_SENSOR
   SUB_SENSOR(calibration_progress)
 #endif
 #ifdef USE_BINARY_SENSOR
   SUB_BINARY_SENSOR(calibration_runing)
 #endif
-
 #ifdef LD2410S_V2
 #endif
  public:
@@ -185,10 +181,8 @@ class LD2410S : public Component, public uart::UARTDevice {
   void parse_short_data_frame_();
   void parse_data_frame_();
   void parse_cmd_frame_();
-
   void publish_distance_(uint16_t distance, bool force_publish = false);
   void publish_presence_(bool presence, bool force_publish = false);
-
 #ifdef LD2410S_V2
 #endif
   template<typename T>
@@ -204,7 +198,6 @@ class LD2410S : public Component, public uart::UARTDevice {
     insert_position += bytes_to_copy;
     return true;
   }
-
   template<typename T>
   static bool read_seq_data(const uint8_t *data, uint16_t &read_position, T *out_data, uint16_t out_array_size = 1,
                             uint16_t actual_size = 0) {
@@ -218,14 +211,12 @@ class LD2410S : public Component, public uart::UARTDevice {
     read_position += bytes_to_read;
     return true;
   }
-
   template<typename T>
   static bool append_seq_data_value(uint8_t *data, uint16_t &insert_position, uint16_t identifier, const T *append_data,
                                     uint16_t append_array_size = 1, uint16_t actual_size = 0) {
     return append_seq_data(data, insert_position, &identifier) &&
            append_seq_data(data, insert_position, append_data, append_array_size, actual_size);
   }
-
   static void append_gate_thresholds(uint8_t *data, uint16_t &insert_position, uint16_t sub_command,
                                      const uint32_t *thresholds_array) {
     if (sub_command != NO_SUB_CMD) {
@@ -239,5 +230,4 @@ class LD2410S : public Component, public uart::UARTDevice {
     }
   }
 };
-
 }  // namespace esphome::ld2410s

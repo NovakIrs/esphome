@@ -223,7 +223,6 @@ void LD2410S::parse_short_data_frame_() {
   uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
   if (!presence_state)
     distance = 0;
-
   this->publish_distance_(distance);
   this->publish_presence_(presence_state);
 }
@@ -239,29 +238,22 @@ void LD2410S::parse_data_frame_() {
       uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
       if (!presence_state)
         distance = 0;
-
       this->publish_distance_(distance);
       this->publish_presence_(presence_state);
-
 #ifdef LD2410S_V2
-      this->parse_data_energy_values_read_(&this->rx_.payload_data()[6]);
 #endif
-
       break;
     }
-
     case 0x03:  // calibration progress
     {
 #ifdef LD2410S_V2
 #endif
-
       break;
     }
 
     default:
       ESP_LOGV(TAG, "<XX [%d] std, Unknown std frame type < %s", this->loop_count_,
                format_hex_pretty(this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ').c_str());
-
       break;
   }
 }
@@ -486,15 +478,12 @@ int LD2410Srx::read_int(const uint8_t *buffer, size_t pos, size_t len) {
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   ESP_LOGV(TAG, "append => cmd:%04x, prev_cmd:%04x, active:%d, last:%d", command,
            this->commands_[this->last_ - 1].command, this->active_, this->last_);
-
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
     ESP_LOGW(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
-
     this->reset();
     this->state_ = TxCmdState::ERROR;
     return;
   }
-
   if (command != CONFIG_MODE_START_CMD) {
     if (this->last_ <= 0) {
       ESP_LOGV(TAG, "First cmd must be config start => appending config start and new cmd");
@@ -506,11 +495,9 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
           ESP_LOGV(TAG, "Ignoring duplicated config end cmd");
           return;
         }
-
         if (this->active_ == this->last_ - 1) {
           ESP_LOGV(TAG, "Previous cmd is config end and it's already executing => appending config start and new cmd");
           this->append(CONFIG_MODE_START_CMD);
-
         } else {
           ESP_LOGV(TAG, "Last cmd was config end and it's not executing executing yet => deleting last config end and "
                         "appending new cmd");
@@ -519,19 +506,14 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
       }
     }
   }
-
   ESP_LOGV(TAG, "++: pos:[%d], cmd:%04x", this->last_, command);
-
   this->commands_[this->last_].command = command;
   this->commands_[this->last_].sub_command = sub_command;
-
   this->last_++;
-
   if (command != CONFIG_MODE_START_CMD && command != CONFIG_MODE_END_CMD) {
     ESP_LOGV(TAG, "Appending end");
     this->append(CONFIG_MODE_END_CMD);
   }
-
   if (this->state_ == TxCmdState::EMPTY) {
     this->state_ = TxCmdState::SCHEDULED;
   }

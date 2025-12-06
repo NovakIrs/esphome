@@ -1,7 +1,5 @@
 #include "ld2410s.h"
-
 namespace esphome::ld2410s {
-
 void LD2410S::publish_distance_(uint16_t distance, bool force_publish) {
 #ifdef USE_SENSOR
   if (this->distance_sensor_ != nullptr) {
@@ -20,5 +18,4 @@ void LD2410S::publish_presence_(bool presence, bool force_publish) {
   }
 #endif
 }
-
 }  // namespace esphome::ld2410s

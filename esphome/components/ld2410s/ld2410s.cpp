@@ -224,7 +224,6 @@ void LD2410S::parse_short_data_frame_() {
   format_hex_pretty_to(hex_buf, sizeof(hex_buf), this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ');
   ESP_LOGVV(TAG, "<   [%d] short data < %s", this->loop_count_, hex_buf);
 
-  
   const bool presence_state = this->rx_.payload_data()[0] > 1;
   uint16_t distance = encode_uint16(this->rx_.payload_data()[2], this->rx_.payload_data()[1]);
   if (!presence_state)
@@ -239,7 +238,7 @@ void LD2410S::parse_data_frame_() {
       char hex_buf[RX_TX_BUFFER_SIZE * 3 + 1];
       format_hex_pretty_to(hex_buf, sizeof(hex_buf), this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ');
       ESP_LOGVV(TAG, "<   [%d] std data < %s", this->loop_count_, hex_buf);
-      
+
       const bool presence_state = this->rx_.payload_data()[1] > 1;
 
       uint16_t distance = encode_uint16(this->rx_.payload_data()[3], this->rx_.payload_data()[2]);
@@ -262,7 +261,7 @@ void LD2410S::parse_data_frame_() {
       char hex_buf[RX_TX_BUFFER_SIZE * 3 + 1];
       format_hex_pretty_to(hex_buf, sizeof(hex_buf), this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ');
       ESP_LOGV(TAG, "<XX [%d] std, Unknown std frame type < %s", this->loop_count_, hex_buf);
-      
+
       break;
   }
 }
@@ -274,15 +273,14 @@ void LD2410S::parse_cmd_frame_() {
   read_seq_data(data_start, read_position, &command_word);
   read_seq_data(data_start, read_position, &ack);
   if (ack == 0x0000) {
-    char frame_hex[RX_TX_BUFFER_SIZE * 3 +1];
+    char frame_hex[RX_TX_BUFFER_SIZE * 3 + 1];
     format_hex_pretty_to(frame_hex, sizeof(frame_hex), this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ');
     ESP_LOGVV(TAG, "<   [%d] %04x cmd < %s", this->loop_count_, command_word, frame_hex);
-    
+
   } else {
-    char hex_buf[RX_TX_BUFFER_SIZE * 3 +1];
+    char hex_buf[RX_TX_BUFFER_SIZE * 3 + 1];
     format_hex_pretty_to(hex_buf, sizeof(hex_buf), this->rx_.frame_data(), this->rx_.frame_size() + 1, ' ');
     ESP_LOGD(TAG, "<XX [%d] %04x cmd Failed ack:%04x < %s", this->loop_count_, command_word, ack, hex_buf);
-
   }
   this->tx_schedule_.verify_response(command_word);
 
@@ -329,7 +327,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
 
     case RxEvaluationResult::NOK:
     default:
-      char hex_buffer[RX_TX_BUFFER_SIZE * 3 + 1]; 
+      char hex_buffer[RX_TX_BUFFER_SIZE * 3 + 1];
       format_hex_pretty_to(hex_buffer, sizeof(hex_buffer), this->rcv_buffer_, end_pos_ + 1, ' ');
       ESP_LOGV(TAG, "<XX [%d] %s < %s", loop_count, this->msg_.c_str(), hex_buffer);
 

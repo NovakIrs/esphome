@@ -1,6 +1,6 @@
 #include "ld2410s.h"
 namespace esphome::ld2410s {
-#pragma region LD2410S
+// LD2410S
 void LD2410S::setup() {
   ESP_LOGD(TAG, "setup");
 #ifdef LD2410S_V2

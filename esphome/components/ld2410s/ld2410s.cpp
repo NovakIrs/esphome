@@ -428,7 +428,10 @@ RxEvaluationResult LD2410Srx::evaluate_size_() {
     return RxEvaluationResult::UNKNOWN;  // not enough data yet to determine size
 
   } else if (this->end_pos_ + 1 > this->expected_frame_size_) {
-    this->msg_ = esphome::str_sprintf("rx passed the expected frame, expected:%d", this->expected_frame_size_);
+    char buffer[64];
+    snprintf(buffer, sizeof(buffer), "rx passed the expected frame, expected:%d", this->expected_frame_size_);
+    this->msg_ = buffer;
+
     return RxEvaluationResult::NOK;  // passed the end of short data frame
 
   } else {

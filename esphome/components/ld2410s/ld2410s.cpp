@@ -106,6 +106,7 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
     case CFG_PARAMS_WRITE_CMD:
       if (this->resp_speed_ == 0) {
         ESP_LOGD(TAG, "CFG_PARAMS_WRITE_CMD Error, bad new_config");
+        this->tx_frame_size_ = 0;
         return;
       } else {
         switch (sub_command) {

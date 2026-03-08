@@ -476,8 +476,8 @@ int LD2410Srx::read_int(const uint8_t *buffer, size_t pos, size_t len) {
 #pragma endregion
 #pragma region LD2410Sschedule
 void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
-  ESP_LOGV(TAG, "append => cmd:%04x, prev_cmd:%04x, active:%d, last:%d", command,
-           this->commands_[this->last_ - 1].command, this->active_, this->last_);
+  uint16_t prev_cmd = (this->last_ > 0) ? this->commands_[this->last_ - 1].command : 0;
+  ESP_LOGV(TAG, "append => cmd:%04x, prev_cmd:%04x, active:%d, last:%d", command, prev_cmd, this->active_, this->last_);
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
     ESP_LOGW(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
     this->reset();

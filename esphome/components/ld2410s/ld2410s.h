@@ -142,7 +142,7 @@ class LD2410S : public Component, public uart::UARTDevice {
   SUB_SENSOR(calibration_progress)
 #endif
 #ifdef USE_BINARY_SENSOR
-  SUB_BINARY_SENSOR(calibration_runing)
+  SUB_BINARY_SENSOR(calibration_running)
 #endif
 #ifdef LD2410S_V2
 #endif

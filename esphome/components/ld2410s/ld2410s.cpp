@@ -308,7 +308,7 @@ RxEvaluationResult LD2410Srx::receive_byte(uint32_t loop_count, uint8_t byte) {
 
     case RxEvaluationResult::UNKNOWN:
       this->end_pos_++;
-      if (this->end_pos_ > RX_TX_BUFFER_SIZE) {
+      if (this->end_pos_ >= RX_TX_BUFFER_SIZE) {
         ESP_LOGV(TAG, "XX< [%d] Received data buffer overflow, resetting", loop_count);
         this->reset_();
       }

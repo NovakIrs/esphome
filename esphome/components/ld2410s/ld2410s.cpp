@@ -29,11 +29,9 @@ void LD2410S::send_() {
       this->status_set_warning();
       this->write_array(this->tx_frame_, this->tx_frame_size_);
       this->flush();
-
       char tx_hex_buf[RX_TX_BUFFER_SIZE * 3 + 1];
       format_hex_pretty_to(tx_hex_buf, sizeof(tx_hex_buf), this->tx_frame_, this->tx_frame_size_, ' ');
       ESP_LOGVV(TAG, ">   [%d] %04x cmd > %s", this->loop_count_, this->tx_schedule_.get_command(), tx_hex_buf);
-
       this->init_done_ = false;
       this->tx_schedule_.confirm_sent();
       break;
@@ -78,12 +76,9 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
     case CONFIG_MODE_START_CMD:
       append_seq_data(this->tx_frame_, this->tx_frame_size_, &CONFIG_MODE_START_VALUE);
       break;
-
     case CONFIG_MODE_END_CMD:
       break;
-
     case CFG_PARAMS_READ_CMD:
-
       switch (sub_command) {
         case CFG_MAX_DETECTION_VALUE:
         case CFG_MIN_DETECTION_VALUE:
@@ -93,7 +88,6 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
         case CFG_RESPONSE_SPEED_VALUE:
           append_seq_data(this->tx_frame_, this->tx_frame_size_, &sub_command);
           break;
-
         default:
           const uint16_t cfg_values[] = {CFG_MAX_DETECTION_VALUE, CFG_MIN_DETECTION_VALUE, CFG_NO_DELAY_VALUE,
                                          CFG_STATUS_FREQ_VALUE,   CFG_DISTANCE_FREQ_VALUE, CFG_RESPONSE_SPEED_VALUE};
@@ -101,10 +95,8 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
           break;
       }
       break;
-
     case CFG_FW_READ_CMD:
       break;
-
     case CFG_PARAMS_WRITE_CMD:
       if (this->resp_speed_ == 0) {
         ESP_LOGD(TAG, "CFG_PARAMS_WRITE_CMD Error, bad new_config");
@@ -115,27 +107,21 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
           case CFG_MAX_DETECTION_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->max_dist_);
             break;
-
           case CFG_MIN_DETECTION_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->min_dist_);
             break;
-
           case CFG_NO_DELAY_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->delay_);
             break;
-
           case CFG_STATUS_FREQ_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->status_freq_);
             break;
-
           case CFG_DISTANCE_FREQ_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->dist_freq_);
             break;
-
           case CFG_RESPONSE_SPEED_VALUE:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, sub_command, &this->resp_speed_);
             break;
-
           default:
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_MAX_DETECTION_VALUE, &this->max_dist_);
             append_seq_data_value(this->tx_frame_, this->tx_frame_size_, CFG_MIN_DETECTION_VALUE, &this->min_dist_);
@@ -147,13 +133,11 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
         }
         break;
       }
-
     case CALIBRATION_CMD:
       append_seq_data(this->tx_frame_, this->tx_frame_size_, &CALIBRATION_TRIGGER_VALUE);
       append_seq_data(this->tx_frame_, this->tx_frame_size_, &CALIBRATION_RETENTION_VALUE);
       append_seq_data(this->tx_frame_, this->tx_frame_size_, &CALIBRATION_TIME_VALUE);
       break;
-
     case CFG_GATE_THRESHOLD_TRIGGER_READ_CMD:
     case CFG_GATE_THRESHOLD_HOLD_READ_CMD:
     case CFG_GATE_THRESHOLD_SNR_READ_CMD:
@@ -165,19 +149,15 @@ void LD2410S::build_cmd_frame_(uint16_t command, uint16_t sub_command) {
         }
       }
       break;
-
     case CFG_GATE_THRESHOLD_TRIGGER_WRITE_CMD:
       append_gate_thresholds(this->tx_frame_, this->tx_frame_size_, sub_command, this->thresholds_trigger_);
       break;
-
     case CFG_GATE_THRESHOLD_HOLD_WRITE_CMD:
       append_gate_thresholds(this->tx_frame_, this->tx_frame_size_, sub_command, this->thresholds_hold_);
       break;
-
     case CFG_GATE_THRESHOLD_SNR_WRITE_CMD:
       append_gate_thresholds(this->tx_frame_, this->tx_frame_size_, sub_command, this->thresholds_snr_);
       break;
-
     default:
       break;
   }

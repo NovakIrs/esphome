@@ -378,7 +378,7 @@ RxEvaluationResult LD2410Srx::evaluate_header_() {
     return RxEvaluationResult::UNKNOWN;
   }
 
-  this->msg_ = "Unkown header";
+  this->msg_ = "Unknown header";
   this->frame_type_ = RxFrameType::NOK;  // bad header
   return RxEvaluationResult::NOK;
 }

@@ -35,7 +35,7 @@ void LD2410S::send_() {
       this->init_done_ = false;
       this->tx_schedule_.confirm_sent();
       break;
-    case TxCmdState::ERROR:
+    case TxCmdState::FAILED:
       this->status_set_warning();
       ESP_LOGD(TAG, ">XX [%d] Scheduling command send failed!!!, re-initializing...", this->loop_count_);
       this->tx_schedule_.reset();
@@ -45,7 +45,7 @@ void LD2410S::send_() {
       this->write_array(CFG_END, sizeof(CFG_END));
       this->flush();
       break;
-    case TxCmdState::EMPTY:
+    case TxCmdState::IDLE:
       if (!this->init_done_) {
         ESP_LOGV(TAG, "+++ [%d] Setup done", this->loop_count_);
         this->init_done_ = true;
@@ -477,7 +477,7 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
   if (this->last_ >= TX_SCHEDULE_BUFFER_SIZE) {
     ESP_LOGW(TAG, "++: pos:[%d], cmd:%04x, Buffer overflow, reseting buffer !!!", this->last_ - 1, command);
     this->reset();
-    this->state_ = TxCmdState::ERROR;
+    this->state_ = TxCmdState::FAILED;
     return;
   }
   if (command != CONFIG_MODE_START_CMD) {
@@ -510,7 +510,7 @@ void LD2410Sschedule::append(uint16_t command, uint16_t sub_command) {
     ESP_LOGV(TAG, "Appending end");
     this->append(CONFIG_MODE_END_CMD);
   }
-  if (this->state_ == TxCmdState::EMPTY) {
+  if (this->state_ == TxCmdState::IDLE) {
     this->state_ = TxCmdState::SCHEDULED;
   }
 }
@@ -547,7 +547,7 @@ TxCmdState LD2410Sschedule::check_state() {
                      ":>> pos:%d[:%d], cmd:%04x, retry:%d, restart:%d, Restart sequence limit reached, Giving up, "
                      "Reseting buffer!!!",
                      this->active_, this->last_ - 1, this->get_command(), this->retry_count_, this->restart_count_);
-            this->state_ = TxCmdState::ERROR;
+            this->state_ = TxCmdState::FAILED;
             this->retry_count_ = 0;
             this->restart_count_ = 0;
             this->active_ = 0;
@@ -557,7 +557,7 @@ TxCmdState LD2410Sschedule::check_state() {
       }
       break;
 
-    case TxCmdState::EMPTY:
+    case TxCmdState::IDLE:
 
       // schedule has passed the end
       if (this->last_ > 0 && !this->config_mode_ && this->active_ >= this->last_ - 1) {
@@ -636,7 +636,7 @@ void LD2410Sschedule::reset() {
   this->time_started_ = App.get_loop_component_start_time();
   this->retry_count_ = 0;
   this->restart_count_ = 0;
-  this->state_ = TxCmdState::EMPTY;
+  this->state_ = TxCmdState::IDLE;
   ESP_LOGV(TAG, "::: Schedule cleared");
 }
 #pragma endregion

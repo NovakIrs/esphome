@@ -1,4 +1,7 @@
 #include "infrared.h"
+
+#include <cinttypes>
+
 #include "esphome/core/log.h"
 
 #ifdef USE_API
@@ -100,7 +103,7 @@ void Infrared::control(const InfraredCall &call) {
     // Zero-copy from packed protobuf data
     transmit_data->set_data_from_packed_sint32(call.get_packed_data(), call.get_packed_length(),
                                                call.get_packed_count());
-    ESP_LOGD(TAG, "Transmitting packed raw timings: count=%u, repeat=%u", call.get_packed_count(),
+    ESP_LOGD(TAG, "Transmitting packed raw timings: count=%" PRIu16 ", repeat=%" PRIu32, call.get_packed_count(),
              call.get_repeat_count());
   } else if (call.is_base64url()) {
     // Decode base64url (URL-safe) into transmit buffer
@@ -113,16 +116,16 @@ void Infrared::control(const InfraredCall &call) {
     for (int32_t timing : transmit_data->get_data()) {
       int32_t abs_timing = timing < 0 ? -timing : timing;
       if (abs_timing > max_timing_us) {
-        ESP_LOGE(TAG, "Invalid timing value: %d µs (max %d)", timing, max_timing_us);
+        ESP_LOGE(TAG, "Invalid timing value: %" PRId32 " µs (max %" PRId32 ")", timing, max_timing_us);
         return;
       }
     }
-    ESP_LOGD(TAG, "Transmitting base64url raw timings: count=%zu, repeat=%u", transmit_data->get_data().size(),
+    ESP_LOGD(TAG, "Transmitting base64url raw timings: count=%zu, repeat=%" PRIu32, transmit_data->get_data().size(),
              call.get_repeat_count());
   } else {
     // From vector (lambdas/automations)
     transmit_data->set_data(call.get_raw_timings());
-    ESP_LOGD(TAG, "Transmitting raw timings: count=%zu, repeat=%u", call.get_raw_timings().size(),
+    ESP_LOGD(TAG, "Transmitting raw timings: count=%zu, repeat=%" PRIu32, call.get_raw_timings().size(),
              call.get_repeat_count());
   }
 
@@ -151,12 +154,8 @@ bool Infrared::on_receive(remote_base::RemoteReceiveData data) {
   // Forward received IR data to API server
 #if defined(USE_API) && defined(USE_IR_RF)
   if (api::global_api_server != nullptr) {
-#ifdef USE_DEVICES
-    uint32_t device_id = this->get_device_id();
-#else
-    uint32_t device_id = 0;
-#endif
-    api::global_api_server->send_infrared_rf_receive_event(device_id, this->get_object_id_hash(), &data.get_raw_data());
+    api::global_api_server->send_infrared_rf_receive_event(this->get_device_id_or_zero(), this->get_entity_key(),
+                                                           &data.get_raw_data());
   }
 #endif
   return false;  // Don't consume the event, allow other listeners to process it

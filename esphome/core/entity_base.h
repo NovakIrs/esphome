@@ -73,20 +73,17 @@ class EntityBase {
   // Get whether this Entity has its own name or it should use the device friendly_name.
   bool has_own_name() const { return this->flags_.has_own_name; }
 
-  // Get the sanitized name of this Entity as an ID.
-  // Deprecated: object_id mangles names and all object_id methods are planned for removal.
-  // See https://github.com/esphome/backlog/issues/76
-  // Now is the time to stop using object_id entirely. If you still need it temporarily,
-  // use get_object_id_to() which will remain available longer but will also eventually be removed.
-  ESPDEPRECATED("object_id mangles names and all object_id methods are planned for removal "
-                "(see https://github.com/esphome/backlog/issues/76). "
-                "Now is the time to stop using object_id. If still needed, use get_object_id_to() "
-                "which will remain available longer. get_object_id() will be removed in 2026.7.0",
-                "2025.12.0")
-  std::string get_object_id() const;
+  // Get the unique key of this Entity: FNV-1 hash of the raw entity name.
+  // This is the key sent to API clients and used to route entity state.
+  uint32_t get_entity_key() const { return this->entity_key_; }
 
-  // Get the unique Object ID of this Entity
-  uint32_t get_object_id_hash() const { return this->object_id_hash_; }
+  /// Returns the LEGACY object_id hash, unchanged from previous releases, so existing
+  /// callers keep getting stable values (for example preference keys). This is no longer
+  /// the key sent to API clients; that is get_entity_key().
+  ESPDEPRECATED("Use get_entity_key() for the entity key sent to API clients, or "
+                "make_entity_preference<T>() for preference storage. Will be removed in 2027.1.0.",
+                "2026.8.0")
+  uint32_t get_object_id_hash() const { return this->calc_old_object_id_hash_(); }
 
   /// Get object_id with zero heap allocation
   /// For static case: returns StringRef to internal storage (buffer unused)
@@ -193,39 +190,23 @@ class EntityBase {
   // Set has_state - for components that need to manually set this
   void set_has_state(bool state) { this->flags_.has_state = state; }
 
-  /**
-   * @brief Get a unique hash for storing preferences/settings for this entity.
-   *
-   * This method returns a hash that uniquely identifies the entity for the purpose of
-   * storing preferences (such as calibration, state, etc.). Unlike get_object_id_hash(),
-   * this hash also incorporates the device_id (if devices are enabled), ensuring uniqueness
-   * across multiple devices that may have entities with the same object_id.
-   *
-   * Use this method when storing or retrieving preferences/settings that should be unique
-   * per device-entity pair. Use get_object_id_hash() when you need a hash that identifies
-   * the entity regardless of the device it belongs to.
-   *
-   * For backward compatibility, if device_id is 0 (the main device), the hash is unchanged
-   * from previous versions, so existing single-device configurations will continue to work.
-   *
-   * @return uint32_t The unique hash for preferences, including device_id if available.
-   * @deprecated Use make_entity_preference<T>() instead, or preferences won't be migrated.
-   * See https://github.com/esphome/backlog/issues/85
-   */
-  ESPDEPRECATED("Use make_entity_preference<T>() instead, or preferences won't be migrated. "
-                "See https://github.com/esphome/backlog/issues/85. Will be removed in 2027.1.0.",
-                "2026.7.0")
-  uint32_t get_preference_hash() {
+  /// Get this entity's device id, or 0 when devices are not compiled in (main device).
+  uint32_t get_device_id_or_zero() const {
 #ifdef USE_DEVICES
-    // Combine object_id_hash with device_id to ensure uniqueness across devices
-    // Note: device_id is 0 for the main device, so XORing with 0 preserves the original hash
-    // This ensures backward compatibility for existing single-device configurations
-    return this->get_object_id_hash() ^ this->get_device_id();
+    return this->get_device_id();
 #else
-    // Without devices, just use object_id_hash as before
-    return this->get_object_id_hash();
+    return 0;
 #endif
   }
+
+  /// Get the LEGACY preference key: FNV-1 hash of the sanitized object_id, XOR device_id.
+  /// Intentionally keeps the old algorithm so external callers that store preferences under
+  /// this key keep stable keys; make_entity_preference() migrates to the new raw-name key,
+  /// this method never will.
+  ESPDEPRECATED("Use make_entity_preference<T>() instead, or preferences won't be migrated. "
+                "See https://github.com/esphome/backlog/issues/85. Will be removed in 2027.1.0.",
+                "2026.8.0")
+  uint32_t get_preference_hash() { return this->old_preference_key_base_(); }
 
   /// Create a preference object for storing this entity's state/settings.
   /// @tparam T The type of data to store (must be trivially copyable)
@@ -238,10 +219,13 @@ class EntityBase {
  protected:
   friend void ::setup();
   friend void ::original_setup();
+  // Application's register_<entity>(obj, name, hash, fields) overloads call configure_entity_
+  // before push_back, so codegen can emit a single combined call per entity.
+  friend class Application;
 
-  /// Combined entity setup from codegen: set name, object_id hash, entity string indices, and flags.
+  /// Combined entity setup from codegen: set name, entity key, entity string indices, and flags.
   /// Bit layout of entity_fields is defined by the ENTITY_FIELD_*_SHIFT constants above.
-  void configure_entity_(const char *name, uint32_t object_id_hash, uint32_t entity_fields);
+  void configure_entity_(const char *name, uint32_t entity_key, uint32_t entity_fields);
 
 #ifdef USE_DEVICES
   // Codegen-only setter — only accessible from setup() via friend declaration.
@@ -249,13 +233,24 @@ class EntityBase {
 #endif
 
   /// Non-template helper for make_entity_preference() to avoid code bloat.
-  /// When preference hash algorithm changes, migration logic goes here.
+  /// Migrates preferences from the old sanitized-object_id key to the raw-name key
+  /// on key-lookup platforms. See: https://github.com/esphome/backlog/issues/85
   ESPPreferenceObject make_entity_preference_(size_t size, uint32_t version);
 
-  void calc_object_id_();
+  void calc_entity_key_();
+
+  /// Reconstruct the OLD (pre-2026.8.0) sanitized-object_id hash for preference keys.
+  uint32_t calc_old_object_id_hash_() const;
+
+  /// Preference key base for this entity: raw-name entity key XOR device_id.
+  uint32_t preference_key_base_() const { return this->entity_key_ ^ this->get_device_id_or_zero(); }
+
+  /// Legacy preference key base: sanitized-object_id hash XOR device_id.
+  /// Note: device_id is 0 for the main device, so XORing with 0 preserves the original hash.
+  uint32_t old_preference_key_base_() const { return this->calc_old_object_id_hash_() ^ this->get_device_id_or_zero(); }
 
   StringRef name_;
-  uint32_t object_id_hash_{};
+  uint32_t entity_key_{};
 #ifdef USE_DEVICES
   Device *device_{};
 #endif
@@ -296,15 +291,36 @@ void log_entity_device_class(const char *tag, const char *prefix, const EntityBa
 #define LOG_ENTITY_UNIT_OF_MEASUREMENT(tag, prefix, obj) log_entity_unit_of_measurement(tag, prefix, obj)
 void log_entity_unit_of_measurement(const char *tag, const char *prefix, const EntityBase &obj);
 
-/**
- * An entity that has a state.
- * @tparam T The type of the state
+/** Base class for entities that track a typed state value with change-detection and callbacks.
+ *
+ * This class does not store the state value — subclasses own their storage. Whether a state
+ * has been set is tracked by EntityBase::has_state().
+ *
+ * Subclasses must implement:
+ *   - get_state(): return a const reference to the current value
+ *   - set_state_value(): store a new value (called only when the state actually changes)
+ *   - get_trigger_on_initial_state(): return whether callbacks should fire on the first state
+ *
+ * Subclasses may override set_new_state() to add behavior (logging, notifications) after calling
+ * the base implementation. Since set_new_state() is virtual, callers like invalidate_state()
+ * dispatch through the vtable to the subclass override in the .cpp, avoiding template code
+ * bloat at inline call sites. Subclasses may also add a fast-path dedup check before calling
+ * set_new_state() to skip virtual dispatch entirely when the state hasn't changed.
+ *
+ * Callback behavior:
+ *   - full_state_callbacks_: fired on every change, receives optional<T> previous and current
+ *   - state_callbacks_: fired only when the new state has a value, and either this is not the
+ *     first state (had_state) or trigger_on_initial_state is set
+ *
+ * @tparam T The type of the state value
  */
 template<typename T> class StatefulEntityBase : public EntityBase {
  public:
-  virtual bool has_state() const { return this->state_.has_value(); }
-  virtual const T &get_state() const { return this->state_.value(); }  // NOLINT(bugprone-unchecked-optional-access)
-  virtual T get_state_default(T default_value) const { return this->state_.value_or(default_value); }
+  /// Return the current state value. Only valid when has_state() is true.
+  virtual const T &get_state() const = 0;
+  /// Return the current state if available, otherwise return the provided default.
+  T get_state_default(T default_value) const { return this->has_state() ? this->get_state() : default_value; }
+  /// Clear the state — sets has_state() to false and fires callbacks with nullopt.
   void invalidate_state() { this->set_new_state({}); }
 
   template<typename F> void add_full_state_callback(F &&callback) {
@@ -314,33 +330,46 @@ template<typename T> class StatefulEntityBase : public EntityBase {
     this->state_callbacks_.add(std::forward<F>(callback));
   }
 
-  void set_trigger_on_initial_state(bool trigger_on_initial_state) {
-    this->trigger_on_initial_state_ = trigger_on_initial_state;
-  }
-
  protected:
-  optional<T> state_{};
-  /**
-   * Set a new state for this entity. This will trigger callbacks only if the new state is different from the previous.
+  /// Subclasses return whether callbacks should fire on the very first state.
+  virtual bool get_trigger_on_initial_state() const = 0;
+
+  /** Apply a new state, de-duplicating and firing callbacks as needed.
    *
-   * @param new_state The new state.
-   * @return True if the state was changed, false if it was the same as before.
+   * Pass nullopt to invalidate (clear) the state. Pass a value to set it.
+   * Returns true if the state actually changed, false if it was the same.
+   * Subclasses may override to add logging/notifications after calling the base.
    */
   virtual bool set_new_state(const optional<T> &new_state) {
-    if (this->state_ != new_state) {
-      // call the full state callbacks with the previous and new state
-      this->full_state_callbacks_.call(this->state_, new_state);
-      // trigger legacy callbacks only if the new state is valid and either the trigger on initial state is enabled or
-      // the previous state was valid
-      auto had_state = this->has_state();
-      this->state_ = new_state;
-      if (new_state.has_value() && (this->trigger_on_initial_state_ || had_state))
-        this->state_callbacks_.call(new_state.value());
-      return true;
+    // Access flags_ directly to avoid function call overhead in this hot path
+    bool had_state = this->flags_.has_state;
+    // Use pointer to avoid requiring T to be default-constructible
+    const T *current = had_state ? &this->get_state() : nullptr;
+    if (new_state.has_value()) {
+      if (current != nullptr && *current == new_state.value())
+        return false;  // same value, no change
+    } else if (!had_state) {
+      return false;  // already invalidated, no change
     }
-    return false;
+    // Capture old_state before set_state_value — current pointer aliases subclass storage
+    bool has_full_cbs = !this->full_state_callbacks_.empty();
+    optional<T> old_state;
+    if (has_full_cbs)
+      old_state = current != nullptr ? optional<T>(*current) : nullopt;
+    // Update storage before firing callbacks so callback code can inspect current state
+    this->flags_.has_state = new_state.has_value();
+    if (new_state.has_value()) {
+      this->set_state_value(new_state.value());
+    }
+    if (has_full_cbs)
+      this->full_state_callbacks_.call(old_state, new_state);
+    // had_state first: on every change except the first, skips the virtual call
+    if (new_state.has_value() && (had_state || this->get_trigger_on_initial_state()))
+      this->state_callbacks_.call(new_state.value());
+    return true;
   }
-  bool trigger_on_initial_state_{true};
+  /// Subclasses implement this to store the actual value into their own storage.
+  virtual void set_state_value(const T &value) = 0;
   LazyCallbackManager<void(optional<T> previous, optional<T> current)> full_state_callbacks_;
   LazyCallbackManager<void(T)> state_callbacks_;
 };
